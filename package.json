@@ -1,0 +1,28 @@
+{
+  "name": "query-grid",
+  "private": true,
+  "scripts": {
+    "build:dotnet": "dotnet build src/dotnet/QueryGrid.slnx -c Release",
+    "test:dotnet": "dotnet test src/dotnet/QueryGrid.slnx -c Release",
+    "pack:dotnet": "dotnet pack src/dotnet/QueryGrid.slnx -c Release -o artifacts/nuget",
+    "install:npm": "npm install --prefix src/npm",
+    "build:npm": "npm run build:npm --prefix src/npm",
+    "test:npm": "npm run test:npm --prefix src/npm",
+    "lint:npm": "npm run lint:npm --prefix src/npm",
+    "build:all": "npm run build:dotnet && npm run build:npm",
+    "test:all": "npm run test:dotnet && npm run test:npm",
+    "start:showcase-api": "dotnet run --project samples/showcase-api/QueryGrid.Samples.ShowcaseApi.csproj",
+    "install:showcase-ui": "npm install --prefix samples/showcase-ui",
+    "sync:showcase-deps": "node scripts/sync-showcase-packages.mjs",
+    "clear:showcase-ui-cache": "node -e \"require('fs').rmSync('samples/showcase-ui/.angular',{recursive:true,force:true}); require('fs').rmSync('samples/showcase-ui/node_modules/.vite',{recursive:true,force:true})\"",
+    "refresh:showcase-ui": "npm run build:npm && npm run install:showcase-ui && npm run sync:showcase-deps && npm run clear:showcase-ui-cache",
+    "prepare:showcase-ui": "npm run build:npm && npm run install:showcase-ui && npm run sync:showcase-deps && npm run clear:showcase-ui-cache",
+    "watch:sync-showcase-deps": "chokidar \"src/npm/packages/core/dist/**/*\" \"src/npm/packages/primeng/dist/**/*\" -c \"npm run sync:showcase-deps\" --initial",
+    "start:showcase-ui": "npm run start --prefix samples/showcase-ui",
+    "dev:showcase-ui": "npm run prepare:showcase-ui && concurrently -k -n core,primeng,sync,ui \"npm run watch:core --prefix src/npm\" \"npm run watch:primeng --prefix src/npm\" \"npm run watch:sync-showcase-deps\" \"npm run start --prefix samples/showcase-ui\""
+  },
+  "devDependencies": {
+    "chokidar-cli": "^3.0.0",
+    "concurrently": "^9.2.1"
+  }
+}

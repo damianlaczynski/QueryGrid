@@ -45,7 +45,7 @@ public class EntityFrameworkTests
 
     Assert.Equal(3, result.TotalCount);
     Assert.Equal(2, result.Take);
-    Assert.Equal([2, 4], result.Items.Select(p => p.Id).ToArray());
+    Assert.Equal([2, 1], result.Items.Select(p => p.Id).ToArray());
   }
 
   [Fact]

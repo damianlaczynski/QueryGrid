@@ -1,0 +1,15 @@
+.error-banner {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.reference-id {
+  font-size: 0.75rem;
+}
+
+.empty-state {
+  margin: 0;
+  padding: 1rem 0;
+  text-align: center;
+  color: var(--p-text-muted-color);
+}

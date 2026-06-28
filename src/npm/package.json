@@ -1,0 +1,28 @@
+{
+  "name": "query-grid",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build:dotnet": "dotnet build ../dotnet/QueryGrid.slnx -c Release",
+    "test:dotnet": "dotnet test ../dotnet/QueryGrid.slnx -c Release --no-build",
+    "pack:dotnet": "dotnet pack ../dotnet/QueryGrid.slnx -c Release -o ../../artifacts/nuget",
+    "build:core": "npm run build -w @query-grid/core",
+    "build:primeng": "npm run build -w @query-grid/primeng",
+    "build:npm": "npm run build:core && npm run build:primeng",
+    "watch:core": "tsc -p packages/core/tsconfig.json --watch --preserveWatchOutput",
+    "watch:primeng": "ng-packagr -p packages/primeng/ng-package.json --watch",
+    "test:npm": "npm run test -w @query-grid/core && npm run test -w @query-grid/primeng",
+    "lint:npm": "eslint packages",
+    "build:all": "npm run build:dotnet && npm run build:npm",
+    "test:all": "dotnet test ../dotnet/QueryGrid.slnx -c Release && npm run test:npm"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "eslint": "^9.39.1",
+    "prettier": "^3.6.2",
+    "typescript-eslint": "^8.46.4"
+  }
+}

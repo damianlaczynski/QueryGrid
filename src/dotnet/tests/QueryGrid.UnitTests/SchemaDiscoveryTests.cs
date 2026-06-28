@@ -48,7 +48,7 @@ public class SchemaDiscoveryTests
   public void Marks_only_annotated_string_fields_as_searchable()
   {
     var searchable = Schema.SearchableFields.Select(f => f.Name).OrderBy(n => n).ToArray();
-    Assert.Equal(["Email", "Name"], searchable);
+    Assert.Equal(["Email", "ExternalId", "Name", "TrackingId"], searchable);
   }
 
   [Fact]
@@ -80,5 +80,11 @@ public class SchemaDiscoveryTests
   {
     Assert.Contains(FilterOperator.IsNull, Schema.Require("DeletedAt").AllowedOperators);
     Assert.DoesNotContain(FilterOperator.IsNull, Schema.Require("Age").AllowedOperators);
+  }
+
+  [Fact]
+  public void Uses_Id_as_default_sort_tie_breaker_by_convention()
+  {
+    Assert.Equal("Id", Schema.SortTieBreakerField?.Name);
   }
 }

@@ -49,7 +49,7 @@ internal static class GridValueConverter
     catch (Exception ex) when (ex is FormatException or InvalidCastException or OverflowException or ArgumentException)
     {
       throw new GridValidationException(
-        "invalid_value",
+        GridValidationCodes.InvalidValue,
         $"Value '{raw}' is not valid for field '{field}' of type '{underlying.Name}'.");
     }
   }

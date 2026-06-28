@@ -1,5 +1,6 @@
 using QueryGrid.Abstractions;
 using QueryGrid.Core;
+using QueryGrid.Core.Schema;
 
 namespace QueryGrid.UnitTests;
 
@@ -11,6 +12,19 @@ public class SortTieBreakerTests
     var query = new GridQuery { Sort = [new SortDescriptor("Age")] };
     var ids = TestData.Query().ApplyGridSort(query).Select(p => p.Id).ToArray();
     Assert.Equal([3, 1, 4, 2], ids);
+  }
+
+  [Fact]
+  public void Tie_breaker_orders_equal_sort_keys_by_Id()
+  {
+    var query = new GridQuery { Sort = [new SortDescriptor("Age")] };
+    var ids = TestData.Query()
+      .Where(p => p.Age == 30)
+      .ApplyGridSort(query)
+      .Select(p => p.Id)
+      .ToArray();
+
+    Assert.Equal([1, 4], ids);
   }
 
   [Fact]
@@ -30,7 +44,18 @@ public class SortTieBreakerTests
     Assert.Equal(2, result.Sort.Count);
     Assert.Equal("Age", result.Sort[0].Field);
     Assert.False(result.Sort[0].Desc);
-    Assert.Equal("Id", result.Sort[1].Field);
+    Assert.Equal(GridSchemaProvider.GetSchema<Person>().SortTieBreakerField?.Name, result.Sort[1].Field);
     Assert.False(result.Sort[1].Desc);
+  }
+
+  [Fact]
+  public void Honors_GridSortTieBreaker_attribute()
+  {
+    var query = new GridQuery { Sort = [new SortDescriptor("Label")] };
+    var result = TieBreakerTestData.Query().ToGridResult(query);
+
+    Assert.Equal(2, result.Sort.Count);
+    Assert.Equal("Label", result.Sort[0].Field);
+    Assert.Equal("Code", result.Sort[1].Field);
   }
 }

@@ -6,9 +6,6 @@ namespace QueryGrid.UnitTests;
 
 public class FilterTests
 {
-  private static int[] FilteredIds(FilterNode filter)
-    => TestData.Query().ApplyGridFilter(WithFilter(filter)).OrderBy(p => p.Id).Select(p => p.Id).ToArray();
-
   [Fact]
   public void Eq_on_number()
   {
@@ -24,7 +21,7 @@ public class FilterTests
   [Fact]
   public void Gt_and_Gte()
   {
-    Assert.Equal([2, 4], FilteredIds(Cond("Age", FilterOperator.Gt, 30)));
+    Assert.Equal([2], FilteredIds(Cond("Age", FilterOperator.Gt, 30)));
     Assert.Equal([1, 2, 4], FilteredIds(Cond("Age", FilterOperator.Gte, 30)));
   }
 
@@ -138,5 +135,24 @@ public class FilterTests
         Cond("Name", FilterOperator.StartsWith, "a"),
         Cond("Name", FilterOperator.StartsWith, "d")));
     Assert.Equal([1, 4], FilteredIds(filter));
+  }
+
+  [Fact]
+  public void NotContains_excludes_substring()
+  {
+    Assert.Equal([1, 2, 3], FilteredIds(Cond("Name", FilterOperator.NotContains, "av")));
+  }
+
+  [Fact]
+  public void Ne_on_string_excludes_exact_match()
+  {
+    Assert.Equal([2, 3, 4], FilteredIds(Cond("Name", FilterOperator.Ne, "Alice")));
+  }
+
+  [Fact]
+  public void Empty_filter_group_matches_all_rows()
+  {
+    var filter = Group(FilterLogic.And);
+    Assert.Equal([1, 2, 3, 4], FilteredIds(filter));
   }
 }

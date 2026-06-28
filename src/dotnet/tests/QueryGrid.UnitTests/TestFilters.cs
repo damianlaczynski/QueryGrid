@@ -1,4 +1,5 @@
 using QueryGrid.Abstractions;
+using QueryGrid.Core;
 
 namespace QueryGrid.UnitTests;
 
@@ -13,4 +14,7 @@ public static class TestFilters
 
   public static GridQuery WithFilter(FilterNode filter)
     => new() { Filter = filter };
+
+  public static int[] FilteredIds(FilterNode filter)
+    => TestData.Query().ApplyGridFilterAndSearch(WithFilter(filter)).OrderBy(p => p.Id).Select(p => p.Id).ToArray();
 }

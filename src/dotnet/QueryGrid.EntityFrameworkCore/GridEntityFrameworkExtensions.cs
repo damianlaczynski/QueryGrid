@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using QueryGrid.Abstractions;
 using QueryGrid.Core;
+using QueryGrid.Core.Internal;
 
 namespace QueryGrid.EntityFrameworkCore;
 
@@ -24,14 +25,10 @@ public static class GridEntityFrameworkExtensions
     ArgumentNullException.ThrowIfNull(query);
     options ??= GridOptions.Default;
 
-    var filtered = source.ApplyGridFilter(query, options);
-    var totalCount = await filtered.CountAsync(cancellationToken).ConfigureAwait(false);
-    var (skip, take) = GridQueryableExtensions.ResolvePaging(query, options);
-    var effectiveSort = GridQueryableExtensions.ResolveEffectiveSort<T>(query, options);
+    var plan = GridResultExecutor.Plan(source, query, options);
+    var totalCount = await plan.FilteredQuery.CountAsync(cancellationToken).ConfigureAwait(false);
+    var items = await plan.PageQuery.ToListAsync(cancellationToken).ConfigureAwait(false);
 
-    var page = filtered.ApplyGridSort(query, options).ApplyGridPaging(query, options);
-    var items = await page.ToListAsync(cancellationToken).ConfigureAwait(false);
-
-    return new GridResult<T>(items, totalCount, skip, take, effectiveSort);
+    return new GridResult<T>(items, totalCount, plan.Skip, plan.Take, plan.EffectiveSort);
   }
 }

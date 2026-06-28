@@ -1,0 +1,100 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "querygrid: build dotnet",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/src/dotnet/QueryGrid.slnx",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary;ForceNoAlign"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/src/dotnet"
+      },
+      "group": "build",
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "querygrid: test dotnet",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "test",
+        "${workspaceFolder}/src/dotnet/QueryGrid.slnx",
+        "--no-build"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/src/dotnet"
+      },
+      "group": "test",
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "querygrid: format dotnet",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["format", "${workspaceFolder}/src/dotnet/QueryGrid.slnx"],
+      "options": {
+        "cwd": "${workspaceFolder}/src/dotnet"
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "querygrid: build npm",
+      "type": "process",
+      "command": "npm",
+      "args": ["run", "build:npm"],
+      "options": {
+        "cwd": "${workspaceFolder}/src/npm"
+      },
+      "group": "build",
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "querygrid: test npm",
+      "type": "process",
+      "command": "npm",
+      "args": ["run", "test:npm"],
+      "options": {
+        "cwd": "${workspaceFolder}/src/npm"
+      },
+      "group": "test",
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "querygrid: build all",
+      "dependsOrder": "sequence",
+      "dependsOn": ["querygrid: build dotnet", "querygrid: build npm"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "querygrid: test all",
+      "dependsOrder": "sequence",
+      "dependsOn": ["querygrid: test dotnet", "querygrid: test npm"],
+      "group": "test"
+    }
+  ]
+}

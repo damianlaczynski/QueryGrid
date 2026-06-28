@@ -1,0 +1,99 @@
+@let column = this.column();
+@if (column.filter) {
+  @switch (column.filter.type) {
+    @case ("text") {
+      <p-columnFilter
+        type="text"
+        [field]="column.field"
+        display="menu"
+        [placeholder]="column.filter.placeholder"
+        [matchModeOptions]="nullableMatchModeOptions(column)"
+      />
+    }
+    @case ("date") {
+      <p-columnFilter
+        type="date"
+        [field]="column.field"
+        display="menu"
+        [matchModeOptions]="nullableMatchModeOptions(column)"
+      />
+    }
+    @case ("number") {
+      <p-columnFilter
+        type="numeric"
+        [field]="column.field"
+        display="menu"
+        [locale]="resolvedFilterLocale()"
+        [minFractionDigits]="numberFilterFractionDigits(column).min"
+        [maxFractionDigits]="numberFilterFractionDigits(column).max"
+        [useGrouping]="numberFilterUseGrouping(column)"
+        [matchModeOptions]="nullableMatchModeOptions(column)"
+      />
+    }
+    @case ("boolean") {
+      <p-columnFilter
+        [field]="column.field"
+        matchMode="equals"
+        display="menu"
+        [showMatchModes]="false"
+        [showOperator]="false"
+        [showAddButton]="false"
+        [showApplyButton]="false"
+      >
+        <ng-template #filter let-value let-filter="filterCallback">
+          <div class="qg-boolean-filter">
+            <label class="qg-boolean-filter-option">
+              <p-checkbox
+                [binary]="true"
+                [ngModel]="value === true"
+                (onChange)="onBooleanFilterCheck(true, $event.checked, filter)"
+              />
+              <span>{{ booleanFilterTrueLabel(column) }}</span>
+            </label>
+            <label class="qg-boolean-filter-option">
+              <p-checkbox
+                [binary]="true"
+                [ngModel]="value === false"
+                (onChange)="onBooleanFilterCheck(false, $event.checked, filter)"
+              />
+              <span>{{ booleanFilterFalseLabel(column) }}</span>
+            </label>
+          </div>
+        </ng-template>
+      </p-columnFilter>
+    }
+    @case ("enum") {
+      <p-columnFilter
+        [field]="column.field"
+        matchMode="in"
+        display="menu"
+        [showMatchModes]="true"
+        [matchModeOptions]="enumMatchModeOptions()"
+        [showOperator]="false"
+        [showAddButton]="false"
+      >
+        <ng-template #filter let-value let-filter="filterCallback">
+          <p-multiselect
+            [ngModel]="value"
+            [options]="column.filter.options ?? []"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Any"
+            (onChange)="filter($event.value)"
+            style="min-width: 14rem"
+          />
+        </ng-template>
+      </p-columnFilter>
+    }
+    @case ("guid") {
+      <p-columnFilter
+        type="text"
+        [field]="column.field"
+        matchMode="equals"
+        display="menu"
+        [showMatchModes]="false"
+        [placeholder]="column.filter.placeholder"
+      />
+    }
+  }
+}

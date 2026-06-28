@@ -109,3 +109,103 @@ export function totalPages(totalCount: number, take: number): number {
 
   return Math.ceil(totalCount / take);
 }
+
+export function clampSortDescriptors(
+  sort: SortDescriptor[] | null | undefined,
+  max = DEFAULT_GRID_OPTIONS.maxSortDescriptors,
+): SortDescriptor[] {
+  return (sort ?? []).slice(0, max);
+}
+
+export function flattenFilterConditions(
+  node: FilterNode | null | undefined,
+  result: FilterCondition[] = [],
+): FilterCondition[] {
+  if (!node) {
+    return result;
+  }
+
+  if (isFilterCondition(node)) {
+    result.push(node);
+    return result;
+  }
+
+  if (isFilterGroup(node)) {
+    for (const child of node.conditions) {
+      flattenFilterConditions(child, result);
+    }
+  }
+
+  return result;
+}
+
+function sameFilterValue(a: unknown, b: unknown): boolean {
+  if (a === b) {
+    return true;
+  }
+
+  if (a == null || b == null) {
+    return a == null && b == null;
+  }
+
+  if (Array.isArray(a) && Array.isArray(b)) {
+    if (a.length !== b.length) {
+      return false;
+    }
+
+    return a.every((item, index) => sameFilterValue(item, b[index]));
+  }
+
+  return false;
+}
+
+export function sameFilterNode(
+  a: FilterNode | null | undefined,
+  b: FilterNode | null | undefined,
+): boolean {
+  if (a == null && b == null) {
+    return true;
+  }
+
+  if (a == null || b == null) {
+    return false;
+  }
+
+  if (isFilterCondition(a) && isFilterCondition(b)) {
+    return (
+      a.field === b.field &&
+      a.operator === b.operator &&
+      sameFilterValue(a.value, b.value)
+    );
+  }
+
+  if (isFilterGroup(a) && isFilterGroup(b)) {
+    if (a.logic !== b.logic || a.conditions.length !== b.conditions.length) {
+      return false;
+    }
+
+    return a.conditions.every((child, index) =>
+      sameFilterNode(child, b.conditions[index]),
+    );
+  }
+
+  return false;
+}
+
+export function areSortDescriptorsEqual(
+  a: SortDescriptor[] | null | undefined,
+  b: SortDescriptor[] | null | undefined,
+): boolean {
+  const left = a ?? [];
+  const right = b ?? [];
+
+  if (left.length !== right.length) {
+    return false;
+  }
+
+  return left.every(
+    (item, index) =>
+      item.field === right[index].field &&
+      Boolean(item.desc) === Boolean(right[index].desc),
+  );
+}

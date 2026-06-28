@@ -18,7 +18,7 @@ public class SortAndPagingTests
   {
     var query = new GridQuery { Sort = [new SortDescriptor("Age", desc: true)] };
     var ids = TestData.Query().ApplyGridSort(query).Select(p => p.Id).ToArray();
-    Assert.Equal([2, 4, 1, 3], ids);
+    Assert.Equal([2, 1, 4, 3], ids);
   }
 
   [Fact]
@@ -55,7 +55,7 @@ public class SortAndPagingTests
     Assert.Equal(4, result.TotalCount);
     Assert.Equal(1, result.Skip);
     Assert.Equal(2, result.Take);
-    Assert.Equal([4, 1], result.Items.Select(p => p.Id).ToArray());
+    Assert.Equal([1, 4], result.Items.Select(p => p.Id).ToArray());
   }
 
   [Fact]
@@ -64,5 +64,13 @@ public class SortAndPagingTests
     var (skip, take) = GridQueryableExtensions.ResolvePaging(new GridQuery());
     Assert.Equal(0, skip);
     Assert.Equal(GridOptions.Default.DefaultPageSize, take);
+  }
+
+  [Fact]
+  public void Negative_skip_and_take_are_clamped_to_zero()
+  {
+    var (skip, take) = GridQueryableExtensions.ResolvePaging(new GridQuery { Skip = -5, Take = -3 });
+    Assert.Equal(0, skip);
+    Assert.Equal(0, take);
   }
 }

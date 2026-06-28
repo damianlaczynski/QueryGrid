@@ -1,5 +1,4 @@
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using QueryGrid.Abstractions;
 using QueryGrid.Abstractions.Serialization;
 using QueryGrid.Core;
@@ -8,7 +7,7 @@ namespace QueryGrid.UnitTests;
 
 public class GridQueryContractTests
 {
-  private static readonly JsonSerializerOptions JsonOptions = CreateJsonOptions();
+  private static readonly JsonSerializerOptions JsonOptions = GridQueryJson.CreateOptions();
 
   [Fact]
   public void Roundtrip_preserves_query()
@@ -67,20 +66,5 @@ public class GridQueryContractTests
     var group = Assert.IsType<FilterGroup>(deserialized.Filter);
     Assert.Equal(FilterLogic.And, group.Logic);
     Assert.Equal(2, group.Conditions.Count);
-  }
-
-  private static JsonSerializerOptions CreateJsonOptions()
-  {
-    return new JsonSerializerOptions
-    {
-      PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-      PropertyNameCaseInsensitive = true,
-      DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-      Converters =
-      {
-        new JsonStringEnumConverter(JsonNamingPolicy.CamelCase),
-        new FilterNodeJsonConverter()
-      }
-    };
   }
 }

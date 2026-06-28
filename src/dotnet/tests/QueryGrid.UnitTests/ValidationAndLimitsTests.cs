@@ -8,24 +8,24 @@ public class ValidationAndLimitsTests
 {
   private static GridValidationException Filter(FilterNode filter, GridOptions? options = null)
     => Assert.Throws<GridValidationException>(
-      () => TestData.Query().ApplyGridFilter(WithFilter(filter), options).ToList());
+      () => TestData.Query().ApplyGridFilterAndSearch(WithFilter(filter), options).ToList());
 
   [Fact]
   public void Unknown_field_is_rejected()
   {
-    Assert.Equal("unknown_field", Filter(Cond("Nope", FilterOperator.Eq, 1)).Code);
+    Assert.Equal(GridValidationCodes.UnknownField, Filter(Cond("Nope", FilterOperator.Eq, 1)).Code);
   }
 
   [Fact]
   public void Operator_invalid_for_type_is_rejected()
   {
-    Assert.Equal("operator_not_allowed", Filter(Cond("Age", FilterOperator.Contains, "3")).Code);
+    Assert.Equal(GridValidationCodes.OperatorNotAllowed, Filter(Cond("Age", FilterOperator.Contains, "3")).Code);
   }
 
   [Fact]
   public void Filtering_a_disabled_field_is_rejected()
   {
-    Assert.Equal("field_not_filterable", Filter(Cond("FilterDisabled", FilterOperator.Eq, "x")).Code);
+    Assert.Equal(GridValidationCodes.FieldNotFilterable, Filter(Cond("FilterDisabled", FilterOperator.Eq, "x")).Code);
   }
 
   [Fact]
@@ -34,13 +34,13 @@ public class ValidationAndLimitsTests
     var query = new GridQuery { Sort = [new SortDescriptor("SortDisabled")] };
     var ex = Assert.Throws<GridValidationException>(
       () => TestData.Query().ApplyGridSort(query).ToList());
-    Assert.Equal("field_not_sortable", ex.Code);
+    Assert.Equal(GridValidationCodes.FieldNotSortable, ex.Code);
   }
 
   [Fact]
   public void Invalid_value_is_rejected()
   {
-    Assert.Equal("invalid_value", Filter(Cond("Age", FilterOperator.Eq, "not-a-number")).Code);
+    Assert.Equal(GridValidationCodes.InvalidValue, Filter(Cond("Age", FilterOperator.Eq, "not-a-number")).Code);
   }
 
   [Fact]
@@ -49,7 +49,7 @@ public class ValidationAndLimitsTests
     var options = new GridOptions { MaxTake = 2 };
     var ex = Assert.Throws<GridValidationException>(
       () => GridQueryableExtensions.ResolvePaging(new GridQuery { Take = 3 }, options));
-    Assert.Equal("page_too_large", ex.Code);
+    Assert.Equal(GridValidationCodes.PageTooLarge, ex.Code);
   }
 
   [Fact]
@@ -62,7 +62,7 @@ public class ValidationAndLimitsTests
     };
     var ex = Assert.Throws<GridValidationException>(
       () => TestData.Query().ApplyGridSort(query, options).ToList());
-    Assert.Equal("too_many_sorts", ex.Code);
+    Assert.Equal(GridValidationCodes.TooManySorts, ex.Code);
   }
 
   [Fact]
@@ -70,7 +70,7 @@ public class ValidationAndLimitsTests
   {
     var options = new GridOptions { MaxInListLength = 2 };
     var filter = Cond("Id", FilterOperator.In, new object[] { 1, 2, 3 });
-    Assert.Equal("in_list_too_long", Filter(filter, options).Code);
+    Assert.Equal(GridValidationCodes.InListTooLong, Filter(filter, options).Code);
   }
 
   [Fact]
@@ -82,7 +82,7 @@ public class ValidationAndLimitsTests
       Cond("Id", FilterOperator.Eq, 1),
       Cond("Id", FilterOperator.Eq, 2),
       Cond("Id", FilterOperator.Eq, 3));
-    Assert.Equal("too_many_conditions", Filter(filter, options).Code);
+    Assert.Equal(GridValidationCodes.TooManyConditions, Filter(filter, options).Code);
   }
 
   [Fact]
@@ -94,6 +94,6 @@ public class ValidationAndLimitsTests
       Group(
         FilterLogic.And,
         Group(FilterLogic.And, Cond("Id", FilterOperator.Eq, 1))));
-    Assert.Equal("filter_too_deep", Filter(filter, options).Code);
+    Assert.Equal(GridValidationCodes.FilterTooDeep, Filter(filter, options).Code);
   }
 }
