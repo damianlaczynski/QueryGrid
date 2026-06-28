@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>QueryGrid.Abstractions</RootNamespace>
+    <PackageId>QueryGrid.Abstractions</PackageId>
+    <Description>Transport contracts for QueryGrid: GridQuery, GridResult, filter and sort descriptors, and field attributes. Pure POCOs with zero dependencies.</Description>
+  </PropertyGroup>
+
+</Project>

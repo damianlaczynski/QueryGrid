@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>QueryGrid.EntityFrameworkCore</RootNamespace>
+    <PackageId>QueryGrid.EntityFrameworkCore</PackageId>
+    <Description>Entity Framework Core integration for QueryGrid: ApplyGridAsync executes filtering, multi-sort, total count and paging asynchronously and returns a GridResult.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\QueryGrid.Core\QueryGrid.Core.csproj" />
+  </ItemGroup>
+
+</Project>

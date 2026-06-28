@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>QueryGrid.Core</RootNamespace>
+    <PackageId>QueryGrid.Core</PackageId>
+    <Description>QueryGrid engine: automatic field discovery from DTOs, filter and multi-sort expression building, and IQueryable shaping. Provider-agnostic (no EF Core dependency).</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\QueryGrid.Abstractions\QueryGrid.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

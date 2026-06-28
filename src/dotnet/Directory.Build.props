@@ -1,0 +1,26 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <!-- Shared NuGet package metadata, applied only to publishable projects -->
+  <PropertyGroup Condition="'$(IsPackable)' != 'false'">
+    <Version>0.1.0-preview.1</Version>
+    <Authors>Damian Łączyński</Authors>
+    <Product>QueryGrid</Product>
+    <Copyright>Copyright (c) 2026 Damian Łączyński</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/damianlaczynski/query-grid</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/damianlaczynski/query-grid</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <PackageTags>querygrid;pagination;sorting;filtering;linq;datagrid;loadoptions</PackageTags>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+</Project>
