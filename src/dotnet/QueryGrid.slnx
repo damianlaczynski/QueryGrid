@@ -1,0 +1,20 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+  </Folder>
+  <Folder Name="/packages/">
+    <Project Path="QueryGrid.Abstractions/QueryGrid.Abstractions.csproj" />
+    <Project Path="QueryGrid.Core/QueryGrid.Core.csproj" />
+    <Project Path="QueryGrid.EntityFrameworkCore/QueryGrid.EntityFrameworkCore.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/QueryGrid.UnitTests/QueryGrid.UnitTests.csproj" />
+  </Folder>
+</Solution>
