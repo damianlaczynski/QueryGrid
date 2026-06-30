@@ -23,7 +23,6 @@
 npm run pack:dotnet
 
 # npm libraries
-cd src/npm
 npm run build:npm
 # dist/ output under each package folder
 ```
@@ -32,9 +31,10 @@ npm run build:npm
 
 1. Update version in `Directory.Build.props` and all npm `package.json` files.
 2. Update `CHANGELOG.md`.
-3. Run `npm run test:all`, `npm run build:all`, and `npm run lint:npm`.4. Pack and smoke-test artifacts against a sample under `samples/`.
-4. Publish to chosen registries (NuGet.org, GitHub Packages, npm).
-5. Tag the release in git.
+3. Run `npm run test`, `npm run build`, and `npm run lint`.
+4. Pack and smoke-test artifacts against a sample under `samples/`.
+5. Publish to chosen registries (NuGet.org, GitHub Packages, npm).
+6. Tag the release in git.
 
 ## Consumer install (after publish)
 

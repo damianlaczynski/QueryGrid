@@ -9,7 +9,7 @@
 3. Implement expression in `FilterExpressionBuilder`.
 4. Add cases in `FilterTests` and `ValidationAndLimitsTests`.
 5. If the operator appears in column filters, add PrimeNG UI mapping in `filter-mapper.ts` / `match-mode-options.ts`.
-6. Run `npm run test:all`.
+6. Run `npm run test`.
 
 ## Change grid JSON shape
 
@@ -17,7 +17,7 @@
 2. Update `GridQueryContractTests` in `QueryGrid.UnitTests`.
 3. Mirror types in `@query-grid/core`.
 4. Update `GridQueryJson.CreateOptions()` / `samples/showcase-api/GridQueryBinding.cs` if serializer options change.
-5. Run `npm run test:all`.
+5. Run `npm run test`.
 
 ## Add a grid state field (e.g. new load option)
 

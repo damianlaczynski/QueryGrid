@@ -14,8 +14,8 @@ Concurrent runs for the same branch are cancelled when a newer commit is pushed.
 | Job           | What it runs                                        | Working directory |
 | ------------- | --------------------------------------------------- | ----------------- |
 | **dotnet**    | `dotnet restore` → `dotnet test` → `dotnet pack`    | Repository root   |
-| **npm**       | `npm ci` → `npm run build:npm` → `npm run test:npm` | `src/npm`         |
-| **artifacts** | Pack dotnet + build npm, upload combined artifact   | Root + `src/npm`  |
+| **npm**       | `npm ci` → `npm run build:npm` → `npm run test:npm` | Repository root   |
+| **artifacts** | Pack dotnet + build npm, upload combined artifact   | Repository root   |
 
 ### dotnet
 
@@ -27,7 +27,7 @@ Concurrent runs for the same branch are cancelled when a newer commit is pushed.
 ### npm
 
 - Node.js **24**
-- npm cache keyed on `src/npm/package-lock.json`
+- npm cache keyed on `package-lock.json`
 - Builds `@query-grid/core`, `@query-grid/primeng`
 - Runs Vitest in **both** `@query-grid/core` and `@query-grid/primeng`
 
@@ -35,9 +35,9 @@ Concurrent runs for the same branch are cancelled when a newer commit is pushed.
 
 ```powershell
 # From repository root
-npm run test:all
-npm run build:all
-npm run lint:npm
+npm run test
+npm run build
+npm run lint
 npm run pack:dotnet
 ```
 
@@ -45,11 +45,10 @@ Or run jobs separately:
 
 ```powershell
 dotnet test src/dotnet/QueryGrid.slnx -c Release
-cd src/npm
 npm ci
 npm run build:npm
 npm run test:npm
-npm run lint:npm
+npm run lint
 ```
 
 ## What CI does not cover
@@ -57,6 +56,6 @@ npm run lint:npm
 | Check                            | Local command                             |
 | -------------------------------- | ----------------------------------------- |
 | Sample apps                      | Build and run under `samples/` manually   |
-| ESLint (`src/npm`)               | `npm run lint:npm` from repository root   |
+| ESLint (`src/npm`)               | `npm run lint` from repository root       |
 | dotnet format                    | `dotnet format src/dotnet/QueryGrid.slnx` |
 | Cross-repo consumer verification | Use `samples/` or published packages      |

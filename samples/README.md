@@ -65,14 +65,14 @@ Unit tests in `src/dotnet` prove expression correctness; samples prove **wiring*
 
 ## Local workflow
 
-1. Build library packages from repo root:
+1. Install and build from repo root:
 
    ```powershell
-   npm run install:npm
-   npm run build:all
+   npm install
+   npm run build
    ```
 
-2. During development, samples reference built packages via `file:` links synced by `scripts/sync-showcase-packages.mjs`.
+2. During development, `samples/showcase-ui` resolves `@query-grid/*` via the root npm workspace (symlinks — no manual sync).
 
 3. Start API and UI; walk the scenario matrix above before a release.
 
@@ -97,8 +97,8 @@ Unit tests in `src/dotnet` prove expression correctness; samples prove **wiring*
 # Terminal 1 — API
 npm run start:showcase-api
 
-# Terminal 2 — UI (first time: build packages + install UI deps)
-npm run prepare:showcase-ui
+# Terminal 2 — UI (build packages first if not done yet)
+npm run build:npm
 npm run start:showcase-ui
 ```
 
@@ -110,4 +110,4 @@ From the repository root, rebuild and sync `@query-grid/*` into the UI sample wh
 npm run dev:showcase-ui
 ```
 
-This runs `watch:core`, `watch:primeng`, automatic dist sync, and the Angular dev server together.
+This runs `watch:core`, `watch:primeng`, and the Angular dev server together.

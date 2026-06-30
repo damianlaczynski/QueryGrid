@@ -22,19 +22,18 @@
 
 ## Commands
 
-### Repository root (npm)
+### Repository root
 
-From the repository root, run `npm install` once if you add root devDependencies. npm package dependencies live under `src/npm`; use `npm run install:npm` after clone or when workspace dependencies change.
+From the repository root, run `npm install` once after clone or when workspace dependencies change.
 
-- Install npm workspace dependencies: `npm run install:npm`
-- Build: `npm run build:dotnet`, `npm run build:npm`, or `npm run build:all`
-- Test: `npm run test:dotnet`, `npm run test:npm`, or `npm run test:all`
-- Lint npm packages: `npm run lint:npm`
+- Install: `npm install`
+- Build: `npm run build` (or `build:dotnet` / `build:npm` separately)
+- Test: `npm run test` (or `test:dotnet` / `test:npm` separately)
+- Lint npm packages: `npm run lint`
 - Pack NuGet packages: `npm run pack:dotnet` (output: `artifacts/nuget/`)
-- Run showcase API sample: `npm run start:showcase-api` (http://localhost:5180)
-- Install showcase UI deps: `npm run install:showcase-ui` (after `npm run build:npm`)
-- Run showcase UI sample: `npm run start:showcase-ui` (http://localhost:4200)
-- Develop showcase UI with package watch: `npm run dev:showcase-ui` (builds packages, watches `core`/`primeng`, runs UI)
+- Run showcase API: `npm run start:showcase-api` (http://localhost:5180)
+- Run showcase UI: `npm run start:showcase-ui` (http://localhost:4200) — run `npm run build:npm` first
+- Develop showcase UI with package watch: `npm run dev:showcase-ui`
 
 ### .NET (in `src/dotnet`)
 
@@ -42,13 +41,10 @@ From the repository root, run `npm install` once if you add root devDependencies
 - All tests: `dotnet test QueryGrid.slnx`
 - Pack: `dotnet pack QueryGrid.slnx -c Release -o ../../artifacts/nuget`
 
-### npm (in `src/npm`)
+### npm packages (`src/npm/packages/`)
 
-- Install: `npm install`
-- Build all packages: `npm run build:npm`
-- Test: `npm run test:npm`
-- Lint: `npm run lint:npm`
-- Build single package: `npm run build:core` or `build:primeng`
+- Build single package: `npm run build -w @query-grid/core` or `npm run build -w @query-grid/primeng`
+- Test single package: `npm run test -w @query-grid/core` or `npm run test -w @query-grid/primeng`
 
 ## Repo navigation rules
 

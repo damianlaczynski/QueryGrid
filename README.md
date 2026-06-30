@@ -1,6 +1,6 @@
 # QueryGrid
 
-DevExtreme-style pagination, filtering, and sorting for .NET and Angular — as a standalone, reusable library.
+Server-driven pagination, filtering, and sorting for .NET and Angular — as a standalone, reusable library.
 
 ## Packages
 
@@ -38,10 +38,10 @@ AGENTS.md            AI / contributor fast-start
 
 ```powershell
 # From repository root
-npm run install:npm
-npm run test:all
-npm run build:all
-npm run lint:npm
+npm install
+npm run test
+npm run build
+npm run lint
 npm run pack:dotnet
 ```
 

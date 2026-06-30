@@ -4,7 +4,7 @@
 
 ## Top level
 
-- Root `package.json` defines orchestration scripts (`build:*`, `test:*`, `pack:dotnet`, `install:npm`) so you can run common dotnet and npm tasks from the repository root.
+- Root `package.json` defines the npm workspace and orchestration scripts (`build`, `test`, `lint`, `pack:dotnet`) so you can run common dotnet and npm tasks from the repository root.
 - `src/dotnet/` contains the .NET solution and publishable NuGet packages.
 - `src/npm/` contains the npm workspace and publishable `@query-grid/*` packages.
 - `samples/` contains runnable demo applications that reference the library packages (local path or published versions).
@@ -41,7 +41,7 @@
 
 ### Workspace shape
 
-- `src/npm/package.json` defines workspaces over `packages/*`.
+- `src/npm/package.json` is a pointer only — workspaces and scripts live at the repository root.
 - Each package has its own `package.json`, build config, and `src/` folder.
 
 ### Package responsibilities

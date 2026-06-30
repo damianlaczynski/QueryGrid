@@ -33,15 +33,12 @@ jobs:
         with:
           node-version: "24"
           cache: npm
-          cache-dependency-path: src/npm/package-lock.json
+          cache-dependency-path: package-lock.json
       - name: Install
-        working-directory: src/npm
         run: npm ci
       - name: Build
-        working-directory: src/npm
         run: npm run build:npm
       - name: Test
-        working-directory: src/npm
         run: npm run test:npm
 
   artifacts:
@@ -57,7 +54,6 @@ jobs:
           node-version: "24"
       - run: dotnet pack src/dotnet/QueryGrid.slnx -c Release -o artifacts/nuget
       - run: npm ci && npm run build:npm
-        working-directory: src/npm
       - uses: actions/upload-artifact@v4
         with:
           name: packages
