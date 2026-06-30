@@ -59,7 +59,7 @@
       "command": "npm",
       "args": ["run", "build:npm"],
       "options": {
-        "cwd": "${workspaceFolder}/src/npm"
+        "cwd": "${workspaceFolder}"
       },
       "group": "build",
       "presentation": {
@@ -73,7 +73,7 @@
       "command": "npm",
       "args": ["run", "test:npm"],
       "options": {
-        "cwd": "${workspaceFolder}/src/npm"
+        "cwd": "${workspaceFolder}"
       },
       "group": "test",
       "presentation": {
@@ -95,6 +95,56 @@
       "dependsOrder": "sequence",
       "dependsOn": ["querygrid: test dotnet", "querygrid: test npm"],
       "group": "test"
+    },
+    {
+      "label": "querygrid: build showcase-api",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/samples/showcase-api/QueryGrid.Samples.ShowcaseApi.csproj",
+        "-c",
+        "Debug",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary;ForceNoAlign"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "querygrid: start showcase-ui",
+      "type": "process",
+      "command": "npm",
+      "args": ["run", "start"],
+      "options": {
+        "cwd": "${workspaceFolder}/samples/showcase-ui"
+      },
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": {
+        "owner": "typescript",
+        "pattern": "$tsc",
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "(Local:\\s+http://localhost:4200|Application bundle generation complete|Compiled successfully)"
+        }
+      }
+    },
+    {
+      "label": "querygrid: prep showcase-ui",
+      "dependsOrder": "sequence",
+      "dependsOn": ["querygrid: build npm", "querygrid: start showcase-ui"]
     }
   ]
 }
