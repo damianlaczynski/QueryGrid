@@ -67,4 +67,27 @@ public class GridQueryContractTests
     Assert.Equal(FilterLogic.And, group.Logic);
     Assert.Equal(2, group.Conditions.Count);
   }
+
+  [Fact]
+  public void TryParse_empty_value_returns_default_query()
+  {
+    Assert.True(GridQuery.TryParse(null, out var query));
+    Assert.NotNull(query.Sort);
+    Assert.Empty(query.Sort);
+  }
+
+  [Fact]
+  public void TryParse_valid_json_roundtrips()
+  {
+    var json = GridQueryJson.Serialize(new GridQuery { Take = 20, Search = "test" });
+    Assert.True(GridQuery.TryParse(json, out var query));
+    Assert.Equal(20, query.Take);
+    Assert.Equal("test", query.Search);
+  }
+
+  [Fact]
+  public void TryParse_invalid_json_returns_false()
+  {
+    Assert.False(GridQuery.TryParse("{not-json", out _));
+  }
 }

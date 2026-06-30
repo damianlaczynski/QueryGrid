@@ -1,20 +1,35 @@
 # Publishing
 
 > Scope: versioning and releasing `QueryGrid.*` NuGet packages and `@query-grid/*` npm packages.
+>
+> **Primary registry:** [GitHub Packages](https://github.com/damianlaczynski/QueryGrid/packages) — tied to this repository. Push a `v*` tag to publish via [`.github/workflows/publish.yml`](../../.github/workflows/publish.yml).
 
-## Version `0.1.0-preview.1`
+## Registries
 
-All packages ship together at the same version:
+| Package                         | GitHub Packages (repo-linked) | Public mirror (optional) |
+| ------------------------------- | ----------------------------- | ------------------------ |
+| `QueryGrid.Abstractions`        | `nuget.pkg.github.com`        | nuget.org                |
+| `QueryGrid.Core`                | `nuget.pkg.github.com`        | nuget.org                |
+| `QueryGrid.EntityFrameworkCore` | `nuget.pkg.github.com`        | nuget.org                |
+| `@query-grid/core`              | `npm.pkg.github.com`          | npmjs.com                |
+| `@query-grid/primeng`           | `npm.pkg.github.com`          | npmjs.com                |
 
-| Package                         | Registry                                                                  |
-| ------------------------------- | ------------------------------------------------------------------------- |
-| `QueryGrid.Abstractions`        | [NuGet.org](https://www.nuget.org/packages/QueryGrid.Abstractions)        |
-| `QueryGrid.Core`                | [NuGet.org](https://www.nuget.org/packages/QueryGrid.Core)                |
-| `QueryGrid.EntityFrameworkCore` | [NuGet.org](https://www.nuget.org/packages/QueryGrid.EntityFrameworkCore) |
-| `@query-grid/core`              | [npm](https://www.npmjs.com/package/@query-grid/core)                     |
-| `@query-grid/primeng`           | [npm](https://www.npmjs.com/package/@query-grid/primeng)                  |
+`RepositoryUrl` in `Directory.Build.props` and `repository` in npm `package.json` link packages to **this repo** — GitHub inherits permissions from the repository on first publish.
 
-### Where versions live
+### npm scope and GitHub owner
+
+GitHub npm requires the scope in `package.json` to match the **publishing account** (user or org). Our packages use `@query-grid/*`.
+
+| Repository owner   | npm on GitHub Packages                      |
+| ------------------ | ------------------------------------------- |
+| `damianlaczynski`  | NuGet works; npm needs org **`query-grid`** |
+| `query-grid` (org) | NuGet + npm both work with `@query-grid/*`  |
+
+**Recommendation:** create a GitHub organization [`query-grid`](https://github.com/organizations/plan) (lowercase) and transfer (or fork) this repository there. Then `@query-grid/*` publishes without renaming packages.
+
+Until then: use GitHub Packages for **NuGet**; publish **npm** to [npmjs.com](https://www.npmjs.com) manually (`publishConfig.registry` → `https://registry.npmjs.org`, `--access public`).
+
+## Where versions live
 
 | Stack           | Location                                                       |
 | --------------- | -------------------------------------------------------------- |
@@ -22,90 +37,95 @@ All packages ship together at the same version:
 | npm per package | `src/npm/packages/*/package.json` → `"version"`                |
 | primeng peer    | `peerDependencies["@query-grid/core"]` must match core version |
 
-## Pre-publish checklist
+## Release (GitHub Packages — automated)
 
-From repository root:
+1. Bump versions in `Directory.Build.props` and npm `package.json` files.
+2. Update `CHANGELOG.md`.
+3. From repo root, verify locally:
+
+   ```powershell
+   npm run test
+   npm run build
+   npm run lint
+   npm run pack:dotnet
+   npm run pack:npm
+   ```
+
+4. Commit, tag, and push — **publish workflow runs on the tag**:
+
+   ```powershell
+   git tag v0.1.0-preview.2
+   git push origin v0.1.0-preview.2
+   ```
+
+The [publish workflow](../../.github/workflows/publish.yml):
+
+- Runs tests + lint
+- Packs NuGet → pushes to `https://nuget.pkg.github.com/<owner>/index.json`
+- Builds npm → pushes `@query-grid/core` then `@query-grid/primeng` to `npm.pkg.github.com`
+- Uses `GITHUB_TOKEN` (`packages: write`) — no PAT in the workflow
+- Prerelease versions (`preview`, `alpha`, `beta`, `rc`) get npm dist-tag **`preview`**; stable → **`latest`**
+
+Create a GitHub Release from the tag and paste the matching `CHANGELOG.md` section.
+
+## Consumer setup
+
+### NuGet (GitHub Packages)
+
+Copy [`nuget.config.example`](nuget.config.example) into your app as `nuget.config`. Replace `OWNER` with the repository owner (`damianlaczynski` or `query-grid`).
+
+Authenticate locally with a PAT (`read:packages`):
 
 ```powershell
-npm install
-npm run test
-npm run build
-npm run lint
-npm run pack:dotnet
-npm run pack:npm
+dotnet nuget add source --username YOUR_GITHUB_USERNAME --password YOUR_PAT --store-password-in-clear-text --name github "https://nuget.pkg.github.com/OWNER/index.json"
+dotnet add package QueryGrid.EntityFrameworkCore --version 0.1.0-preview.2
 ```
 
-Verify artifacts:
+In **GitHub Actions** on the consuming repo, use `GITHUB_TOKEN` with read access to the package (inherit from linked repo or grant workflow access in package settings).
 
-- `artifacts/nuget/*.nupkg` — three packages + `.snupkg` symbol packages
-- `artifacts/npm/query-grid-core-0.1.0-preview.1.tgz`
-- `artifacts/npm/query-grid-primeng-0.1.0-preview.1.tgz`
+`packageSourceMapping` in the example routes only `QueryGrid.*` to GitHub — everything else stays on nuget.org (avoids intermittent 403 on public restores).
 
-Optional smoke test: run showcase apps (`npm run start:showcase-api`, `npm run start:showcase-ui`).
+### npm (GitHub Packages)
 
-## Publish NuGet (nuget.org)
+Copy [`npmrc.consumer.example`](npmrc.consumer.example) into your app `.npmrc`. Add auth (do not commit tokens):
 
-**Prerequisites:** [NuGet.org](https://www.nuget.org/) account and an API key (Account → API Keys → Create).
+```ini
+@query-grid:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=YOUR_GITHUB_PAT
+```
 
 ```powershell
-$apiKey = "<your-nuget-api-key>"
-
-dotnet nuget push artifacts/nuget/QueryGrid.Abstractions.0.1.0-preview.1.nupkg --api-key $apiKey --source https://api.nuget.org/v3/index.json
-dotnet nuget push artifacts/nuget/QueryGrid.Core.0.1.0-preview.1.nupkg --api-key $apiKey --source https://api.nuget.org/v3/index.json
-dotnet nuget push artifacts/nuget/QueryGrid.EntityFrameworkCore.0.1.0-preview.1.nupkg --api-key $apiKey --source https://api.nuget.org/v3/index.json
-
-# Optional — symbol packages for debugging
-dotnet nuget push artifacts/nuget/QueryGrid.Abstractions.0.1.0-preview.1.snupkg --api-key $apiKey --source https://api.nuget.org/v3/index.json
-dotnet nuget push artifacts/nuget/QueryGrid.Core.0.1.0-preview.1.snupkg --api-key $apiKey --source https://api.nuget.org/v3/index.json
-dotnet nuget push artifacts/nuget/QueryGrid.EntityFrameworkCore.0.1.0-preview.1.snupkg --api-key $apiKey --source https://api.nuget.org/v3/index.json
+npm install @query-grid/core@0.1.0-preview.2 @query-grid/primeng@0.1.0-preview.2
+# or, for preview dist-tag: npm install @query-grid/core@preview
 ```
 
-Publish **core before EF** is not required — packages are independent. Typical consumer install pulls `QueryGrid.EntityFrameworkCore` which depends on the others.
+### Install docs for app authors
 
-## Publish npm (npmjs.com)
+See [getting-started.md](../getting-started.md) for first-grid examples (registry-agnostic).
 
-**Prerequisites:** [npmjs.com](https://www.npmjs.com/) account, `npm login`, and access to the `@query-grid` scope (first publish sets it public via `publishConfig.access`).
+## Manual publish (optional mirrors)
 
-Publish **core first**, then primeng (primeng peer-depends on core). Prerelease versions require an explicit dist-tag:
+### NuGet.org
+
+```powershell
+$apiKey = "<nuget.org-api-key>"
+dotnet nuget push artifacts/nuget/QueryGrid.EntityFrameworkCore.*.nupkg --api-key $apiKey --source https://api.nuget.org/v3/index.json
+# repeat for Abstractions, Core, and optional .snupkg
+```
+
+### npmjs.com
+
+Temporarily set `"registry": "https://registry.npmjs.org"` and `"access": "public"` in `publishConfig`, then:
 
 ```powershell
 npm publish -w @query-grid/core --access public --tag preview
 npm publish src/npm/packages/primeng/dist --access public --tag preview
 ```
 
-Consumers install with `@preview` until you ship a stable release:
-
-```powershell
-npm install @query-grid/core@preview @query-grid/primeng@preview
-```
-
-`@query-grid/primeng` is published from `dist/` after `ng-packagr` build — do not publish from the package source folder.
-
-## After publish
-
-1. Create a git tag and push:
-
-   ```powershell
-   git tag v0.1.0-preview.1
-   git push origin v0.1.0-preview.1
-   ```
-
-2. Create a GitHub Release from the tag with `CHANGELOG.md` section `0.1.0-preview.1` as release notes.
-
-3. Verify install from registries (outside this repo):
-
-   ```powershell
-   dotnet add package QueryGrid.EntityFrameworkCore --version 0.1.0-preview.1
-   npm install @query-grid/core@0.1.0-preview.1 @query-grid/primeng@0.1.0-preview.1
-   # or: npm install @query-grid/core@preview @query-grid/primeng@preview
-   ```
-
-## Consumer install
-
-See [getting-started.md](../getting-started.md) for install commands and first-grid examples.
+Restore `publishConfig.registry` to `https://npm.pkg.github.com` before the next GitHub tag publish.
 
 ## Next releases
 
-1. Bump `<Version>` in `Directory.Build.props` and all npm `package.json` files (including primeng `peerDependencies["@query-grid/core"]`).
-2. Add a new section to `CHANGELOG.md`.
-3. Repeat checklist → pack → publish → tag.
+1. Bump all version locations (see table above).
+2. Add a `CHANGELOG.md` section.
+3. Test → tag `vX.Y.Z` → push → verify packages on GitHub **Packages** tab.

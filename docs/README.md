@@ -40,4 +40,4 @@ Run, configure, CI, and publishing. Start with [technical/README.md](technical/R
 | ---------------------------------------- | ---------------------------------------------- |
 | [README.md](technical/README.md)         | Entry point — when to read each technical doc  |
 | [ci.md](technical/ci.md)                 | GitHub Actions workflow and local reproduction |
-| [publishing.md](technical/publishing.md) | Versioning and publishing NuGet / npm packages |
+| [publishing.md](technical/publishing.md) | GitHub Packages publish, consumer feeds        |

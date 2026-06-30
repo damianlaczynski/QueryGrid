@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Consumer example — copy to your app as nuget.config (do not commit tokens).
+
+  Replace OWNER with the GitHub user or org that publishes QueryGrid
+  (repository owner — e.g. damianlaczynski or query-grid).
+
+  Authenticate locally:
+    dotnet nuget add source --username YOUR_GITHUB_USERNAME --password YOUR_PAT --store-password-in-clear-text --name github "https://nuget.pkg.github.com/OWNER/index.json"
+
+  In GitHub Actions, use GITHUB_TOKEN with packages:read on the consuming repo.
+-->
+<configuration>
+  <packageSources>
+    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+    <add key="github" value="https://nuget.pkg.github.com/OWNER/index.json" />
+  </packageSources>
+  <packageSourceMapping>
+    <packageSource key="nuget.org">
+      <package pattern="*" />
+    </packageSource>
+    <packageSource key="github">
+      <package pattern="QueryGrid.*" />
+    </packageSource>
+  </packageSourceMapping>
+</configuration>

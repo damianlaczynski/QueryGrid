@@ -39,16 +39,7 @@ internal static class GridQueryBinding
     }
   }
 
-  /// <summary>For FastEndpoints: register via <c>BindingOptions.ValueParserFor&lt;GridQuery&gt;</c> or copy onto a wrapper.</summary>
+  /// <summary>For FastEndpoints: binds from <c>?grid=</c> via <see cref="GridQuery.TryParse"/> — no app registration.</summary>
   public static bool TryParse(string? value, out GridQuery result)
-  {
-    if (TryDeserialize(value, out var query, out _))
-    {
-      result = query!;
-      return true;
-    }
-
-    result = new GridQuery();
-    return false;
-  }
+    => GridQuery.TryParse(value, out result);
 }

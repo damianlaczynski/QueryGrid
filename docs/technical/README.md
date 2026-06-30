@@ -9,7 +9,7 @@
 | Document                       | Read when you need to…                                                           |
 | ------------------------------ | -------------------------------------------------------------------------------- |
 | [ci.md](ci.md)                 | Understand GitHub Actions, reproduce CI locally, or debug a failing pipeline job |
-| [publishing.md](publishing.md) | Version and publish NuGet / npm packages                                         |
+| [publishing.md](publishing.md) | GitHub Packages publish (tag `v*`), consumer feeds                               |
 
 ## Start here by task
 
