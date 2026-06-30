@@ -152,20 +152,14 @@ Override via `GridOptions` on the server or `maxTake` / `defaultTake` in `create
 
 ### FastEndpoints
 
-Name the request property to match the query parameter (camelCase). Register a value parser that uses your JSON options — full example in `samples/showcase-api/GridQueryBinding.cs`:
+Name the request property to match the query parameter (camelCase). `GridQuery.TryParse` is picked up automatically — no startup registration:
 
 ```csharp
-public sealed class GetIssuesRequest
+public sealed class GetAllIssuesQuery
 {
   public GridQuery Grid { get; set; } = new();  // ?grid={json}
   public bool WatchedByMe { get; set; }
 }
-
-// At startup:
-b.Binding.ValueParserFor<GridQuery>((value) =>
-  GridQueryBinding.TryParse(value.ToString(), out var grid)
-    ? ParseResult.Success(grid)
-    : ParseResult.Failed());
 ```
 
-`public GridQuery LoadOptions` would bind from `?loadOptions=` when the parser is registered.
+`public GridQuery LoadOptions` binds from `?loadOptions=` the same way.

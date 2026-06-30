@@ -20,4 +20,7 @@ public static class GridQueryJson
       }
     };
   }
+
+  public static string Serialize(GridQuery query)
+    => JsonSerializer.Serialize(query, CreateOptions());
 }

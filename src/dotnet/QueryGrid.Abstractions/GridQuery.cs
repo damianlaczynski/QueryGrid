@@ -1,3 +1,4 @@
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using QueryGrid.Abstractions.Serialization;
 
@@ -23,4 +24,28 @@ public sealed class GridQuery
 
   /// <summary>Optional free-text search applied across the fields marked as searchable.</summary>
   public string? Search { get; set; }
+
+  /// <summary>
+  /// Parses a URL-encoded JSON <c>?grid=</c> value. Used by FastEndpoints and other query-string binders — no app registration required.
+  /// </summary>
+  public static bool TryParse(string? value, out GridQuery result)
+  {
+    if (string.IsNullOrWhiteSpace(value))
+    {
+      result = new GridQuery { Sort = [] };
+      return true;
+    }
+
+    try
+    {
+      result = JsonSerializer.Deserialize<GridQuery>(value, GridQueryJson.CreateOptions()) ?? new GridQuery();
+      result.Sort ??= [];
+      return true;
+    }
+    catch (JsonException)
+    {
+      result = new GridQuery();
+      return false;
+    }
+  }
 }

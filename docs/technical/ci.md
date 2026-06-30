@@ -42,9 +42,24 @@ CI-specific differences:
 
 ## What CI does not cover
 
-| Check                            | Local command                             |
-| -------------------------------- | ----------------------------------------- |
-| Sample apps                      | Build and run under `samples/` manually   |
-| ESLint (`src/npm`)               | `npm run lint` from repository root       |
-| dotnet format                    | `dotnet format src/dotnet/QueryGrid.slnx` |
-| Cross-repo consumer verification | Use `samples/` or published packages      |
+| Check                            | Local command / workflow                                             |
+| -------------------------------- | -------------------------------------------------------------------- |
+| Sample apps                      | Build and run under `samples/` manually                              |
+| ESLint (`src/npm`)               | `npm run lint` from repository root                                  |
+| dotnet format                    | `dotnet format src/dotnet/QueryGrid.slnx`                            |
+| Cross-repo consumer verification | Use `samples/` or published packages                                 |
+| **Publishing**                   | Push a `v*` tag → [publish.yml](../../.github/workflows/publish.yml) |
+
+## Publish workflow
+
+Separate from CI — runs on **tag push** `v*` (e.g. `v0.1.0-preview.2`).
+
+| Step       | Action                                             |
+| ---------- | -------------------------------------------------- |
+| Trigger    | `git push origin v0.1.0-preview.2`                 |
+| Auth       | `GITHUB_TOKEN` with `packages: write`              |
+| NuGet feed | `https://nuget.pkg.github.com/<repository_owner>/` |
+| npm feed   | `https://npm.pkg.github.com`                       |
+| Dist-tag   | `preview` for prerelease versions, else `latest`   |
+
+Details: [publishing.md](publishing.md).

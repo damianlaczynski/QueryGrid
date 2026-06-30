@@ -1,0 +1,63 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Test
+        run: |
+          dotnet test src/dotnet/QueryGrid.slnx -c Release
+          npm ci
+          npm run lint
+          npm run test:npm
+
+      - name: Pack NuGet
+        run: dotnet pack src/dotnet/QueryGrid.slnx -c Release -o artifacts/nuget
+
+      - name: Build npm
+        run: npm run build:npm
+
+      - name: Publish NuGet to GitHub Packages
+        run: |
+          dotnet nuget add source \
+            --username ${{ github.actor }} \
+            --password ${{ secrets.GITHUB_TOKEN }} \
+            --store-password-in-clear-text \
+            --name github \
+            "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json"
+          dotnet nuget push artifacts/nuget/*.nupkg --source github --skip-duplicate
+          dotnet nuget push artifacts/nuget/*.snupkg --source github --skip-duplicate
+
+      - name: Publish npm to GitHub Packages
+        run: |
+          VERSION=$(node -p "require('./src/npm/packages/core/package.json').version")
+          if echo "$VERSION" | grep -qE '(preview|alpha|beta|rc)'; then
+            TAG=preview
+          else
+            TAG=latest
+          fi
+          npm publish -w @query-grid/core --tag "$TAG"
+          npm publish src/npm/packages/primeng/dist --tag "$TAG"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
