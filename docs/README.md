@@ -36,8 +36,8 @@ Implementation conventions for library packages. Start with [guides/README.md](g
 
 Run, configure, CI, and publishing. Start with [technical/README.md](technical/README.md).
 
-| Document                                 | Description                                    |
-| ---------------------------------------- | ---------------------------------------------- |
-| [README.md](technical/README.md)         | Entry point — when to read each technical doc  |
-| [ci.md](technical/ci.md)                 | GitHub Actions workflow and local reproduction |
-| [publishing.md](technical/publishing.md) | GitHub Packages publish, consumer feeds        |
+| Document                                 | Description                                       |
+| ---------------------------------------- | ------------------------------------------------- |
+| [README.md](technical/README.md)         | Entry point — when to read each technical doc     |
+| [ci.md](technical/ci.md)                 | GitHub Actions workflow and local reproduction    |
+| [publishing.md](technical/publishing.md) | NuGet (GitHub Packages) + npm (npmjs.com, manual) |

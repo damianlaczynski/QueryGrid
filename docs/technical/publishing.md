@@ -1,33 +1,18 @@
 # Publishing
 
 > Scope: versioning and releasing `QueryGrid.*` NuGet packages and `@query-grid/*` npm packages.
->
-> **Primary registry:** [GitHub Packages](https://github.com/damianlaczynski/QueryGrid/packages) — tied to this repository. Push a `v*` tag to publish via [`.github/workflows/publish.yml`](../../.github/workflows/publish.yml).
 
 ## Registries
 
-| Package                         | GitHub Packages (repo-linked) | Public mirror (optional) |
-| ------------------------------- | ----------------------------- | ------------------------ |
-| `QueryGrid.Abstractions`        | `nuget.pkg.github.com`        | nuget.org                |
-| `QueryGrid.Core`                | `nuget.pkg.github.com`        | nuget.org                |
-| `QueryGrid.EntityFrameworkCore` | `nuget.pkg.github.com`        | nuget.org                |
-| `@query-grid/core`              | `npm.pkg.github.com`          | npmjs.com                |
-| `@query-grid/primeng`           | `npm.pkg.github.com`          | npmjs.com                |
+| Package                         | Registry                           | How to publish                                                     |
+| ------------------------------- | ---------------------------------- | ------------------------------------------------------------------ |
+| `QueryGrid.Abstractions`        | GitHub Packages                    | Tag `v*` → [publish workflow](../../.github/workflows/publish.yml) |
+| `QueryGrid.Core`                | GitHub Packages                    | same                                                               |
+| `QueryGrid.EntityFrameworkCore` | GitHub Packages                    | same                                                               |
+| `@query-grid/core`              | [npmjs.com](https://www.npmjs.com) | **Manual** after tag (see below)                                   |
+| `@query-grid/primeng`           | [npmjs.com](https://www.npmjs.com) | **Manual** after tag (see below)                                   |
 
-`RepositoryUrl` in `Directory.Build.props` and `repository` in npm `package.json` link packages to **this repo** — GitHub inherits permissions from the repository on first publish.
-
-### npm scope and GitHub owner
-
-GitHub npm requires the scope in `package.json` to match the **publishing account** (user or org). Our packages use `@query-grid/*`.
-
-| Repository owner   | npm on GitHub Packages                      |
-| ------------------ | ------------------------------------------- |
-| `damianlaczynski`  | NuGet works; npm needs org **`query-grid`** |
-| `query-grid` (org) | NuGet + npm both work with `@query-grid/*`  |
-
-**Recommendation:** create a GitHub organization [`query-grid`](https://github.com/organizations/plan) (lowercase) and transfer (or fork) this repository there. Then `@query-grid/*` publishes without renaming packages.
-
-Until then: use GitHub Packages for **NuGet**; publish **npm** to [npmjs.com](https://www.npmjs.com) manually (`publishConfig.registry` → `https://registry.npmjs.org`, `--access public`).
+NuGet `RepositoryUrl` links packages to this repo on first GitHub Packages publish.
 
 ## Where versions live
 
@@ -37,11 +22,11 @@ Until then: use GitHub Packages for **NuGet**; publish **npm** to [npmjs.com](ht
 | npm per package | `src/npm/packages/*/package.json` → `"version"`                |
 | primeng peer    | `peerDependencies["@query-grid/core"]` must match core version |
 
-## Release (GitHub Packages — automated)
+## Release checklist
 
 1. Bump versions in `Directory.Build.props` and npm `package.json` files.
 2. Update `CHANGELOG.md`.
-3. From repo root, verify locally:
+3. Verify locally:
 
    ```powershell
    npm run test
@@ -51,81 +36,71 @@ Until then: use GitHub Packages for **NuGet**; publish **npm** to [npmjs.com](ht
    npm run pack:npm
    ```
 
-4. Commit, tag, and push — **publish workflow runs on the tag**:
+4. Commit, tag, push — **NuGet publishes automatically**:
 
    ```powershell
    git tag v0.1.0-preview.2
    git push origin v0.1.0-preview.2
    ```
 
-The [publish workflow](../../.github/workflows/publish.yml):
+5. **npm — manual** (after tag push, same version):
 
-- Runs tests + lint
-- Packs NuGet → pushes to `https://nuget.pkg.github.com/<owner>/index.json`
-- Builds npm → pushes `@query-grid/core` then `@query-grid/primeng` to `npm.pkg.github.com`
-- Uses `GITHUB_TOKEN` (`packages: write`) — no PAT in the workflow
-- Prerelease versions (`preview`, `alpha`, `beta`, `rc`) get npm dist-tag **`preview`**; stable → **`latest`**
+   ```powershell
+   npm login
+   npm run build:npm
+   npm publish -w @query-grid/core --access public --tag preview
+   npm publish src/npm/packages/primeng/dist --access public --tag preview
+   ```
 
-Create a GitHub Release from the tag and paste the matching `CHANGELOG.md` section.
+   Prerelease versions need `--tag preview` (or `alpha` / `beta`). Stable releases use `--tag latest` or omit `--tag`.
+
+6. Create a GitHub Release from the tag with the matching `CHANGELOG.md` section.
+
+### Publish workflow (NuGet only)
+
+[`.github/workflows/publish.yml`](../../.github/workflows/publish.yml) on tag `v*`:
+
+- Tests + lint (including npm unit tests)
+- Packs and pushes NuGet to `https://nuget.pkg.github.com/<owner>/`
+- Uses `GITHUB_TOKEN` (`packages: write`) — no secrets required
+
+**GitHub settings:** Actions enabled; workflow permissions allow `packages: write` (see repo **Settings → Actions → General**).
 
 ## Consumer setup
 
 ### NuGet (GitHub Packages)
 
-Copy [`nuget.config.example`](nuget.config.example) into your app as `nuget.config`. Replace `OWNER` with the repository owner (`damianlaczynski` or `query-grid`).
-
-Authenticate locally with a PAT (`read:packages`):
+Copy [`nuget.config.example`](nuget.config.example). Replace `OWNER` with `damianlaczynski`.
 
 ```powershell
 dotnet nuget add source --username YOUR_GITHUB_USERNAME --password YOUR_PAT --store-password-in-clear-text --name github "https://nuget.pkg.github.com/OWNER/index.json"
 dotnet add package QueryGrid.EntityFrameworkCore --version 0.1.0-preview.2
 ```
 
-In **GitHub Actions** on the consuming repo, use `GITHUB_TOKEN` with read access to the package (inherit from linked repo or grant workflow access in package settings).
+In GitHub Actions on a consuming repo, use `GITHUB_TOKEN` with read access to the package.
 
-`packageSourceMapping` in the example routes only `QueryGrid.*` to GitHub — everything else stays on nuget.org (avoids intermittent 403 on public restores).
+### npm (npmjs.com)
 
-### npm (GitHub Packages)
-
-Copy [`npmrc.consumer.example`](npmrc.consumer.example) into your app `.npmrc`. Add auth (do not commit tokens):
-
-```ini
-@query-grid:registry=https://npm.pkg.github.com
-//npm.pkg.github.com/:_authToken=YOUR_GITHUB_PAT
-```
+Public packages — no special `.npmrc` required:
 
 ```powershell
-npm install @query-grid/core@0.1.0-preview.2 @query-grid/primeng@0.1.0-preview.2
-# or, for preview dist-tag: npm install @query-grid/core@preview
+npm install @query-grid/core@preview @query-grid/primeng@preview
+# or: npm install @query-grid/core@0.1.0-preview.2
 ```
 
-### Install docs for app authors
+### App integration
 
-See [getting-started.md](../getting-started.md) for first-grid examples (registry-agnostic).
+See [getting-started.md](../getting-started.md).
 
-## Manual publish (optional mirrors)
-
-### NuGet.org
+## Optional: NuGet.org mirror
 
 ```powershell
 $apiKey = "<nuget.org-api-key>"
 dotnet nuget push artifacts/nuget/QueryGrid.EntityFrameworkCore.*.nupkg --api-key $apiKey --source https://api.nuget.org/v3/index.json
-# repeat for Abstractions, Core, and optional .snupkg
 ```
-
-### npmjs.com
-
-Temporarily set `"registry": "https://registry.npmjs.org"` and `"access": "public"` in `publishConfig`, then:
-
-```powershell
-npm publish -w @query-grid/core --access public --tag preview
-npm publish src/npm/packages/primeng/dist --access public --tag preview
-```
-
-Restore `publishConfig.registry` to `https://npm.pkg.github.com` before the next GitHub tag publish.
 
 ## Next releases
 
-1. Bump all version locations (see table above).
-2. Add a `CHANGELOG.md` section.
-3. Test → tag `vX.Y.Z` → push → verify packages on GitHub **Packages** tab.
+1. Bump all version locations.
+2. `CHANGELOG.md` section.
+3. Tag → verify NuGet on GitHub **Packages** → publish npm manually → GitHub Release.

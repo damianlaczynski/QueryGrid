@@ -54,12 +54,11 @@ CI-specific differences:
 
 Separate from CI — runs on **tag push** `v*` (e.g. `v0.1.0-preview.2`).
 
-| Step       | Action                                             |
-| ---------- | -------------------------------------------------- |
-| Trigger    | `git push origin v0.1.0-preview.2`                 |
-| Auth       | `GITHUB_TOKEN` with `packages: write`              |
-| NuGet feed | `https://nuget.pkg.github.com/<repository_owner>/` |
-| npm feed   | `https://npm.pkg.github.com`                       |
-| Dist-tag   | `preview` for prerelease versions, else `latest`   |
+| Step       | Action                                                       |
+| ---------- | ------------------------------------------------------------ |
+| Trigger    | `git push origin v0.1.0-preview.2`                           |
+| Auth       | `GITHUB_TOKEN` with `packages: write`                        |
+| NuGet feed | `https://nuget.pkg.github.com/<repository_owner>/`           |
+| npm        | **Manual** on npmjs.com — see [publishing.md](publishing.md) |
 
 Details: [publishing.md](publishing.md).

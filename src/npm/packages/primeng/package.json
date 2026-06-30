@@ -34,7 +34,7 @@
     "sorting"
   ],
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
+    "access": "public"
   },
   "scripts": {
     "build": "ng-packagr -p ng-package.json",
