@@ -14,6 +14,7 @@
     "test:npm": "npm run test -w @query-grid/core && npm run test -w @query-grid/primeng",
     "lint": "eslint -c src/npm/eslint.config.js src/npm/packages",
     "pack:dotnet": "dotnet pack src/dotnet/QueryGrid.slnx -c Release -o artifacts/nuget",
+    "pack:npm": "npm run build:npm && node -e \"require('fs').mkdirSync('artifacts/npm',{recursive:true})\" && npm pack -w @query-grid/core --pack-destination artifacts/npm && node scripts/pack-primeng.mjs",
     "watch:core": "tsc -p src/npm/packages/core/tsconfig.json --watch --preserveWatchOutput",
     "watch:primeng": "ng-packagr -p src/npm/packages/primeng/ng-package.json --watch",
     "start:showcase-api": "dotnet run --project samples/showcase-api/QueryGrid.Samples.ShowcaseApi.csproj",

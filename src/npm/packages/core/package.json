@@ -16,8 +16,27 @@
     "dist",
     "README.md"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/damianlaczynski/QueryGrid.git"
+  },
+  "homepage": "https://github.com/damianlaczynski/QueryGrid#readme",
+  "bugs": {
+    "url": "https://github.com/damianlaczynski/QueryGrid/issues"
+  },
+  "keywords": [
+    "querygrid",
+    "grid",
+    "pagination",
+    "filtering",
+    "sorting",
+    "datagrid"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest"
   },

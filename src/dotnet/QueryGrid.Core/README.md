@@ -21,4 +21,4 @@ var page = queryable
 
 ## Full guide
 
-[Getting started](https://github.com/damianlaczynski/query-grid/blob/main/docs/getting-started.md)
+[Getting started](https://github.com/damianlaczynski/QueryGrid/blob/main/docs/getting-started.md)

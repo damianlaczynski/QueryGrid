@@ -14,8 +14,8 @@
     <Product>QueryGrid</Product>
     <Copyright>Copyright (c) 2026 Damian Łączyński</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/damianlaczynski/query-grid</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/damianlaczynski/query-grid</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/damianlaczynski/QueryGrid</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/damianlaczynski/QueryGrid</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <PackageTags>querygrid;pagination;sorting;filtering;linq;datagrid;loadoptions</PackageTags>

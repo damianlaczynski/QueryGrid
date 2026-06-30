@@ -1,6 +1,6 @@
 # QueryGrid.Abstractions
 
-Transport contracts for [QueryGrid](https://github.com/damianlaczynski/query-grid): `GridQuery`, `GridResult`, filter/sort types, DTO attributes, and JSON serialization helpers. Zero dependencies.
+Transport contracts for [QueryGrid](https://github.com/damianlaczynski/QueryGrid): `GridQuery`, `GridResult`, filter/sort types, DTO attributes, and JSON serialization helpers. Zero dependencies.
 
 ## Install
 
@@ -21,4 +21,4 @@ var query = JsonSerializer.Deserialize<GridQuery>(json, options);
 
 ## Full guide
 
-[Getting started](https://github.com/damianlaczynski/query-grid/blob/main/docs/getting-started.md)
+[Getting started](https://github.com/damianlaczynski/QueryGrid/blob/main/docs/getting-started.md)

@@ -1,6 +1,6 @@
 # QueryGrid.EntityFrameworkCore
 
-EF Core integration for [QueryGrid](https://github.com/damianlaczynski/query-grid): async count, filter, sort, and page via `ToGridResultAsync`.
+EF Core integration for [QueryGrid](https://github.com/damianlaczynski/QueryGrid): async count, filter, sort, and page via `ToGridResultAsync`.
 
 ## Install
 
@@ -20,4 +20,4 @@ Deserialize `GridQuery` in your API layer — see the getting-started guide for 
 
 ## Full guide
 
-[Getting started](https://github.com/damianlaczynski/query-grid/blob/main/docs/getting-started.md)
+[Getting started](https://github.com/damianlaczynski/QueryGrid/blob/main/docs/getting-started.md)

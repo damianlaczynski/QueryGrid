@@ -2,46 +2,103 @@
 
 > Scope: versioning and releasing `QueryGrid.*` NuGet packages and `@query-grid/*` npm packages.
 
-## Versioning
+## Version `0.1.0-preview.1`
 
-- **SemVer** for all packages.
-- Preview versions use `0.1.0-preview.N` (or similar) until the first stable release.
-- `QueryGrid.Abstractions` is the stability anchor — breaking changes there require a major bump across the stack.
-- Keep NuGet and npm preview versions aligned when shipping together.
+All packages ship together at the same version:
+
+| Package                         | Registry                                                                  |
+| ------------------------------- | ------------------------------------------------------------------------- |
+| `QueryGrid.Abstractions`        | [NuGet.org](https://www.nuget.org/packages/QueryGrid.Abstractions)        |
+| `QueryGrid.Core`                | [NuGet.org](https://www.nuget.org/packages/QueryGrid.Core)                |
+| `QueryGrid.EntityFrameworkCore` | [NuGet.org](https://www.nuget.org/packages/QueryGrid.EntityFrameworkCore) |
+| `@query-grid/core`              | [npm](https://www.npmjs.com/package/@query-grid/core)                     |
+| `@query-grid/primeng`           | [npm](https://www.npmjs.com/package/@query-grid/primeng)                  |
 
 ### Where versions live
 
-| Stack           | Location                                                              |
-| --------------- | --------------------------------------------------------------------- |
-| NuGet (shared)  | `src/dotnet/Directory.Build.props` → `<Version>` on packable projects |
-| npm per package | `src/npm/packages/*/package.json` → `"version"`                       |
+| Stack           | Location                                                       |
+| --------------- | -------------------------------------------------------------- |
+| NuGet (shared)  | `src/dotnet/Directory.Build.props` → `<Version>`               |
+| npm per package | `src/npm/packages/*/package.json` → `"version"`                |
+| primeng peer    | `peerDependencies["@query-grid/core"]` must match core version |
 
-## Pack locally
+## Pre-publish checklist
+
+From repository root:
 
 ```powershell
-# NuGet → artifacts/nuget/
+npm install
+npm run test
+npm run build
+npm run lint
 npm run pack:dotnet
-
-# npm libraries
-npm run build:npm
-# dist/ output under each package folder
+npm run pack:npm
 ```
 
-## Publishing checklist
+Verify artifacts:
 
-1. Update version in `Directory.Build.props` and all npm `package.json` files.
-2. Update `CHANGELOG.md`.
-3. Run `npm run test`, `npm run build`, and `npm run lint`.
-4. Pack and smoke-test artifacts against a sample under `samples/`.
-5. Publish to chosen registries (NuGet.org, GitHub Packages, npm).
-6. Tag the release in git.
+- `artifacts/nuget/*.nupkg` — three packages + `.snupkg` symbol packages
+- `artifacts/npm/query-grid-core-0.1.0-preview.1.tgz`
+- `artifacts/npm/query-grid-primeng-0.1.0-preview.1.tgz`
+
+Optional smoke test: run showcase apps (`npm run start:showcase-api`, `npm run start:showcase-ui`).
+
+## Publish NuGet (nuget.org)
+
+**Prerequisites:** [NuGet.org](https://www.nuget.org/) account and an API key (Account → API Keys → Create).
+
+```powershell
+$apiKey = "<your-nuget-api-key>"
+
+dotnet nuget push artifacts/nuget/QueryGrid.Abstractions.0.1.0-preview.1.nupkg --api-key $apiKey --source https://api.nuget.org/v3/index.json
+dotnet nuget push artifacts/nuget/QueryGrid.Core.0.1.0-preview.1.nupkg --api-key $apiKey --source https://api.nuget.org/v3/index.json
+dotnet nuget push artifacts/nuget/QueryGrid.EntityFrameworkCore.0.1.0-preview.1.nupkg --api-key $apiKey --source https://api.nuget.org/v3/index.json
+
+# Optional — symbol packages for debugging
+dotnet nuget push artifacts/nuget/QueryGrid.Abstractions.0.1.0-preview.1.snupkg --api-key $apiKey --source https://api.nuget.org/v3/index.json
+dotnet nuget push artifacts/nuget/QueryGrid.Core.0.1.0-preview.1.snupkg --api-key $apiKey --source https://api.nuget.org/v3/index.json
+dotnet nuget push artifacts/nuget/QueryGrid.EntityFrameworkCore.0.1.0-preview.1.snupkg --api-key $apiKey --source https://api.nuget.org/v3/index.json
+```
+
+Publish **core before EF** is not required — packages are independent. Typical consumer install pulls `QueryGrid.EntityFrameworkCore` which depends on the others.
+
+## Publish npm (npmjs.com)
+
+**Prerequisites:** [npmjs.com](https://www.npmjs.com/) account, `npm login`, and access to the `@query-grid` scope (first publish sets it public via `publishConfig.access`).
+
+Publish **core first**, then primeng (primeng peer-depends on core):
+
+```powershell
+npm publish -w @query-grid/core --access public
+npm publish src/npm/packages/primeng/dist --access public
+```
+
+`@query-grid/primeng` is published from `dist/` after `ng-packagr` build — do not publish from the package source folder.
+
+## After publish
+
+1. Create a git tag and push:
+
+   ```powershell
+   git tag v0.1.0-preview.1
+   git push origin v0.1.0-preview.1
+   ```
+
+2. Create a GitHub Release from the tag with `CHANGELOG.md` section `0.1.0-preview.1` as release notes.
+
+3. Verify install from registries (outside this repo):
+
+   ```powershell
+   dotnet add package QueryGrid.EntityFrameworkCore --version 0.1.0-preview.1
+   npm install @query-grid/core@0.1.0-preview.1 @query-grid/primeng@0.1.0-preview.1
+   ```
 
 ## Consumer install
 
 See [getting-started.md](../getting-started.md) for install commands and first-grid examples.
 
-Local development in this repo uses project references and workspace builds — consumers use published versions. Do not rely on path references from downstream apps once packages are on a feed.
+## Next releases
 
-## Registry choice
-
-Document the chosen feed URLs in release notes when publishing is configured. Until then, verification happens via local pack + `samples/`.
+1. Bump `<Version>` in `Directory.Build.props` and all npm `package.json` files (including primeng `peerDependencies["@query-grid/core"]`).
+2. Add a new section to `CHANGELOG.md`.
+3. Repeat checklist → pack → publish → tag.

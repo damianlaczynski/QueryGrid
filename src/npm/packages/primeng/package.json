@@ -16,15 +16,25 @@
     "tslib": "^2.8.0"
   },
   "sideEffects": false,
-  "files": [
-    "dist",
-    "README.md"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/damianlaczynski/QueryGrid.git"
+  },
+  "homepage": "https://github.com/damianlaczynski/QueryGrid#readme",
+  "bugs": {
+    "url": "https://github.com/damianlaczynski/QueryGrid/issues"
+  },
+  "keywords": [
+    "querygrid",
+    "angular",
+    "primeng",
+    "datagrid",
+    "pagination",
+    "filtering",
+    "sorting"
   ],
-  "exports": {
-    ".": {
-      "types": "./dist/types/query-grid-primeng.d.ts",
-      "default": "./dist/fesm2022/query-grid-primeng.mjs"
-    }
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "ng-packagr -p ng-package.json",

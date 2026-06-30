@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented here.
 
-## 0.1.0-preview.1 — 2026-06-24
+## 0.1.0-preview.1 — 2026-07-01
 
 First public preview.
 

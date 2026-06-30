@@ -1,6 +1,6 @@
 # @query-grid/primeng
 
-PrimeNG lazy data grid for [QueryGrid](https://github.com/damianlaczynski/query-grid) — column filters, global search, multi-sort, and optional session persistence.
+PrimeNG lazy data grid for [QueryGrid](https://github.com/damianlaczynski/QueryGrid) — column filters, global search, multi-sort, and optional session persistence.
 
 ## Install
 
@@ -30,4 +30,4 @@ readonly grid = this.gridFactory.create<IssueDto>({
 
 ## Full guide
 
-[Getting started](https://github.com/damianlaczynski/query-grid/blob/main/docs/getting-started.md) — backend setup, JSON transport, column templates, and field naming.
+[Getting started](https://github.com/damianlaczynski/QueryGrid/blob/main/docs/getting-started.md) — backend setup, JSON transport, column templates, and field naming.
