@@ -31,5 +31,8 @@ public sealed class GridFieldInfo
   /// <summary>The set of operators valid for this field, derived from its type and nullability.</summary>
   public required IReadOnlySet<FilterOperator> AllowedOperators { get; init; }
 
+  /// <summary>Whether this field is the explicit sort tie-breaker via <see cref="GridSortTieBreakerAttribute"/>.</summary>
+  public required bool IsSortTieBreaker { get; init; }
+
   internal FieldCategory Category { get; init; }
 }

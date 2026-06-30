@@ -1,0 +1,15 @@
+{
+  "extends": "../core/tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "declaration": true,
+    "declarationMap": true,
+    "paths": {
+      "@query-grid/core": ["../core/dist/index.d.ts"]
+    }
+  },
+  "angularCompilerOptions": {
+    "compilationMode": "partial"
+  },
+  "include": ["src/**/*.ts"]
+}

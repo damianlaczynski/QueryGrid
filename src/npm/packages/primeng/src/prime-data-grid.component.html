@@ -1,0 +1,142 @@
+<p-table
+  #table
+  [value]="grid().items() ?? []"
+  [lazy]="true"
+  (onLazyLoad)="onLazyLoad($event, table)"
+  (onSort)="onTableSort($event, table)"
+  [loading]="grid().loading()"
+  [paginator]="true"
+  [rows]="grid().query().take ?? DEFAULT_GRID_OPTIONS.defaultPageSize"
+  [rowsPerPageOptions]="pageSizeOptions()"
+  [totalRecords]="grid().totalCount()"
+  [first]="grid().query().skip ?? 0"
+  sortMode="multiple"
+  [customSort]="true"
+  [globalFilterFields]="searchFields()"
+  [filterLocale]="resolvedFilterLocale()"
+  [showGridlines]="appearance() === 'plain' ? true : showGridlines()"
+  [stripedRows]="appearance() === 'plain' ? false : stripedRows()"
+  [dataKey]="dataKey()"
+  [styleClass]="appearance() === 'plain' ? 'qg-plain-table' : undefined"
+>
+  <ng-template #caption>
+    <div class="qg-caption" [class.qg-plain-caption]="appearance() === 'plain'">
+      <div class="qg-caption-toolbar">
+        @if (searchable()) {
+          <p-iconfield iconPosition="left" class="qg-caption-search">
+            <p-inputicon>
+              <i class="pi pi-search"></i>
+            </p-inputicon>
+            <input
+              pInputText
+              type="text"
+              [ngModel]="searchText()"
+              (ngModelChange)="onSearchChange($event, table)"
+              [placeholder]="searchPlaceholder()"
+            />
+          </p-iconfield>
+        }
+
+        <div class="qg-caption-actions">
+          @if (toolbarTemplate(); as toolbar) {
+            <p-button
+              type="button"
+              label="Filters"
+              icon="pi pi-filter"
+              [outlined]="true"
+              [severity]="filtersExpanded() ? 'primary' : 'secondary'"
+              (onClick)="toggleFiltersExpanded()"
+            />
+          }
+
+          <p-button
+            type="button"
+            label="Clear"
+            [outlined]="true"
+            icon="pi pi-filter-slash"
+            [disabled]="!hasActiveFilters()"
+            (onClick)="clear(table)"
+          />
+        </div>
+      </div>
+
+      @if (filtersExpanded() && toolbarTemplate(); as toolbar) {
+        <div class="qg-caption-filters">
+          <ng-container [ngTemplateOutlet]="toolbar" />
+        </div>
+      }
+
+      @if (allChips().length > 0) {
+        <div class="qg-caption-chips">
+          @for (chip of allChips(); track chip.id) {
+            <p-chip
+              [label]="chip.label"
+              removable
+              removeIcon="pi pi-times-circle"
+              (onRemove)="removeChip(chip, table, $event)"
+            />
+          }
+        </div>
+      }
+    </div>
+  </ng-template>
+
+  <ng-template #header>
+    <tr>
+      @for (column of resolvedColumns(); track column.field) {
+        <th
+          scope="col"
+          [style.minWidth]="column.width"
+          [style.textAlign]="column.align"
+          [pSortableColumn]="isSortable(column) ? column.field : undefined"
+        >
+          <div class="qg-column-header">
+            <div class="qg-column-title">
+              <span>{{ column.header }}</span>
+              @if (isSortable(column)) {
+                <p-sortIcon [field]="column.field" />
+              }
+            </div>
+            @if (column.filter) {
+              <qg-column-filter
+                [column]="column"
+                [filterLocale]="resolvedFilterLocale()"
+              />
+            }
+          </div>
+        </th>
+      }
+    </tr>
+  </ng-template>
+
+  <ng-template #body let-row>
+    <tr>
+      @for (column of resolvedColumns(); track column.field) {
+        <td [style.textAlign]="column.align">
+          @if (cellTemplate(column.field); as template) {
+            <ng-container
+              [ngTemplateOutlet]="template"
+              [ngTemplateOutletContext]="cellContext(row, column.field)"
+            />
+          } @else {
+            {{ formatCell(column, row) }}
+          }
+        </td>
+      }
+    </tr>
+  </ng-template>
+
+  <ng-template #emptymessage>
+    @if (emptyTemplate(); as template) {
+      <tr>
+        <td [attr.colspan]="resolvedColumns().length">
+          <ng-container [ngTemplateOutlet]="template" />
+        </td>
+      </tr>
+    } @else {
+      <tr>
+        <td [attr.colspan]="resolvedColumns().length">No data</td>
+      </tr>
+    }
+  </ng-template>
+</p-table>

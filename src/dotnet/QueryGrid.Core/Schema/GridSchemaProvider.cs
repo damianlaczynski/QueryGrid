@@ -45,8 +45,9 @@ public static class GridSchemaProvider
       var nullable = TypeClassifier.IsNullable(property.PropertyType);
       var sortEnabled = property.GetCustomAttribute<GridSortAttribute>()?.Enabled ?? true;
       var filterEnabled = property.GetCustomAttribute<GridFilterAttribute>()?.Enabled ?? true;
-      var searchable = category == FieldCategory.Text
-        && property.GetCustomAttribute<GridSearchableAttribute>() is not null;
+      var searchable = property.GetCustomAttribute<GridSearchableAttribute>() is not null
+        && category is FieldCategory.Text or FieldCategory.Guid;
+      var sortTieBreaker = property.GetCustomAttribute<GridSortTieBreakerAttribute>() is not null;
 
       fields.Add(new GridFieldInfo
       {
@@ -57,6 +58,7 @@ public static class GridSchemaProvider
         CanSort = sortEnabled,
         CanFilter = filterEnabled,
         IsSearchable = searchable,
+        IsSortTieBreaker = sortTieBreaker,
         AllowedOperators = TypeClassifier.GetAllowedOperators(category, nullable)
       });
     }

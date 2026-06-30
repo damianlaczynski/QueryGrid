@@ -4,8 +4,7 @@ using QueryGrid.Abstractions.Serialization;
 namespace QueryGrid.Abstractions;
 
 /// <summary>
-/// The unified transport contract describing how a data set should be paged, sorted, filtered
-/// and searched. Inspired by DevExtreme's load options but expressed as plain CLR types.
+/// Describes how a data set should be paged, sorted, filtered and searched.
 /// </summary>
 public sealed class GridQuery
 {
@@ -24,17 +23,4 @@ public sealed class GridQuery
 
   /// <summary>Optional free-text search applied across the fields marked as searchable.</summary>
   public string? Search { get; set; }
-
-  /// <summary>Parses a JSON query-string value for FastEndpoints and other model binders.</summary>
-  public static bool TryParse(string? value, out GridQuery result)
-  {
-    if (GridQueryJson.TryDeserialize(value, out var query, out _))
-    {
-      result = query!;
-      return true;
-    }
-
-    result = new GridQuery();
-    return false;
-  }
 }

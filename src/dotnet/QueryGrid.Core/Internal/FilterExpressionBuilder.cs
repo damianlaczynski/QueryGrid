@@ -13,17 +13,11 @@ namespace QueryGrid.Core.Internal;
 /// </summary>
 internal static class FilterExpressionBuilder
 {
-  private static readonly MethodInfo _stringToLower =
-    typeof(string).GetMethod(nameof(string.ToLower), Type.EmptyTypes)!;
-
-  private static readonly MethodInfo _stringContains =
-    typeof(string).GetMethod(nameof(string.Contains), [typeof(string)])!;
-
-  private static readonly MethodInfo _stringStartsWith =
-    typeof(string).GetMethod(nameof(string.StartsWith), [typeof(string)])!;
-
-  private static readonly MethodInfo _stringEndsWith =
-    typeof(string).GetMethod(nameof(string.EndsWith), [typeof(string)])!;
+  private static readonly MethodInfo _enumerableContains = typeof(Enumerable)
+    .GetMethods(BindingFlags.Static | BindingFlags.Public)
+    .Single(method =>
+      method.Name == nameof(Enumerable.Contains) &&
+      method.GetParameters().Length == 2);
 
   public static Expression<Func<T, bool>>? Build<T>(FilterNode? node, GridSchema schema, GridOptions options)
   {
@@ -47,7 +41,7 @@ internal static class FilterExpressionBuilder
         if (depth > options.MaxFilterDepth)
         {
           throw new GridValidationException(
-            "filter_too_deep", $"Filter nesting exceeds the maximum depth of {options.MaxFilterDepth}.");
+            GridValidationCodes.FilterTooDeep, $"Filter nesting exceeds the maximum depth of {options.MaxFilterDepth}.");
         }
 
         if (group.Conditions.Count == 0)
@@ -73,13 +67,13 @@ internal static class FilterExpressionBuilder
         if (conditions > options.MaxConditions)
         {
           throw new GridValidationException(
-            "too_many_conditions", $"Filter exceeds the maximum of {options.MaxConditions} conditions.");
+            GridValidationCodes.TooManyConditions, $"Filter exceeds the maximum of {options.MaxConditions} conditions.");
         }
 
         return BuildCondition(condition, parameter, schema, options);
 
       default:
-        throw new GridValidationException("invalid_filter", "Unsupported filter node type.");
+        throw new GridValidationException(GridValidationCodes.InvalidFilter, "Unsupported filter node type.");
     }
   }
 
@@ -91,13 +85,13 @@ internal static class FilterExpressionBuilder
     if (!field.CanFilter)
     {
       throw new GridValidationException(
-        "field_not_filterable", $"Field '{field.Name}' cannot be filtered.");
+        GridValidationCodes.FieldNotFilterable, $"Field '{field.Name}' cannot be filtered.");
     }
 
     if (!field.AllowedOperators.Contains(condition.Operator))
     {
       throw new GridValidationException(
-        "operator_not_allowed",
+        GridValidationCodes.OperatorNotAllowed,
         $"Operator '{condition.Operator}' is not valid for field '{field.Name}'.");
     }
 
@@ -120,7 +114,7 @@ internal static class FilterExpressionBuilder
             if (!TypeClassifier.IsNullable(field.ClrType))
             {
               throw new GridValidationException(
-                "invalid_value",
+                GridValidationCodes.InvalidValue,
                 $"Operator '{condition.Operator}' on '{field.Name}' cannot be used with null.");
             }
 
@@ -143,22 +137,22 @@ internal static class FilterExpressionBuilder
         {
           var value = GridValueConverter.Convert(condition.Value, field.ClrType, field.Name)
             ?? throw new GridValidationException(
-              "invalid_value", $"Operator '{condition.Operator}' on '{field.Name}' requires a value.");
+              GridValidationCodes.InvalidValue, $"Operator '{condition.Operator}' on '{field.Name}' requires a value.");
           var constant = Expression.Constant(value, field.ClrType);
           return BuildComparison(condition.Operator, member, constant);
         }
 
       case FilterOperator.Contains:
-        return BuildStringMatch(member, condition, field, _stringContains);
+        return BuildStringMatch(member, condition, field, StringExpressionMethods.Contains);
 
       case FilterOperator.NotContains:
-        return Expression.Not(BuildStringMatch(member, condition, field, _stringContains));
+        return Expression.Not(BuildStringMatch(member, condition, field, StringExpressionMethods.Contains));
 
       case FilterOperator.StartsWith:
-        return BuildStringMatch(member, condition, field, _stringStartsWith);
+        return BuildStringMatch(member, condition, field, StringExpressionMethods.StartsWith);
 
       case FilterOperator.EndsWith:
-        return BuildStringMatch(member, condition, field, _stringEndsWith);
+        return BuildStringMatch(member, condition, field, StringExpressionMethods.EndsWith);
 
       case FilterOperator.In:
       case FilterOperator.NotIn:
@@ -169,7 +163,7 @@ internal static class FilterExpressionBuilder
 
       default:
         throw new GridValidationException(
-          "operator_not_supported", $"Operator '{condition.Operator}' is not supported.");
+          GridValidationCodes.OperatorNotSupported, $"Operator '{condition.Operator}' is not supported.");
     }
   }
 
@@ -181,7 +175,7 @@ internal static class FilterExpressionBuilder
       FilterOperator.Lte => Expression.LessThanOrEqual(member, constant, liftToNull: false, method: null),
       FilterOperator.Gt => Expression.GreaterThan(member, constant, liftToNull: false, method: null),
       FilterOperator.Gte => Expression.GreaterThanOrEqual(member, constant, liftToNull: false, method: null),
-      _ => throw new GridValidationException("operator_not_supported", $"Operator '{op}' is not a comparison.")
+      _ => throw new GridValidationException(GridValidationCodes.OperatorNotSupported, $"Operator '{op}' is not a comparison.")
     };
   }
 
@@ -190,13 +184,11 @@ internal static class FilterExpressionBuilder
   {
     var value = GridValueConverter.Convert(condition.Value, typeof(string), field.Name) as string
       ?? throw new GridValidationException(
-        "invalid_value", $"Operator '{condition.Operator}' on '{field.Name}' requires a string value.");
+        GridValidationCodes.InvalidValue, $"Operator '{condition.Operator}' on '{field.Name}' requires a string value.");
 
     var loweredValue = Expression.Constant(value.ToLowerInvariant());
-    var loweredMember = Expression.Call(member, _stringToLower);
-    var match = Expression.Call(loweredMember, method, loweredValue);
-    var notNull = Expression.NotEqual(member, Expression.Constant(null, typeof(string)));
-    return Expression.AndAlso(notNull, match);
+    return CaseInsensitiveStringExpressions.BuildMatch(
+      member, loweredValue, method, typeof(string));
   }
 
   private static Expression BuildInList(
@@ -206,19 +198,19 @@ internal static class FilterExpressionBuilder
     if (rawValues.Count > options.MaxInListLength)
     {
       throw new GridValidationException(
-        "in_list_too_long",
+        GridValidationCodes.InListTooLong,
         $"'{condition.Operator}' list for '{field.Name}' exceeds the maximum of {options.MaxInListLength} items.");
     }
 
-    var listType = typeof(List<>).MakeGenericType(field.ClrType);
-    var list = (IList)Activator.CreateInstance(listType)!;
-    foreach (var raw in rawValues)
-    {
-      list.Add(GridValueConverter.Convert(raw, field.ClrType, field.Name));
-    }
+    var constants = rawValues
+      .Select(raw => Expression.Constant(
+        GridValueConverter.Convert(raw, field.ClrType, field.Name),
+        field.ClrType))
+      .ToArray();
 
-    var containsMethod = listType.GetMethod(nameof(List<object>.Contains), [field.ClrType])!;
-    var containsCall = Expression.Call(Expression.Constant(list, listType), containsMethod, member);
+    var arrayExpression = Expression.NewArrayInit(field.ClrType, constants);
+    var containsMethod = _enumerableContains.MakeGenericMethod(field.ClrType);
+    var containsCall = Expression.Call(containsMethod, arrayExpression, member);
     return condition.Operator == FilterOperator.NotIn ? Expression.Not(containsCall) : containsCall;
   }
 
@@ -228,7 +220,7 @@ internal static class FilterExpressionBuilder
     if (bounds.Count != 2)
     {
       throw new GridValidationException(
-        "invalid_value", $"Operator 'Between' on '{field.Name}' requires exactly two values.");
+        GridValidationCodes.InvalidValue, $"Operator 'Between' on '{field.Name}' requires exactly two values.");
     }
 
     var lower = Expression.Constant(GridValueConverter.Convert(bounds[0], field.ClrType, field.Name), field.ClrType);

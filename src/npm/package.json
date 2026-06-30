@@ -1,0 +1,6 @@
+{
+  "name": "query-grid-npm",
+  "private": true,
+  "type": "module",
+  "description": "npm packages for QueryGrid. Run npm install and scripts from the repository root."
+}

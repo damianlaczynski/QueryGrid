@@ -10,4 +10,8 @@
     <ProjectReference Include="..\QueryGrid.Abstractions\QueryGrid.Abstractions.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="QueryGrid.EntityFrameworkCore" />
+  </ItemGroup>
+
 </Project>

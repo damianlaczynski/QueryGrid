@@ -43,10 +43,19 @@ public sealed class GridFilterAttribute : Attribute
 }
 
 /// <summary>
-/// Marks a string property as a target for free-text <see cref="GridQuery.Search"/>.
+/// Marks a text or Guid property as a target for free-text <see cref="GridQuery.Search"/>.
 /// When no property is marked, search is disabled for the row type.
 /// </summary>
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
 public sealed class GridSearchableAttribute : Attribute
+{
+}
+
+/// <summary>
+/// Marks the property used as an implicit final ascending sort when multi-sort is applied.
+/// When omitted, a sortable property named <c>Id</c> is used when present.
+/// </summary>
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+public sealed class GridSortTieBreakerAttribute : Attribute
 {
 }

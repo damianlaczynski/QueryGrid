@@ -1,0 +1,33 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Showcase API",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "querygrid: build showcase-api",
+      "program": "${workspaceFolder}/samples/showcase-api/bin/Debug/net10.0/QueryGrid.Samples.ShowcaseApi.dll",
+      "cwd": "${workspaceFolder}/samples/showcase-api",
+      "stopAtEntry": false,
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5180"
+      }
+    },
+    {
+      "name": "Showcase UI",
+      "type": "chrome",
+      "request": "launch",
+      "preLaunchTask": "querygrid: prep showcase-ui",
+      "url": "http://localhost:4200/",
+      "webRoot": "${workspaceFolder}/samples/showcase-ui"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Showcase API + UI",
+      "configurations": ["Showcase API", "Showcase UI"],
+      "stopAll": true
+    }
+  ]
+}

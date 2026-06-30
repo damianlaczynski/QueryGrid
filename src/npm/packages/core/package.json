@@ -1,0 +1,47 @@
+{
+  "name": "@query-grid/core",
+  "version": "0.1.0-preview.1",
+  "description": "Framework-agnostic GridQuery/GridResult types for QueryGrid.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/damianlaczynski/QueryGrid.git"
+  },
+  "homepage": "https://github.com/damianlaczynski/QueryGrid#readme",
+  "bugs": {
+    "url": "https://github.com/damianlaczynski/QueryGrid/issues"
+  },
+  "keywords": [
+    "querygrid",
+    "grid",
+    "pagination",
+    "filtering",
+    "sorting",
+    "datagrid"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.2",
+    "vitest": "^3.2.4"
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "querygrid: build dotnet",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/src/dotnet/QueryGrid.slnx",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary;ForceNoAlign"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/src/dotnet"
+      },
+      "group": "build",
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "querygrid: test dotnet",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "test",
+        "${workspaceFolder}/src/dotnet/QueryGrid.slnx",
+        "--no-build"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/src/dotnet"
+      },
+      "group": "test",
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "querygrid: format dotnet",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["format", "${workspaceFolder}/src/dotnet/QueryGrid.slnx"],
+      "options": {
+        "cwd": "${workspaceFolder}/src/dotnet"
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "querygrid: build npm",
+      "type": "process",
+      "command": "npm",
+      "args": ["run", "build:npm"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "querygrid: test npm",
+      "type": "process",
+      "command": "npm",
+      "args": ["run", "test:npm"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "test",
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "querygrid: build all",
+      "dependsOrder": "sequence",
+      "dependsOn": ["querygrid: build dotnet", "querygrid: build npm"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "querygrid: test all",
+      "dependsOrder": "sequence",
+      "dependsOn": ["querygrid: test dotnet", "querygrid: test npm"],
+      "group": "test"
+    },
+    {
+      "label": "querygrid: build showcase-api",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/samples/showcase-api/QueryGrid.Samples.ShowcaseApi.csproj",
+        "-c",
+        "Debug",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary;ForceNoAlign"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "querygrid: start showcase-ui",
+      "type": "process",
+      "command": "npm",
+      "args": ["run", "start"],
+      "options": {
+        "cwd": "${workspaceFolder}/samples/showcase-ui"
+      },
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": {
+        "owner": "typescript",
+        "pattern": "$tsc",
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "(Local:\\s+http://localhost:4200|Application bundle generation complete|Compiled successfully)"
+        }
+      }
+    },
+    {
+      "label": "querygrid: prep showcase-ui",
+      "dependsOrder": "sequence",
+      "dependsOn": ["querygrid: build npm", "querygrid: start showcase-ui"]
+    }
+  ]
+}

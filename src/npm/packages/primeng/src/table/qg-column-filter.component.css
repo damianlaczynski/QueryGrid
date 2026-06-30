@@ -1,0 +1,16 @@
+.qg-boolean-filter {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.625rem;
+  min-width: 8rem;
+}
+
+.qg-boolean-filter-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+  width: 100%;
+}

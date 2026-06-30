@@ -12,38 +12,23 @@ internal static class SortExpressionBuilder
   public static IQueryable<T> Apply<T>(
     IQueryable<T> source, IList<SortDescriptor> sorts, GridSchema schema, GridOptions options)
   {
-    if (sorts.Count == 0)
+    return ApplyEffective(source, ResolveEffectiveSort(sorts, schema, options), schema);
+  }
+
+  public static IQueryable<T> ApplyEffective<T>(
+    IQueryable<T> source, IReadOnlyList<SortDescriptor> effectiveSorts, GridSchema schema)
+  {
+    if (effectiveSorts.Count == 0)
     {
       return source;
     }
 
-    if (sorts.Count > options.MaxSortDescriptors)
-    {
-      throw new GridValidationException(
-        "too_many_sorts", $"Sort exceeds the maximum of {options.MaxSortDescriptors} descriptors.");
-    }
-
     IQueryable<T> result = source;
-    var appliedSortFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-    for (var i = 0; i < sorts.Count; i++)
+    for (var i = 0; i < effectiveSorts.Count; i++)
     {
-      var descriptor = sorts[i];
+      var descriptor = effectiveSorts[i];
       var field = schema.Require(descriptor.Field);
-      if (!field.CanSort)
-      {
-        throw new GridValidationException(
-          "field_not_sortable", $"Field '{field.Name}' cannot be sorted.");
-      }
-
-      appliedSortFields.Add(field.Name);
       result = ApplyOne(result, field, descriptor.Desc, first: i == 0);
-    }
-
-    var idField = schema.Find("Id");
-    if (idField is { CanSort: true } && !appliedSortFields.Contains(idField.Name))
-    {
-      result = ApplyOne(result, idField, desc: false, first: false);
     }
 
     return result;
@@ -63,7 +48,7 @@ internal static class SortExpressionBuilder
     if (sorts.Count > options.MaxSortDescriptors)
     {
       throw new GridValidationException(
-        "too_many_sorts", $"Sort exceeds the maximum of {options.MaxSortDescriptors} descriptors.");
+        GridValidationCodes.TooManySorts, $"Sort exceeds the maximum of {options.MaxSortDescriptors} descriptors.");
     }
 
     var result = new List<SortDescriptor>(sorts.Count + 1);
@@ -75,20 +60,25 @@ internal static class SortExpressionBuilder
       if (!field.CanSort)
       {
         throw new GridValidationException(
-          "field_not_sortable", $"Field '{field.Name}' cannot be sorted.");
+          GridValidationCodes.FieldNotSortable, $"Field '{field.Name}' cannot be sorted.");
       }
 
       appliedSortFields.Add(field.Name);
       result.Add(descriptor);
     }
 
-    var idField = schema.Find("Id");
-    if (idField is { CanSort: true } && !appliedSortFields.Contains(idField.Name))
-    {
-      result.Add(new SortDescriptor(idField.Name, desc: false));
-    }
-
+    AppendSortTieBreaker(result, schema, appliedSortFields);
     return result;
+  }
+
+  private static void AppendSortTieBreaker(
+    List<SortDescriptor> sorts, GridSchema schema, HashSet<string> appliedSortFields)
+  {
+    var tieBreaker = schema.SortTieBreakerField;
+    if (tieBreaker is not null && !appliedSortFields.Contains(tieBreaker.Name))
+    {
+      sorts.Add(new SortDescriptor(tieBreaker.Name, desc: false));
+    }
   }
 
   private static IOrderedQueryable<T> ApplyOne<T>(IQueryable<T> source, GridFieldInfo field, bool desc, bool first)
