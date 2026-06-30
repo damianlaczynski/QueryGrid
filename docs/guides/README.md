@@ -13,7 +13,6 @@
 | [npm-guidelines.md](npm-guidelines.md)         | TypeScript packages, Angular libraries, PrimeNG grid        |
 | [testing-guidelines.md](testing-guidelines.md) | Test layer ownership, anti-patterns, when to skip tests     |
 | [feature-recipes.md](feature-recipes.md)       | Step-by-step recipes for common library work                |
-| [getting-started.md](../getting-started.md)    | Install and first grid (consumer perspective)               |
 
 ## Start here by task
 
@@ -25,13 +24,5 @@
 | Transport or shared contract change | [dotnet-guidelines.md](dotnet-guidelines.md) + [npm-guidelines.md](npm-guidelines.md) + [testing-guidelines.md](testing-guidelines.md) |
 | Verify before PR                    | [testing-guidelines.md](testing-guidelines.md) + [`AGENTS.md`](../../AGENTS.md)                                                        |
 | End-to-end check                    | [`samples/README.md`](../../samples/README.md) + relevant guide                                                                        |
-
-## Relationship to other docs
-
-| Folder                       | Use for                                   |
-| ---------------------------- | ----------------------------------------- |
-| `docs/guides/` (this folder) | How to _implement_ the library            |
-| `docs/technical/`            | How to _build, test, publish_ the repo    |
-| `samples/`                   | Runnable apps that _consume_ the packages |
 
 Commands shared across areas: [`AGENTS.md`](../../AGENTS.md).

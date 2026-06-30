@@ -44,31 +44,7 @@ var jsonOptions = GridQueryJson.CreateOptions();
 var grid = JsonSerializer.Deserialize<GridQuery>(json, jsonOptions);
 ```
 
-### FastEndpoints
-
-Name the request property to match the query parameter (camelCase). Register a value parser that uses your JSON options:
-
-```csharp
-public sealed class GetIssuesRequest
-{
-  public GridQuery Grid { get; set; } = new();  // ?grid={json}
-  public bool WatchedByMe { get; set; }
-}
-
-// At startup:
-b.Binding.ValueParserFor<GridQuery>((value) =>
-  GridQueryBinding.TryParse(value.ToString(), out var grid)
-    ? ParseResult.Success(grid)
-    : ParseResult.Failed());
-```
-
-`public GridQuery LoadOptions` would bind from `?loadOptions=` when the parser is registered.
-
 Contextual filters (`WatchedByMe`, …) stay as separate query parameters — only column sort/filter/search travels in the grid JSON blob.
-
-### Multi-sort
-
-- **PrimeNG** (`qg-prime-data-grid`): multi-sort is on by default (`sortMode="multiple"`). Click another column header to add a sort level (no Shift). Click again to toggle asc/desc; remove a level via the column menu or **Clear**.
 
 ### GridResult.Sort vs GridQuery.Sort
 
@@ -88,9 +64,7 @@ Create a grid resource with `GridResourceFactory` (DI-friendly) or `createGridRe
 import { Component, DestroyRef, inject } from "@angular/core";
 import { GridResourceFactory } from "@query-grid/primeng";
 
-@Component({
-  /* … */
-})
+@Component({/* … */})
 export class IssuesComponent {
   private readonly api = inject(IssuesService);
   private readonly gridFactory = inject(GridResourceFactory);
@@ -127,6 +101,10 @@ Declare columns with `qgColumn` — each template defines header, filters, and c
 /** Type anchor for strict `let-row` typing — `[qgColumnOf]="rowType"`. */
 protected readonly rowType!: IssueDto;
 ```
+
+### Multi-sort
+
+`qg-prime-data-grid` enables multi-sort by default (`sortMode="multiple"`). Click another column header to add a sort level (no Shift). Click again to toggle asc/desc; remove a level via the column menu or **Clear**.
 
 ### Field naming
 
@@ -169,3 +147,25 @@ Filter trees use `FilterNodeJsonConverter` on .NET — see `GridQueryContractTes
 | Sort descriptors           | 5       |
 
 Override via `GridOptions` on the server or `maxTake` / `defaultTake` in `createGridResource`.
+
+## Optional integrations
+
+### FastEndpoints
+
+Name the request property to match the query parameter (camelCase). Register a value parser that uses your JSON options — full example in `samples/showcase-api/GridQueryBinding.cs`:
+
+```csharp
+public sealed class GetIssuesRequest
+{
+  public GridQuery Grid { get; set; } = new();  // ?grid={json}
+  public bool WatchedByMe { get; set; }
+}
+
+// At startup:
+b.Binding.ValueParserFor<GridQuery>((value) =>
+  GridQueryBinding.TryParse(value.ToString(), out var grid)
+    ? ParseResult.Success(grid)
+    : ParseResult.Failed());
+```
+
+`public GridQuery LoadOptions` would bind from `?loadOptions=` when the parser is registered.

@@ -2,6 +2,17 @@
 
 > Start with [`AGENTS.md`](../AGENTS.md) for commands, repo layout, and task-based reading order.
 
+## How the docs are organized
+
+| Folder                    | Use for                                   |
+| ------------------------- | ----------------------------------------- |
+| `docs/getting-started.md` | Install and first grid (consumer)         |
+| `docs/guides/`            | How to _implement_ the library            |
+| `docs/technical/`         | How to _build, test, publish_ the repo    |
+| `samples/`                | Runnable apps that _consume_ the packages |
+
+Commands shared across areas: [`AGENTS.md`](../AGENTS.md).
+
 ## Guides (`guides/`)
 
 Implementation conventions for library packages. Start with [guides/README.md](guides/README.md).
@@ -25,11 +36,8 @@ Implementation conventions for library packages. Start with [guides/README.md](g
 
 Run, configure, CI, and publishing. Start with [technical/README.md](technical/README.md).
 
-| Document                                                                       | Description                                    |
-| ------------------------------------------------------------------------------ | ---------------------------------------------- |
-| [README.md](technical/README.md)                                               | Entry point — when to read each technical doc  |
-| [technical-documentation-guide.md](technical/technical-documentation-guide.md) | When to add or extend technical docs           |
-| [ci.md](technical/ci.md)                                                       | GitHub Actions workflow and local reproduction |
-| [publishing.md](technical/publishing.md)                                       | Versioning and publishing NuGet / npm packages |
-
-Commands shared across areas: [`AGENTS.md`](../AGENTS.md).
+| Document                                 | Description                                    |
+| ---------------------------------------- | ---------------------------------------------- |
+| [README.md](technical/README.md)         | Entry point — when to read each technical doc  |
+| [ci.md](technical/ci.md)                 | GitHub Actions workflow and local reproduction |
+| [publishing.md](technical/publishing.md) | Versioning and publishing NuGet / npm packages |

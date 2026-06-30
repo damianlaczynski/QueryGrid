@@ -36,13 +36,9 @@ npm run build:npm
 5. Publish to chosen registries (NuGet.org, GitHub Packages, npm).
 6. Tag the release in git.
 
-## Consumer install (after publish)
+## Consumer install
 
-```powershell
-dotnet add package QueryGrid.EntityFrameworkCore
-
-npm install @query-grid/core @query-grid/primeng
-```
+See [getting-started.md](../getting-started.md) for install commands and first-grid examples.
 
 Local development in this repo uses project references and workspace builds — consumers use published versions. Do not rely on path references from downstream apps once packages are on a feed.
 

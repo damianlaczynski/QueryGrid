@@ -33,23 +33,12 @@ Concurrent runs for the same branch are cancelled when a newer commit is pushed.
 
 ## Reproduce locally
 
-```powershell
-# From repository root
-npm run test
-npm run build
-npm run lint
-npm run pack:dotnet
-```
+Full command list: [`AGENTS.md`](../../AGENTS.md). CI runs the equivalent of `npm run test`, `npm run build`, and `dotnet pack` on every push.
 
-Or run jobs separately:
+CI-specific differences:
 
-```powershell
-dotnet test src/dotnet/QueryGrid.slnx -c Release
-npm ci
-npm run build:npm
-npm run test:npm
-npm run lint
-```
+- Uses `npm ci` (not `npm install`) and Node **24**
+- Does **not** run `npm run lint` or sample apps — run those locally before a PR
 
 ## What CI does not cover
 

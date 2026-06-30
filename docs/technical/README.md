@@ -6,11 +6,10 @@
 
 ## Documents
 
-| Document                                                             | Read when you need to…                                                           |
-| -------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| [technical-documentation-guide.md](technical-documentation-guide.md) | Rules for when to add or extend docs in this folder                              |
-| [ci.md](ci.md)                                                       | Understand GitHub Actions, reproduce CI locally, or debug a failing pipeline job |
-| [publishing.md](publishing.md)                                       | Version and publish NuGet / npm packages                                         |
+| Document                       | Read when you need to…                                                           |
+| ------------------------------ | -------------------------------------------------------------------------------- |
+| [ci.md](ci.md)                 | Understand GitHub Actions, reproduce CI locally, or debug a failing pipeline job |
+| [publishing.md](publishing.md) | Version and publish NuGet / npm packages                                         |
 
 ## Start here by task
 
@@ -21,12 +20,12 @@
 | Publish preview or stable release | [publishing.md](publishing.md)                         |
 | Pack NuGet locally                | [`AGENTS.md`](../../AGENTS.md) → `npm run pack:dotnet` |
 
-## Relationship to other docs
+## When to add or extend technical docs
 
-| Folder            | Use for                                     |
-| ----------------- | ------------------------------------------- |
-| `docs/guides/`    | How to _implement_ the library              |
-| `docs/technical/` | How to _build, test, publish_ (this folder) |
-| `samples/`        | Runnable verification apps                  |
+- CI workflow or required toolchain versions change → update [ci.md](ci.md) and `.github/workflows/ci.yml` in the same PR.
+- Publishing process or version policy changes → update [publishing.md](publishing.md) and `CHANGELOG.md`.
+- A new repeatable operational task appears (e.g. local feed setup) that is not implementation guidance.
+
+Do **not** put C# or TypeScript coding conventions here (`docs/guides/`), consumer tutorials ([getting-started.md](../getting-started.md)), or API reference for public types (XML docs / package READMEs).
 
 Commands shared across areas: [`AGENTS.md`](../../AGENTS.md).

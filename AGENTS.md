@@ -8,8 +8,9 @@
 - `src/npm/` — npm workspaces with publishable packages (`@query-grid/*`).
 - `samples/` — showcase apps that stress-test data types and grid scenarios (integration verification; not shipped).
 - `docs/` — guides and technical docs (`docs/README.md` for the full index).
-- `docs/guides/README.md`, `docs/technical/README.md` — entry points per area.
 - Root `package.json` — orchestration scripts for dotnet and npm from the repository root.
+
+Package ownership and file locations: [docs/guides/repo-map.md](docs/guides/repo-map.md).
 
 ## Start here by task
 
@@ -45,22 +46,6 @@ From the repository root, run `npm install` once after clone or when workspace d
 
 - Build single package: `npm run build -w @query-grid/core` or `npm run build -w @query-grid/primeng`
 - Test single package: `npm run test -w @query-grid/core` or `npm run test -w @query-grid/primeng`
-
-## Repo navigation rules
-
-### .NET packages
-
-- `QueryGrid.Abstractions` — transport contracts (`GridQuery`, `GridResult`, filter/sort types, attributes). Zero dependencies; stability anchor.
-- `QueryGrid.Core` — engine: schema discovery, expression builders, `IQueryable` extensions. Depends on Abstractions only.
-- `QueryGrid.EntityFrameworkCore` — `ToGridResultAsync` for EF Core.
-- Unit tests live in `src/dotnet/tests/QueryGrid.UnitTests/` and mirror package boundaries.
-
-### npm packages
-
-- `@query-grid/core` — TypeScript models and helpers (`formatGridError`, `formatLocalDateTime`); no HTTP/JSON transport layer.
-- `@query-grid/primeng` — `createGridResource()` signal store + `<qg-prime-data-grid>` PrimeNG table.
-
-Package source lives under `src/npm/packages/<name>/src/`. Public API is exported from `public-api.ts` (Angular/PrimeNG) or `index.ts` (core).
 
 ## Change coupling checklist
 

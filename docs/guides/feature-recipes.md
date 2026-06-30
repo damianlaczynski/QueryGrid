@@ -13,6 +13,8 @@
 
 ## Change grid JSON shape
 
+See [Change coupling checklist](../../AGENTS.md#change-coupling-checklist). Steps:
+
 1. Update types in `QueryGrid.Abstractions` and `FilterNodeJsonConverter` if needed.
 2. Update `GridQueryContractTests` in `QueryGrid.UnitTests`.
 3. Mirror types in `@query-grid/core`.
