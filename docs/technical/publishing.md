@@ -66,11 +66,17 @@ Publish **core before EF** is not required — packages are independent. Typical
 
 **Prerequisites:** [npmjs.com](https://www.npmjs.com/) account, `npm login`, and access to the `@query-grid` scope (first publish sets it public via `publishConfig.access`).
 
-Publish **core first**, then primeng (primeng peer-depends on core):
+Publish **core first**, then primeng (primeng peer-depends on core). Prerelease versions require an explicit dist-tag:
 
 ```powershell
-npm publish -w @query-grid/core --access public
-npm publish src/npm/packages/primeng/dist --access public
+npm publish -w @query-grid/core --access public --tag preview
+npm publish src/npm/packages/primeng/dist --access public --tag preview
+```
+
+Consumers install with `@preview` until you ship a stable release:
+
+```powershell
+npm install @query-grid/core@preview @query-grid/primeng@preview
 ```
 
 `@query-grid/primeng` is published from `dist/` after `ng-packagr` build — do not publish from the package source folder.
@@ -91,6 +97,7 @@ npm publish src/npm/packages/primeng/dist --access public
    ```powershell
    dotnet add package QueryGrid.EntityFrameworkCore --version 0.1.0-preview.1
    npm install @query-grid/core@0.1.0-preview.1 @query-grid/primeng@0.1.0-preview.1
+   # or: npm install @query-grid/core@preview @query-grid/primeng@preview
    ```
 
 ## Consumer install
