@@ -2,6 +2,17 @@
 
 All notable changes to this project are documented here.
 
+## 0.1.0-preview.4 — 2026-07-19
+
+### Added
+
+- **QueryGrid.IntegrationTests** — PostgreSQL + Testcontainers coverage for `GridQuery.Search` on projected EF queries with correlated subqueries
+- **QueryGrid.Core** — `ApplyEntitySearch` and `GridQuery.WithoutSearch()` for entity-level search before projection
+
+### Fixed
+
+- **QueryGrid.Core / QueryGrid.EntityFrameworkCore** — `GridQuery.Search` on projected `IQueryable` DTOs no longer fails on PostgreSQL when searchable fields include `Guid` (equality instead of `ToString().Contains()`; non-Guid text skips Guid fields)
+
 ## 0.1.0-preview.3 — 2026-07-18
 
 ### Added
