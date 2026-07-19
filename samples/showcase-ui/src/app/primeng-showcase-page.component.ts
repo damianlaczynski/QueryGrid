@@ -11,7 +11,7 @@ import { Message } from 'primeng/message';
 import { Tag } from 'primeng/tag';
 import { ShowcaseRow } from './models/showcase-row.model';
 import { ShowcaseApiService } from './services/showcase-api.service';
-import { createShowcaseGrid } from './showcase-grid.factory';
+import { createPrimengShowcaseGrid } from './showcase-grid.factory';
 import { getShowcaseCategoryLabel, showcaseCategories } from './utils/showcase.utils';
 
 @Component({
@@ -35,7 +35,7 @@ export class PrimengShowcasePageComponent {
   readonly showcaseCategories = showcaseCategories;
   readonly getShowcaseCategoryLabel = getShowcaseCategoryLabel;
 
-  readonly grid = createShowcaseGrid(this.injector, this.api, 'querygrid.showcase-primeng');
+  readonly grid = createPrimengShowcaseGrid(this.injector, this.api);
 
   /** Type anchor for `qgColumn` cell templates (`[qgColumnOf]="rowType"`). */
   protected readonly rowType!: ShowcaseRow;

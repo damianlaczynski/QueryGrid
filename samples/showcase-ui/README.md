@@ -1,14 +1,19 @@
 # QueryGrid Showcase UI
 
-Angular sample that exercises `@query-grid/primeng` against `showcase-api`.
+Angular sample that exercises `@query-grid/primeng` and `@query-grid/ui` against `showcase-api`.
 
-See [../README.md](../README.md) for setup. From the repository root:
+From the repository root:
 
 ```powershell
 npm install
-npm run build:npm
-npm run start:showcase-api    # terminal 1 — http://localhost:5180
-npm run start:showcase-ui     # terminal 2 — http://localhost:4200
+npm run start:all
 ```
 
-For library development with live rebuild, use `npm run dev:showcase-ui` from the repository root instead.
+Or separately:
+
+```powershell
+npm run start:backend    # http://localhost:5180
+npm run start:frontend   # rebuilds @query-grid/*, then http://localhost:4200
+```
+
+For library development with live rebuild: `npm run dev:frontend`.

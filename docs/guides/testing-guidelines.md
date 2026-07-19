@@ -44,11 +44,11 @@ Prefer the smallest relevant check. Command details: [`AGENTS.md`](../../AGENTS.
 
 | Change                                 | Run                                                                 |
 | -------------------------------------- | ------------------------------------------------------------------- |
-| `QueryGrid.Core` only                  | `npm run test:dotnet` (or `dotnet test` filtered if fast iteration) |
-| `QueryGrid.Abstractions` JSON contract | `dotnet test`                                                       |
-| `@query-grid/core`                     | `npm run test:npm` (or test core workspace only from `src/npm`)     |
-| `@query-grid/primeng`                  | `npm run test:npm` + `samples/showcase-ui` smoke                    |
-| Before PR                              | `npm run test`, `npm run build`, `npm run lint`                     |
+| `QueryGrid.Core` only                  | `npm run test:backend` (or `dotnet test` filtered if fast iteration) |
+| `QueryGrid.Abstractions` JSON contract | `dotnet test`                                                        |
+| `@query-grid/core`                     | `npm run test:npm` (or test core workspace only from `src/npm`)      |
+| `@query-grid/primeng`                  | `npm run test:npm` + `samples/showcase-ui` smoke                     |
+| Before PR                              | `npm run test:all`, `npm run build:all`, `npm run lint:frontend`     |
 
 CI runs the equivalent on every push — see [ci.md](../technical/ci.md). ESLint is local/PR checklist only (not in CI yet).
 

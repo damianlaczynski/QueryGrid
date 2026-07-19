@@ -9,7 +9,7 @@
 3. Implement expression in `FilterExpressionBuilder`.
 4. Add cases in `FilterTests` and `ValidationAndLimitsTests`.
 5. If the operator appears in column filters, add PrimeNG UI mapping in `filter-mapper.ts` / `match-mode-options.ts`.
-6. Run `npm run test`.
+6. Run `npm run test:all`.
 
 ## Change grid JSON shape
 
@@ -19,7 +19,7 @@ See [Change coupling checklist](../../AGENTS.md#change-coupling-checklist). Step
 2. Update `GridQueryContractTests` in `QueryGrid.UnitTests`.
 3. Mirror types in `@query-grid/core`.
 4. Update `GridQueryJson.CreateOptions()` / `samples/showcase-api/GridQueryBinding.cs` if serializer options change.
-5. Run `npm run test`.
+5. Run `npm run test:all`.
 
 ## Add a grid state field (e.g. new load option)
 
@@ -47,7 +47,7 @@ See [Change coupling checklist](../../AGENTS.md#change-coupling-checklist). Step
 
 ## Verify end-to-end in samples
 
-1. Build and pack locally: `npm run pack:dotnet`, `npm run build:npm`.
+1. Build and pack locally: `npm run pack:backend`, `npm run build:npm`.
 2. Reference packages from the sample (project reference or `file:` / local feed).
-3. Run sample API and UI; exercise sort, filter, paging, and search.
+3. Run `npm run start:all`; exercise sort, filter, paging, and search.
 4. See [samples/README.md](../../samples/README.md) for the showcase layout and scenario matrix.

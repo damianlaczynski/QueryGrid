@@ -1,0 +1,70 @@
+:host {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+}
+
+.qg-column-filter__panel {
+  min-width: 16rem;
+  max-width: min(20rem, 90vw);
+}
+
+.qg-column-filter__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.qg-column-filter__control {
+  display: block;
+  width: 100%;
+  min-width: 0;
+}
+
+.qg-column-filter__boolean {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.qg-column-filter__rule {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.qg-column-filter__rule-remove,
+.qg-column-filter__add-rule {
+  display: block;
+  width: 100%;
+}
+
+:host ::ng-deep .qg-column-filter__rule-remove .button,
+:host ::ng-deep .qg-column-filter__add-rule .button {
+  width: 100%;
+  justify-content: center;
+}
+
+.qg-column-filter__footer.popover-panel__footer {
+  justify-content: space-between;
+}
+
+.qg-column-filter__trigger {
+  flex-shrink: 0;
+  color: var(--color-neutral-foreground3-rest, #616161);
+  transition:
+    color 150ms ease,
+    background-color 150ms ease;
+}
+
+.qg-column-filter__trigger--active {
+  color: var(--color-brand-foreground, #1267b4);
+  background: var(--color-neutral-background-brand-selected, #cdd8ef);
+}
+
+:host ::ng-deep .qg-column-filter__trigger--active.button--selected ui-icon,
+:host ::ng-deep .qg-column-filter__trigger--active .button--selected ui-icon,
+:host ::ng-deep .qg-column-filter__trigger--active ui-icon {
+  color: var(--color-brand-primary, #1267b4) !important;
+}

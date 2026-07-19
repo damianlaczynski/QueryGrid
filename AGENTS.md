@@ -18,7 +18,7 @@ Package ownership and file locations: [docs/guides/repo-map.md](docs/guides/repo
 - npm package change: read `docs/guides/README.md`, then `repo-map.md` and `npm-guidelines.md`.
 - Test work or bugfix verification: read `docs/guides/testing-guidelines.md`.
 - Cross-stack transport or API contract: read `dotnet-guidelines.md`, `npm-guidelines.md`, and `testing-guidelines.md`.
-- End-to-end verification: read `samples/README.md`, run `npm run start:showcase-api` and `npm run dev:showcase-ui` (or `start:showcase-ui`).
+- End-to-end verification: read `samples/README.md`, run `npm run start:all` (or `dev:frontend` for package watch).
 - CI or publishing: read `docs/technical/README.md`, then `ci.md` or `publishing.md`.
 
 ## Commands
@@ -28,13 +28,14 @@ Package ownership and file locations: [docs/guides/repo-map.md](docs/guides/repo
 From the repository root, run `npm install` once after clone or when workspace dependencies change.
 
 - Install: `npm install`
-- Build: `npm run build` (or `build:dotnet` / `build:npm` separately)
-- Test: `npm run test` (or `test:dotnet` / `test:npm` separately)
-- Lint npm packages: `npm run lint`
-- Pack NuGet packages: `npm run pack:dotnet` (output: `artifacts/nuget/`)
-- Run showcase API: `npm run start:showcase-api` (http://localhost:5180)
-- Run showcase UI: `npm run start:showcase-ui` (http://localhost:4200) — run `npm run build:npm` first
-- Develop showcase UI with package watch: `npm run dev:showcase-ui`
+- Build: `npm run build:all` (or `build:backend` / `build:npm` / `build:frontend` separately)
+- Test: `npm run test:all` (or `test:backend` / `test:npm` separately)
+- Lint npm packages: `npm run lint:frontend`
+- Pack NuGet packages: `npm run pack:backend` (output: `artifacts/nuget/`)
+- Run showcase (build packages + API + UI): `npm run start:all`
+- Run showcase API only: `npm run start:backend` (http://localhost:5180)
+- Run showcase UI only: `npm run start:frontend` (rebuilds `@query-grid/*`, then http://localhost:4200)
+- Develop with package watch: `npm run dev:frontend`
 
 ### .NET (in `src/dotnet`)
 
@@ -44,8 +45,8 @@ From the repository root, run `npm install` once after clone or when workspace d
 
 ### npm packages (`src/npm/packages/`)
 
-- Build single package: `npm run build -w @query-grid/core` or `npm run build -w @query-grid/primeng`
-- Test single package: `npm run test -w @query-grid/core` or `npm run test -w @query-grid/primeng`
+- Build single package: `npm run build -w @query-grid/core` or `npm run build -w @query-grid/primeng` or `npm run build -w @query-grid/ui`
+- Test single package: `npm run test -w @query-grid/core` or `npm run test -w @query-grid/primeng` or `npm run test -w @query-grid/ui`
 
 ## Change coupling checklist
 

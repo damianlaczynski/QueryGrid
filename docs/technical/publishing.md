@@ -29,18 +29,18 @@ NuGet `RepositoryUrl` links packages to this repo on first GitHub Packages publi
 3. Verify locally:
 
    ```powershell
-   npm run test
-   npm run build
-   npm run lint
-   npm run pack:dotnet
+   npm run test:all
+   npm run build:all
+   npm run lint:frontend
+   npm run pack:backend
    npm run pack:npm
    ```
 
 4. Commit, tag, push — **NuGet publishes automatically**:
 
    ```powershell
-   git tag v0.1.0-preview.2
-   git push origin v0.1.0-preview.2
+   git tag v0.1.0-preview.3
+   git push origin v0.1.0-preview.3
    ```
 
 5. **npm — manual** (after tag push, same version):
@@ -50,6 +50,7 @@ NuGet `RepositoryUrl` links packages to this repo on first GitHub Packages publi
    npm run build:npm
    npm publish -w @query-grid/core --access public --tag preview
    npm publish src/npm/packages/primeng/dist --access public --tag preview
+   npm publish src/npm/packages/ui/dist --access public --tag preview
    ```
 
    Prerelease versions need `--tag preview` (or `alpha` / `beta`). Stable releases use `--tag latest` or omit `--tag`.
@@ -74,7 +75,7 @@ Copy [`nuget.config.example`](nuget.config.example). Replace `OWNER` with `damia
 
 ```powershell
 dotnet nuget add source --username YOUR_GITHUB_USERNAME --password YOUR_PAT --store-password-in-clear-text --name github "https://nuget.pkg.github.com/OWNER/index.json"
-dotnet add package QueryGrid.EntityFrameworkCore --version 0.1.0-preview.2
+dotnet add package QueryGrid.EntityFrameworkCore --version 0.1.0-preview.3
 ```
 
 In GitHub Actions on a consuming repo, use `GITHUB_TOKEN` with read access to the package.
@@ -84,8 +85,8 @@ In GitHub Actions on a consuming repo, use `GITHUB_TOKEN` with read access to th
 Public packages — no special `.npmrc` required:
 
 ```powershell
-npm install @query-grid/core@preview @query-grid/primeng@preview
-# or: npm install @query-grid/core@0.1.0-preview.2
+npm install @query-grid/core@preview @query-grid/primeng@preview @query-grid/ui@preview
+# or: npm install @query-grid/core@0.1.0-preview.3
 ```
 
 ### App integration

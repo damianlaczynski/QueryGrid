@@ -14,6 +14,9 @@ import { TableModule } from "primeng/table";
 import { buildEnumMatchModeOptions, buildNullableMatchModeOptions } from "../match-mode-options";
 import type { GridColumn } from "./grid-column";
 
+/** Aligned with `@query-grid/ui` multi-rule column filters. PrimeNG defaults to 2. */
+const MAX_COLUMN_FILTER_RULES = 5;
+
 @Component({
   selector: "qg-column-filter",
   standalone: true,
@@ -29,6 +32,8 @@ export class QgColumnFilterComponent<T = unknown> {
 
   readonly column = input.required<GridColumn<T>>();
   readonly filterLocale = input<string | undefined>(undefined);
+
+  protected readonly maxConstraints = MAX_COLUMN_FILTER_RULES;
 
   protected resolvedFilterLocale(): string {
     return this.filterLocale() ?? this.localeId;

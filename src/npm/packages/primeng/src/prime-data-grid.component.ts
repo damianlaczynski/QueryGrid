@@ -32,6 +32,7 @@ import {
   syncPrimeTableFieldFilters,
 } from "./lazy-load-mapper";
 import { GRID_TABLE_STYLES } from "./prime-data-grid.styles";
+import { mapSortToPrimeMeta, toggleSortField } from "./sort-mapper";
 import type { QgColumnContext } from "./table/column-context";
 import { QgColumnDirective } from "./table/column.directive";
 import { QgEmptyDirective } from "./table/empty.directive";
@@ -199,6 +200,7 @@ export class PrimeDataGridComponent<T = unknown> {
       multiSortMeta?: SortMeta[];
       field?: string;
       order?: number;
+      originalEvent?: MouseEvent;
     },
     table: Table,
   ): void {
@@ -207,28 +209,11 @@ export class PrimeDataGridComponent<T = unknown> {
       return;
     }
 
-    const current = [...(table.multiSortMeta ?? [])];
-    const existingIndex = current.findIndex((meta) => meta.field === clickedField);
-    let next: SortMeta[];
-
-    if (existingIndex >= 0) {
-      const existingOrder = current[existingIndex].order ?? 1;
-      if (existingOrder === 1) {
-        next = current.map((meta, index) =>
-          index === existingIndex ? { field: clickedField, order: -1 } : meta,
-        );
-      } else {
-        next = current.filter((_, index) => index !== existingIndex);
-      }
-    } else {
-      const max = DEFAULT_GRID_OPTIONS.maxSortDescriptors;
-      if (current.length >= max) {
-        return;
-      }
-      next = [...current, { field: clickedField, order: event.order ?? 1 }];
-    }
-
-    table.multiSortMeta = next;
+    const original = event.originalEvent;
+    const next = toggleSortField(this.grid().query().sort, clickedField, {
+      multi: !!(original?.ctrlKey || original?.metaKey),
+    });
+    table.multiSortMeta = mapSortToPrimeMeta(next);
   }
 
   protected onLazyLoad(event: TableLazyLoadEvent, table: Table): void {

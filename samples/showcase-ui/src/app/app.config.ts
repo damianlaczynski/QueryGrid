@@ -3,6 +3,7 @@ import { provideHttpClient } from '@angular/common/http';
 import localePl from '@angular/common/locales/pl';
 import { ApplicationConfig, LOCALE_ID, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter } from '@angular/router';
+import { provideUiI18n } from '@laczynski/ui';
 import Aura from '@primeuix/themes/aura';
 import { providePrimeNG } from 'primeng/config';
 import { routes } from './app.routes';
@@ -14,6 +15,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideHttpClient(),
     provideRouter(routes),
+    provideUiI18n(),
     { provide: LOCALE_ID, useValue: 'pl-PL' },
     providePrimeNG({
       ripple: true,

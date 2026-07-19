@@ -18,7 +18,7 @@
 | PR failed on GitHub               | [ci.md](ci.md)                                         |
 | First local build after clone     | [`AGENTS.md`](../../AGENTS.md)                         |
 | Publish preview or stable release | [publishing.md](publishing.md)                         |
-| Pack NuGet locally                | [`AGENTS.md`](../../AGENTS.md) → `npm run pack:dotnet` |
+| Pack NuGet locally                | [`AGENTS.md`](../../AGENTS.md) → `npm run pack:backend` |
 
 ## When to add or extend technical docs
 

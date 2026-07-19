@@ -6,6 +6,9 @@
         type="text"
         [field]="column.field"
         display="menu"
+        [showOperator]="true"
+        [showAddButton]="true"
+        [maxConstraints]="maxConstraints"
         [placeholder]="column.filter.placeholder"
         [matchModeOptions]="nullableMatchModeOptions(column)"
       />
@@ -15,6 +18,9 @@
         type="date"
         [field]="column.field"
         display="menu"
+        [showOperator]="true"
+        [showAddButton]="true"
+        [maxConstraints]="maxConstraints"
         [matchModeOptions]="nullableMatchModeOptions(column)"
       />
     }
@@ -23,6 +29,9 @@
         type="numeric"
         [field]="column.field"
         display="menu"
+        [showOperator]="true"
+        [showAddButton]="true"
+        [maxConstraints]="maxConstraints"
         [locale]="resolvedFilterLocale()"
         [minFractionDigits]="numberFilterFractionDigits(column).min"
         [maxFractionDigits]="numberFilterFractionDigits(column).max"
@@ -92,6 +101,9 @@
         matchMode="equals"
         display="menu"
         [showMatchModes]="false"
+        [showOperator]="true"
+        [showAddButton]="true"
+        [maxConstraints]="maxConstraints"
         [placeholder]="column.filter.placeholder"
       />
     }

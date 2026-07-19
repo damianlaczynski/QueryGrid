@@ -11,5 +11,39 @@
   margin: 0;
   padding: 1rem 0;
   text-align: center;
-  color: var(--p-text-muted-color);
+  color: var(--p-text-muted-color, #616161);
+}
+
+.showcase-panel--primeng {
+  display: block;
+  min-height: calc(100vh - 8rem);
+}
+
+.showcase-panel--primeng qg-prime-data-grid {
+  min-height: 32rem;
+}
+
+.showcase-panel--ui {
+  display: block;
+  min-height: calc(100vh - 8rem);
+}
+
+.showcase-panel--ui qg-ui-data-grid {
+  min-height: 32rem;
+}
+
+.showcase-panel__header {
+  padding: 1.25rem 1.25rem 0;
+}
+
+.showcase-panel__title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.showcase-panel__subtitle {
+  margin: 0.375rem 0 0;
+  color: var(--color-neutral-foreground3-rest, #616161);
+  font-size: 0.875rem;
 }

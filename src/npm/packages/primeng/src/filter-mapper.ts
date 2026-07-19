@@ -1,5 +1,11 @@
-import type { FilterCondition, FilterNode, FilterOperator, GridQuery } from "@query-grid/core";
-import { flattenFilterConditions } from "@query-grid/core";
+import type {
+  FilterCondition,
+  FilterLogic,
+  FilterNode,
+  FilterOperator,
+  GridQuery,
+} from "@query-grid/core";
+import { isFilterCondition, isFilterGroup } from "@query-grid/core";
 import type { FilterMetadata } from "primeng/api";
 import { FilterOperator as PrimeFilterOperator } from "primeng/api";
 import type { Table } from "primeng/table";
@@ -181,7 +187,7 @@ export function mapPrimeFiltersToGridFilter(
   columns: GridColumn[],
 ): FilterNode | null {
   const columnByField = new Map(columns.map((column) => [column.field, column]));
-  const conditions: FilterCondition[] = [];
+  const byField = new Map<string, { logic: FilterLogic; conditions: FilterCondition[] }>();
 
   for (const { field, meta } of readFilterEntries(filters)) {
     if (field === "global") {
@@ -208,10 +214,32 @@ export function mapPrimeFiltersToGridFilter(
       condition.value = meta.value;
     }
 
-    conditions.push(condition);
+    const logic: FilterLogic =
+      meta.operator === PrimeFilterOperator.OR || meta.operator === "or" ? "or" : "and";
+    const entry = byField.get(field) ?? { logic, conditions: [] };
+    entry.logic = logic;
+    entry.conditions.push(condition);
+    byField.set(field, entry);
   }
 
-  return conditions.length ? { logic: "and", conditions } : null;
+  const nodes: FilterNode[] = [];
+  for (const [, entry] of byField) {
+    if (entry.conditions.length === 1) {
+      nodes.push(entry.conditions[0]);
+    } else {
+      nodes.push({ logic: entry.logic, conditions: entry.conditions });
+    }
+  }
+
+  if (nodes.length === 0) {
+    return null;
+  }
+
+  if (nodes.length === 1) {
+    return nodes[0];
+  }
+
+  return { logic: "and", conditions: nodes };
 }
 
 function mapOperatorToMatchMode(operator: FilterOperator, columnType?: string): string {
@@ -286,18 +314,72 @@ export function buildPrimeTableFilters(
   const columnByField = new Map(columns.map((column) => [column.field, column]));
   const result: Record<string, FilterMetadata[]> = {};
 
-  for (const condition of flattenFilterConditions(filter)) {
-    const column = columnByField.get(condition.field);
-    const metadata: FilterMetadata = {
+  for (const [field, entry] of collectFieldFilters(filter)) {
+    const column = columnByField.get(field);
+    const primeOperator =
+      entry.logic === "or" ? PrimeFilterOperator.OR : PrimeFilterOperator.AND;
+
+    result[field] = entry.conditions.map((condition) => ({
       value:
         condition.operator === "isNull" || condition.operator === "isNotNull"
           ? null
           : reviveFilterValue(condition.value, column?.filter?.type),
       matchMode: mapOperatorToMatchMode(condition.operator, column?.filter?.type),
-      operator: PrimeFilterOperator.AND,
-    };
+      operator: primeOperator,
+    }));
+  }
 
-    (result[condition.field] ??= []).push(metadata);
+  return result;
+}
+
+function collectFieldFilters(
+  filter: FilterNode | null | undefined,
+): Map<string, { logic: FilterLogic; conditions: FilterCondition[] }> {
+  const result = new Map<string, { logic: FilterLogic; conditions: FilterCondition[] }>();
+  if (!filter) {
+    return result;
+  }
+
+  if (isFilterCondition(filter)) {
+    result.set(filter.field, { logic: "and", conditions: [filter] });
+    return result;
+  }
+
+  if (!isFilterGroup(filter)) {
+    return result;
+  }
+
+  for (const child of filter.conditions) {
+    if (isFilterCondition(child)) {
+      const existing = result.get(child.field);
+      if (existing) {
+        existing.conditions.push(child);
+      } else {
+        result.set(child.field, { logic: filter.logic, conditions: [child] });
+      }
+      continue;
+    }
+
+    if (!isFilterGroup(child)) {
+      continue;
+    }
+
+    const childConditions = child.conditions.filter(isFilterCondition);
+    if (
+      childConditions.length > 0 &&
+      childConditions.length === child.conditions.length &&
+      childConditions.every((condition) => condition.field === childConditions[0].field)
+    ) {
+      result.set(childConditions[0].field, {
+        logic: child.logic,
+        conditions: childConditions,
+      });
+      continue;
+    }
+
+    for (const [field, value] of collectFieldFilters(child)) {
+      result.set(field, value);
+    }
   }
 
   return result;
