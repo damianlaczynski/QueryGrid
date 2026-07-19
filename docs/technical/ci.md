@@ -11,18 +11,16 @@ Concurrent runs for the same branch are cancelled when a newer commit is pushed.
 
 ## Jobs
 
-| Job           | What it runs                                        | Working directory |
-| ------------- | --------------------------------------------------- | ----------------- |
-| **dotnet**    | `dotnet restore` → `dotnet test` → `dotnet pack`    | Repository root   |
-| **npm**       | `npm ci` → `npm run build:npm` → `npm run test:npm` | Repository root   |
-| **artifacts** | Pack dotnet + build npm, upload combined artifact   | Repository root   |
+| Job        | What it runs                                        | Working directory |
+| ---------- | --------------------------------------------------- | ----------------- |
+| **dotnet** | `dotnet restore` → `dotnet test`                    | Repository root   |
+| **npm**    | `npm ci` → `npm run build:npm` → `npm run test:npm` | Repository root   |
 
 ### dotnet
 
 - .NET **10**
 - Solution: `src/dotnet/QueryGrid.slnx`
 - Release configuration
-- Pack output: `artifacts/nuget/*.nupkg`
 
 ### npm
 
@@ -33,7 +31,7 @@ Concurrent runs for the same branch are cancelled when a newer commit is pushed.
 
 ## Reproduce locally
 
-Full command list: [`AGENTS.md`](../../AGENTS.md). CI runs the equivalent of `npm run test:all`, `npm run build:all`, and `npm run pack:backend` on every push.
+Full command list: [`AGENTS.md`](../../AGENTS.md). CI runs the equivalent of `npm run test:all` on every push. Packing and publishing happen only on tag push — see [publishing.md](publishing.md).
 
 CI-specific differences:
 
@@ -52,13 +50,6 @@ CI-specific differences:
 
 ## Publish workflow
 
-Separate from CI — runs on **tag push** `v*` (e.g. `v0.1.0-preview.3`).
-
-| Step       | Action                                                       |
-| ---------- | ------------------------------------------------------------ |
-| Trigger    | `git push origin v0.1.0-preview.3`                           |
-| Auth       | `GITHUB_TOKEN` with `packages: write`                        |
-| NuGet feed | `https://nuget.pkg.github.com/<repository_owner>/`           |
-| npm        | **Manual** on npmjs.com — see [publishing.md](publishing.md) |
+Separate from CI — runs on **tag push** `v*`. Tests, packs, and publishes NuGet (nuget.org + GitHub Packages), npm (npmjs.com + GitHub Packages), and creates a GitHub Release.
 
 Details: [publishing.md](publishing.md).

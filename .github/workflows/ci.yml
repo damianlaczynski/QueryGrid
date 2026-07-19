@@ -22,8 +22,6 @@ jobs:
         run: dotnet restore src/dotnet/QueryGrid.slnx
       - name: Test
         run: dotnet test src/dotnet/QueryGrid.slnx -c Release --no-restore
-      - name: Pack
-        run: dotnet pack src/dotnet/QueryGrid.slnx -c Release --no-restore -o artifacts/nuget
 
   npm:
     runs-on: ubuntu-latest
@@ -40,24 +38,3 @@ jobs:
         run: npm run build:npm
       - name: Test
         run: npm run test:npm
-
-  artifacts:
-    needs: [dotnet, npm]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: "10.0.x"
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "24"
-      - run: dotnet pack src/dotnet/QueryGrid.slnx -c Release -o artifacts/nuget
-      - run: npm ci && npm run build:npm
-      - uses: actions/upload-artifact@v4
-        with:
-          name: packages
-          path: |
-            artifacts/nuget/*.nupkg
-            src/npm/packages/core/dist
-            src/npm/packages/primeng/dist

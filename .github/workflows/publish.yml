@@ -87,7 +87,7 @@ jobs:
 
       - name: Publish npm to npmjs.com
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
           if [[ "$VERSION" == *-* ]]; then
@@ -95,6 +95,9 @@ jobs:
           else
             NPM_TAG=latest
           fi
+          cat > .npmrc <<EOF
+          //registry.npmjs.org/:_authToken=${NPM_TOKEN}
+          EOF
           npm publish "artifacts/npm/query-grid-core-${VERSION}.tgz" --access public --tag "$NPM_TAG"
           npm publish "artifacts/npm/query-grid-primeng-${VERSION}.tgz" --access public --tag "$NPM_TAG"
           npm publish "artifacts/npm/query-grid-ui-${VERSION}.tgz" --access public --tag "$NPM_TAG"

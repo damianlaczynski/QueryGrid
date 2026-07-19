@@ -56,7 +56,7 @@ NuGet `RepositoryUrl` links packages to this repo on first GitHub Packages publi
    | Secret | Value |
    | ------ | ----- |
    | `NUGET_USER` | nuget.org profile name (not email) |
-   | `NPM_TOKEN` | npm automation token with publish access to `@query-grid/*` |
+   | `NPM_TOKEN` | npm **Granular Access Token** or **Automation** token with **Publish** on `@query-grid/*` (classic tokens that bypass 2FA are being restricted) |
 
 6. **One-time nuget.org trusted publishing** — see below.
 
