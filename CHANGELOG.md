@@ -7,7 +7,7 @@ All notable changes to this project are documented here.
 ### Added
 
 - **QueryGrid.Abstractions** — `[GridEnumOrder]`, `[GridSortKey]`, `[GridSortWith]` attributes for custom enum sort order, display-field-to-rank sort, and date+time companion sort
-- **QueryGrid.Core** — schema discovery and expression building for the new sort attributes; nullable string/enum normalization (trim, whitespace-only → `null`)
+- **QueryGrid.Core** — schema discovery and expression building for the new sort attributes; nullable string/enum normalization (trim, whitespace-only → `null`); Guid global search supports full equality and case-insensitive substring match on canonical `Guid.ToString()` when the search text looks like a Guid fragment
 - **@query-grid/core** — `getAllowedOperatorsForColumnType`, `coerceOperatorForColumnType`, `defaultOperatorForColumnType` (defensive operator coercion aligned with backend rules)
 - **@query-grid/primeng / @query-grid/ui** — nullable enum match modes (`is` / `isNot`); operator coercion when PrimeNG or persisted state sends an invalid match mode for the column type
 - **QueryGrid.IntegrationTests** — shared `GridBehaviorScenarios` run against SQLite (in-memory), PostgreSQL, and SQL Server (Testcontainers); UX-focused unit tests for odd but realistic `GridQuery` payloads

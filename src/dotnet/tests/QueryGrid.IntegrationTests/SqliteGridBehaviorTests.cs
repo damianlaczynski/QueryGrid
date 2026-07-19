@@ -99,4 +99,11 @@ public sealed class SqliteGridBehaviorTests
     await using var host = await SqliteTestHost.CreateSeededAsync(TestContext.Current.CancellationToken);
     await GridBehaviorScenarios.Filter_and_search_combine_with_and(host.Context, TestContext.Current.CancellationToken);
   }
+
+  [Fact]
+  public async Task Guid_search_matches_by_fragment()
+  {
+    await using var host = await SqliteTestHost.CreateSeededAsync(TestContext.Current.CancellationToken);
+    await GridBehaviorScenarios.Guid_search_matches_by_fragment(host.Context, TestContext.Current.CancellationToken);
+  }
 }

@@ -264,6 +264,25 @@ public static class GridBehaviorScenarios
     Assert.Equal("Broken login", result.Items[0].Title);
   }
 
+  public static async Task Guid_search_matches_by_fragment(SearchTestDbContext context, CancellationToken ct)
+  {
+    var projected = context.Issues.AsNoTracking()
+      .Select(i => new IssueListItemDto
+      {
+        Id = i.Id,
+        Title = i.Title,
+        Description = i.Description,
+        CreatedByName = null,
+      });
+
+    var result = await projected.ToGridResultAsync(
+      new GridQuery { Take = 10, Search = "dddd-1111" },
+      cancellationToken: ct);
+
+    Assert.Single(result.Items);
+    Assert.Equal(SearchTestData.IssueId1, result.Items[0].Id);
+  }
+
   private static IQueryable<AppointmentListRow> ProjectAppointments(SearchTestDbContext context)
     => context.Appointments.AsNoTracking()
       .Select(a => new AppointmentListRow

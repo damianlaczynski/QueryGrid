@@ -100,4 +100,11 @@ public sealed class SqlServerGridBehaviorTests(SqlServerFixture fixture) : SqlSe
     await using var context = await CreateSeededContextAsync();
     await GridBehaviorScenarios.Filter_and_search_combine_with_and(context, TestContext.Current.CancellationToken);
   }
+
+  [Fact]
+  public async Task Guid_search_matches_by_fragment()
+  {
+    await using var context = await CreateSeededContextAsync();
+    await GridBehaviorScenarios.Guid_search_matches_by_fragment(context, TestContext.Current.CancellationToken);
+  }
 }

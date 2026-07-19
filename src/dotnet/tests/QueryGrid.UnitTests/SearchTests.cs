@@ -32,9 +32,16 @@ public class SearchTests
   }
 
   [Fact]
-  public void Search_skips_guid_fields_for_non_guid_text()
+  public void Search_matches_guid_fields_by_fragment()
   {
-    Assert.Empty(Search("33333333"));
+    Assert.Equal([3], Search("33333333"));
+    Assert.Equal([3], Search("bbbb-cccc"));
+  }
+
+  [Fact]
+  public void Search_skips_guid_fields_for_plain_text()
+  {
+    Assert.Empty(Search("login"));
   }
 
   [Fact]

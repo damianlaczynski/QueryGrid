@@ -31,7 +31,7 @@ For build, test, and pack commands, see [`AGENTS.md`](../../AGENTS.md).
 - Reject invalid operator/type combinations with `GridValidationException` — never silently ignore.
 - String filtering uses case-insensitive matching consistent with existing `FilterExpressionBuilder` behavior.
 - `GridQuery.Search` uses `ToLower().Contains()` for text — provider-agnostic, translated by all relational providers and InMemory.
-- Guid search uses equality when the search text parses as a `Guid`; non-Guid text does not search Guid fields.
+- Guid search uses full equality when the text parses as a `Guid`; otherwise a case-insensitive substring match on `Guid.ToString()` when the text looks like a Guid fragment (hex, dashes, braces). Plain non-hex text does not search Guid fields.
 - For projections that cannot translate search to SQL, use `ApplyEntitySearch` on the entity query and `GridQuery.WithoutSearch()` on `ToGridResultAsync` (see [getting-started.md](../getting-started.md)).
 
 ## Public API conventions
