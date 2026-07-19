@@ -40,4 +40,4 @@ Run, configure, CI, and publishing. Start with [technical/README.md](technical/R
 | ---------------------------------------- | ------------------------------------------------- |
 | [README.md](technical/README.md)         | Entry point — when to read each technical doc     |
 | [ci.md](technical/ci.md)                 | GitHub Actions workflow and local reproduction    |
-| [publishing.md](technical/publishing.md) | NuGet (GitHub Packages) + npm (npmjs.com, manual) |
+| [publishing.md](technical/publishing.md) | Tag-based release (NuGet + npm via CI) |

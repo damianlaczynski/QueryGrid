@@ -4,15 +4,16 @@
 
 ## Registries
 
-| Package                         | Registry                           | How to publish                                                     |
-| ------------------------------- | ---------------------------------- | ------------------------------------------------------------------ |
-| `QueryGrid.Abstractions`        | [nuget.org](https://www.nuget.org) | Tag `v*` → [publish workflow](../../.github/workflows/publish.yml) (trusted publishing) |
-| `QueryGrid.Core`                | [nuget.org](https://www.nuget.org) | same                                                               |
-| `QueryGrid.EntityFrameworkCore` | [nuget.org](https://www.nuget.org) | same                                                               |
-| `QueryGrid.*` (mirror)          | GitHub Packages                    | same workflow (secondary feed)                                     |
-| `@query-grid/core`              | [npmjs.com](https://www.npmjs.com) | Tag `v*` → [publish workflow](../../.github/workflows/publish.yml) |
-| `@query-grid/primeng`           | [npmjs.com](https://www.npmjs.com) | same                                                               |
-| `@query-grid/ui`                | [npmjs.com](https://www.npmjs.com) | same                                                               |
+| Package                         | Primary registry                   | Secondary (NuGet only) |
+| ------------------------------- | ---------------------------------- | ---------------------- |
+| `QueryGrid.Abstractions`        | [nuget.org](https://www.nuget.org) | GitHub Packages        |
+| `QueryGrid.Core`                | [nuget.org](https://www.nuget.org) | GitHub Packages        |
+| `QueryGrid.EntityFrameworkCore` | [nuget.org](https://www.nuget.org) | GitHub Packages        |
+| `@query-grid/core`              | [npmjs.com](https://www.npmjs.com) | —                      |
+| `@query-grid/primeng`           | [npmjs.com](https://www.npmjs.com) | —                      |
+| `@query-grid/ui`                | [npmjs.com](https://www.npmjs.com) | —                      |
+
+All packages publish on tag push `v*` via [publish.yml](../../.github/workflows/publish.yml) (trusted publishing / OIDC).
 
 NuGet `RepositoryUrl` links packages to this repo on first GitHub Packages publish.
 
@@ -22,7 +23,7 @@ NuGet `RepositoryUrl` links packages to this repo on first GitHub Packages publi
 | --------------- | -------------------------------------------------------------- |
 | NuGet (shared)  | `src/dotnet/Directory.Build.props` → `<Version>`               |
 | npm per package | `src/npm/packages/*/package.json` → `"version"`                |
-| primeng peer    | `peerDependencies["@query-grid/core"]` must match core version |
+| primeng / ui    | `peerDependencies["@query-grid/core"]` must match core version |
 
 ## Release checklist
 
@@ -38,70 +39,76 @@ NuGet `RepositoryUrl` links packages to this repo on first GitHub Packages publi
    npm run pack:npm
    ```
 
-4. Tag and push — **CI publishes everything**:
+4. Tag and push:
 
    ```powershell
-   git tag v0.1.0-preview.7
-   git push origin v0.1.0-preview.7
+   git tag v0.1.0-preview.8
+   git push origin v0.1.0-preview.8
    ```
 
-   On tag push, [publish.yml](../../.github/workflows/publish.yml) runs tests, then publishes:
-   - NuGet → nuget.org + GitHub Packages
-   - npm → npmjs.com
-   - GitHub Release with notes from `CHANGELOG.md`
+   [publish.yml](../../.github/workflows/publish.yml) runs tests, then publishes NuGet (nuget.org + GitHub Packages), npm (npmjs.com), and creates a GitHub Release from `CHANGELOG.md`.
 
-5. **One-time GitHub secret** (Settings → Secrets and variables → Actions):
+## One-time setup
 
-   | Secret | Value |
-   | ------ | ----- |
-   | `NUGET_USER` | nuget.org profile name (not email) |
+### GitHub secret
 
-6. **One-time npm trusted publishing** — for each package (`@query-grid/core`, `@query-grid/primeng`, `@query-grid/ui`):
+Settings → Secrets and variables → Actions:
 
-   npmjs.com → package → **Settings** → **Trusted Publisher** → **GitHub Actions**:
+| Secret       | Value                              |
+| ------------ | ---------------------------------- |
+| `NUGET_USER` | nuget.org profile name (not email) |
 
-   | Field | Value |
-   | ----- | ----- |
-   | Organization or user | `damianlaczynski` |
-   | Repository | `QueryGrid` |
-   | Workflow filename | `publish.yml` |
-   | Environment | *(leave empty)* |
+### nuget.org trusted publishing
 
-   No `NPM_TOKEN` secret is required — CI uses OIDC (npm CLI ≥ 11.5.1).
-
-7. **One-time nuget.org trusted publishing** — see below.
-
-### Publish workflow (tag `v*`)
-
-[`.github/workflows/publish.yml`](../../.github/workflows/publish.yml) on tag push:
-
-- Tests + lint
-- Pack NuGet + npm
-- Publish NuGet to **nuget.org** via [trusted publishing](https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing) (OIDC)
-- Mirror NuGet to GitHub Packages
-- Publish npm to npmjs.com via [trusted publishing](https://docs.npmjs.com/trusted-publishers/) (OIDC)
-- Create GitHub Release from `CHANGELOG.md`
-
-npm packages use the `@query-grid` scope on npmjs.com. GitHub Packages npm requires the scope to match the GitHub owner (e.g. `@damianlaczynski/...`), so npm is not mirrored to GitHub Packages. NuGet packages are still mirrored.
-
-**One-time nuget.org trusted publishing:**
-
-1. Log in at [nuget.org](https://www.nuget.org) → your profile → **Trusted Publishing** → **Add**.
+1. [nuget.org](https://www.nuget.org) → profile → **Trusted Publishing** → **Add**.
 2. Policy fields:
 
-   | Field             | Value              |
-   | ----------------- | ------------------ |
-   | Package Owner     | your nuget.org account |
-   | Repository Owner  | `damianlaczynski`  |
-   | Repository        | `QueryGrid`        |
-   | Workflow File     | `publish.yml`      |
-   | Environment       | *(leave empty)*    |
+   | Field            | Value              |
+   | ---------------- | ------------------ |
+   | Package Owner    | your nuget.org account |
+   | Repository Owner | `damianlaczynski`  |
+   | Repository       | `QueryGrid`        |
+   | Workflow File    | `publish.yml`      |
+   | Environment      | *(leave empty)*    |
 
-3. GitHub repo → **Settings → Secrets and variables → Actions** → add `NUGET_USER` (see step 5 above).
+### npm trusted publishing
 
-**GitHub settings:** Actions enabled; workflow permissions allow `packages: write` and OIDC (`id-token: write` is set in the workflow).
+For each package (`@query-grid/core`, `@query-grid/primeng`, `@query-grid/ui`):
+
+npmjs.com → package → **Settings** → **Trusted Publisher** → **GitHub Actions**:
+
+| Field                | Value             |
+| -------------------- | ----------------- |
+| Organization or user | `damianlaczynski` |
+| Repository           | `QueryGrid`       |
+| Workflow filename    | `publish.yml`     |
+| Environment          | *(leave empty)*   |
+
+No `NPM_TOKEN` secret — CI uses OIDC (npm CLI ≥ 11.5.1, upgraded in the workflow).
+
+### GitHub repository settings
+
+Actions enabled; workflow permissions allow `packages: write` and OIDC (`id-token: write` is set in the workflow).
+
+## Publish workflow (tag `v*`)
+
+[`.github/workflows/publish.yml`](../../.github/workflows/publish.yml):
+
+1. Test + lint
+2. Pack NuGet + npm
+3. Publish NuGet to **nuget.org** and **GitHub Packages** (OIDC + `GITHUB_TOKEN`)
+4. Publish npm to **npmjs.com** with `--provenance` (OIDC)
+5. Create GitHub Release from `CHANGELOG.md`
+
+Prerelease tags (`v*-*`) publish npm with dist-tag `preview`; stable tags use `latest`.
 
 ## Consumer setup
+
+### NuGet (nuget.org)
+
+```powershell
+dotnet add package QueryGrid.EntityFrameworkCore --version 0.1.0-preview.7
+```
 
 ### NuGet (GitHub Packages)
 
@@ -109,7 +116,7 @@ Copy [`nuget.config.example`](nuget.config.example). Replace `OWNER` with `damia
 
 ```powershell
 dotnet nuget add source --username YOUR_GITHUB_USERNAME --password YOUR_PAT --store-password-in-clear-text --name github "https://nuget.pkg.github.com/OWNER/index.json"
-dotnet add package QueryGrid.EntityFrameworkCore --version 0.1.0-preview.3
+dotnet add package QueryGrid.EntityFrameworkCore --version 0.1.0-preview.7
 ```
 
 In GitHub Actions on a consuming repo, use `GITHUB_TOKEN` with read access to the package.
@@ -120,7 +127,6 @@ Public packages — no special `.npmrc` required:
 
 ```powershell
 npm install @query-grid/core@preview @query-grid/primeng@preview @query-grid/ui@preview
-# or: npm install @query-grid/core@0.1.0-preview.7
 ```
 
 ### App integration
@@ -135,9 +141,3 @@ Trusted publishing works in CI only. For a local push without OIDC:
 $apiKey = "<nuget.org-api-key>"
 dotnet nuget push artifacts/nuget/QueryGrid.EntityFrameworkCore.*.nupkg --api-key $apiKey --source https://api.nuget.org/v3/index.json
 ```
-
-## Next releases
-
-1. Bump all version locations.
-2. `CHANGELOG.md` section.
-3. Push tag → CI publishes everything.

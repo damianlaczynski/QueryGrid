@@ -50,6 +50,6 @@ CI-specific differences:
 
 ## Publish workflow
 
-Separate from CI — runs on **tag push** `v*`. Tests, packs, and publishes NuGet (nuget.org + GitHub Packages), npm (npmjs.com + GitHub Packages), and creates a GitHub Release.
+Separate from CI — runs on **tag push** `v*`. Tests, packs, and publishes NuGet (nuget.org + GitHub Packages), npm (npmjs.com), and creates a GitHub Release.
 
 Details: [publishing.md](publishing.md).

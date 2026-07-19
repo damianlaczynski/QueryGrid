@@ -6,19 +6,7 @@ All notable changes to this project are documented here.
 
 ### Changed
 
-- CI: drop npm GitHub Packages mirror (`@query-grid` scope is incompatible with GitHub owner `damianlaczynski`)
-
-## 0.1.0-preview.6 — 2026-07-19
-
-### Fixed
-
-- CI: pass `--tag preview` when publishing prerelease npm packages to GitHub Packages
-
-## 0.1.0-preview.5 — 2026-07-19
-
-### Changed
-
-- CI: npm publish via trusted publishing (OIDC) with provenance
+- CI: tag `v*` triggers full publish — NuGet (nuget.org + GitHub Packages) and npm (npmjs.com) via trusted publishing (OIDC)
 
 ## 0.1.0-preview.4 — 2026-07-19
 
