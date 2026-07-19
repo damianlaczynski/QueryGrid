@@ -33,6 +33,24 @@ var grid = await db.Issues.AsNoTracking()
   .ToGridResultAsync(request.Grid, cancellationToken: ct);
 ```
 
+### Search on projected queries
+
+`GridQuery.Search` works on projected `IQueryable` DTOs, including typical EF Core projections with correlated subqueries (counts, lookups). Mark searchable fields with `[GridSearchable]` on the DTO.
+
+- **String fields** — case-insensitive contains (`ToLower().Contains()`, translated to `LOWER(...) LIKE` by every relational provider).
+- **Guid fields** — equality when the search text parses as a `Guid`; otherwise the field is skipped (no `ToString().Contains()` in SQL).
+
+For very heavy projections where provider translation still fails, apply search on the entity **before** `.Select()` and clear search from the grid query:
+
+```csharp
+var grid = request.Grid;
+var projected = db.Roles.AsNoTracking()
+  .ApplyEntitySearch(grid.Search, r => r.Name, r => r.Description)
+  .Select(r => new RoleListItemDto { /* … */ });
+
+return await projected.ToGridResultAsync(grid.WithoutSearch(), cancellationToken: ct);
+```
+
 ### JSON binding (your code)
 
 QueryGrid ships transport **types** and `FilterNodeJsonConverter` — not HTTP helpers. Use `GridQueryJson.CreateOptions()` from `QueryGrid.Abstractions.Serialization` (see `samples/showcase-api/GridQueryBinding.cs`):

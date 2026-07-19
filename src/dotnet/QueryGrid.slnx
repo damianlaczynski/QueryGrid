@@ -15,6 +15,7 @@
     <Project Path="QueryGrid.EntityFrameworkCore/QueryGrid.EntityFrameworkCore.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/QueryGrid.IntegrationTests/QueryGrid.IntegrationTests.csproj" />
     <Project Path="tests/QueryGrid.UnitTests/QueryGrid.UnitTests.csproj" />
   </Folder>
 </Solution>

@@ -17,6 +17,7 @@
 | Layer                                | Owns                                                                                                 | Does not own                                       |
 | ------------------------------------ | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
 | .NET unit (`QueryGrid.UnitTests`)    | Expression building, schema discovery, operator validation, JSON contract (`GridQueryContractTests`) | Browser, Angular, real HTTP servers                |
+| .NET integration (`QueryGrid.IntegrationTests`) | PostgreSQL + Testcontainers: search on projected EF queries | Browser, Angular, real HTTP servers                |
 | npm unit (`@query-grid/core` Vitest) | Model helpers, error codes, formatting                                                               | DOM, Angular change detection, JSON transport      |
 | npm unit (`@query-grid/primeng`)     | Lazy-load mapping, filter chips                                                                      | Full browser E2E                                   |
 | Samples                              | Full stack: API + grid UI + real lazy load                                                           | Exhaustive operator matrix (covered by unit tests) |
@@ -55,6 +56,7 @@ CI runs the equivalent on every push — see [ci.md](../technical/ci.md). ESLint
 ## Test file locations
 
 - .NET: `src/dotnet/tests/QueryGrid.UnitTests/*.cs`
+- .NET integration (PostgreSQL + Docker): `src/dotnet/tests/QueryGrid.IntegrationTests/*.cs`
 - npm core: `src/npm/packages/core/src/*.spec.ts`
 - npm primeng: `src/npm/packages/primeng/src/*.spec.ts`
 

@@ -26,9 +26,15 @@ public class SearchTests
   }
 
   [Fact]
-  public void Search_matches_guid_fields()
+  public void Search_matches_guid_fields_by_equality()
   {
-    Assert.Equal([3], Search("33333333"));
+    Assert.Equal([3], Search(TestData.Guid3.ToString()));
+  }
+
+  [Fact]
+  public void Search_skips_guid_fields_for_non_guid_text()
+  {
+    Assert.Empty(Search("33333333"));
   }
 
   [Fact]
@@ -56,8 +62,39 @@ public class SearchTests
   }
 
   [Fact]
-  public void Search_matches_nullable_guid_fields()
+  public void Search_matches_nullable_guid_fields_by_equality()
   {
-    Assert.Equal([3], Search("bbbb-cccc"));
+    Assert.Equal([3], Search("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"));
+  }
+
+  [Fact]
+  public void ApplyEntitySearch_filters_before_projection()
+  {
+    var ids = TestData.Query()
+      .ApplyEntitySearch("bob", p => p.Name, p => p.Email)
+      .OrderBy(p => p.Id)
+      .Select(p => p.Id)
+      .ToArray();
+
+    Assert.Equal([2], ids);
+  }
+
+  [Fact]
+  public void WithoutSearch_clears_search_only()
+  {
+    var query = new GridQuery
+    {
+      Skip = 5,
+      Take = 10,
+      Search = "bob",
+      Sort = [new SortDescriptor("Name", desc: true)],
+    };
+
+    var without = query.WithoutSearch();
+
+    Assert.Null(without.Search);
+    Assert.Equal(5, without.Skip);
+    Assert.Equal(10, without.Take);
+    Assert.Single(without.Sort);
   }
 }
