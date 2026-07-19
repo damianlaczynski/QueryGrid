@@ -12,6 +12,12 @@ All notable changes to this project are documented here.
 
 - Multi-sort UX aligned with PrimeNG `sortMode="multiple"`: plain header click replaces with a single column; Ctrl/Cmd + click adds or toggles within multi-sort (`@query-grid/ui`, `@query-grid/primeng`)
 - PrimeNG column filters support Match All / Match Any with up to five rules per column
+- String filters and global search use `string.ToLower()` instead of `ToLowerInvariant()` so EF Core can translate them to SQL `LOWER` (Npgsql, SQLite, SQL Server)
+
+### Fixed
+
+- **QueryGrid.Core / QueryGrid.EntityFrameworkCore** — `Contains` / `StartsWith` / `EndsWith` / `NotContains` and `[GridSearchable]` search no longer throw `Translation of method 'string.ToLowerInvariant' failed` under relational EF providers
+
 ## 0.1.0-preview.1 — 2026-07-01
 
 First public preview.
