@@ -1,3 +1,4 @@
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using QueryGrid.Abstractions;
 using QueryGrid.EntityFrameworkCore;
@@ -17,7 +18,7 @@ public class EntityFrameworkTests
     }
   }
 
-  private static TestDbContext NewContext()
+  private static TestDbContext NewInMemoryContext()
   {
     var options = new DbContextOptionsBuilder<TestDbContext>()
       .UseInMemoryDatabase(Guid.NewGuid().ToString())
@@ -29,10 +30,26 @@ public class EntityFrameworkTests
     return context;
   }
 
+  private static async Task<(TestDbContext Context, SqliteConnection Connection)> NewSqliteContextAsync()
+  {
+    var connection = new SqliteConnection("DataSource=:memory:");
+    await connection.OpenAsync(TestContext.Current.CancellationToken);
+
+    var options = new DbContextOptionsBuilder<TestDbContext>()
+      .UseSqlite(connection)
+      .Options;
+
+    var context = new TestDbContext(options);
+    await context.Database.EnsureCreatedAsync(TestContext.Current.CancellationToken);
+    context.People.AddRange(TestData.People());
+    await context.SaveChangesAsync(TestContext.Current.CancellationToken);
+    return (context, connection);
+  }
+
   [Fact]
   public async Task ToGridResultAsync_executes_filter_sort_and_paging()
   {
-    await using var context = NewContext();
+    await using var context = NewInMemoryContext();
 
     var query = new GridQuery
     {
@@ -51,12 +68,42 @@ public class EntityFrameworkTests
   [Fact]
   public async Task ToGridResultAsync_applies_default_page_size()
   {
-    await using var context = NewContext();
+    await using var context = NewInMemoryContext();
 
     var result = await context.People.ToGridResultAsync(
       new GridQuery(), cancellationToken: TestContext.Current.CancellationToken);
 
     Assert.Equal(4, result.TotalCount);
     Assert.Equal(4, result.Items.Count);
+  }
+
+  [Fact]
+  public async Task Sqlite_Contains_filter_is_case_insensitive_and_server_translated()
+  {
+    var (context, connection) = await NewSqliteContextAsync();
+    await using (context)
+    await using (connection)
+    {
+      var result = await context.People.ToGridResultAsync(
+        new GridQuery { Filter = Cond("Email", FilterOperator.Contains, "EXAMPLE.COM") },
+        cancellationToken: TestContext.Current.CancellationToken);
+
+      Assert.Equal([1, 4], result.Items.Select(p => p.Id).OrderBy(id => id).ToArray());
+    }
+  }
+
+  [Fact]
+  public async Task Sqlite_Search_is_case_insensitive_and_server_translated()
+  {
+    var (context, connection) = await NewSqliteContextAsync();
+    await using (context)
+    await using (connection)
+    {
+      var result = await context.People.ToGridResultAsync(
+        new GridQuery { Search = "BOB" },
+        cancellationToken: TestContext.Current.CancellationToken);
+
+      Assert.Equal([2], result.Items.Select(p => p.Id).ToArray());
+    }
   }
 }

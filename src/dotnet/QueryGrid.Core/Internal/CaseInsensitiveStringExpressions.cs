@@ -11,7 +11,7 @@ internal static class CaseInsensitiveStringExpressions
     MethodInfo stringMethod,
     Type memberType)
   {
-    var loweredMember = Expression.Call(member, StringExpressionMethods.ToLowerInvariant);
+    var loweredMember = Expression.Call(member, StringExpressionMethods.ToLower);
     var match = Expression.Call(loweredMember, stringMethod, loweredValue);
     var notNull = Expression.NotEqual(member, Expression.Constant(null, memberType));
     return Expression.AndAlso(notNull, match);
