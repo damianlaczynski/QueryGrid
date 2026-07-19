@@ -10,8 +10,9 @@
 | `QueryGrid.Core`                | [nuget.org](https://www.nuget.org) | same                                                               |
 | `QueryGrid.EntityFrameworkCore` | [nuget.org](https://www.nuget.org) | same                                                               |
 | `QueryGrid.*` (mirror)          | GitHub Packages                    | same workflow (secondary feed)                                     |
-| `@query-grid/core`              | [npmjs.com](https://www.npmjs.com) | **Manual** after tag (see below)                                   |
-| `@query-grid/primeng`           | [npmjs.com](https://www.npmjs.com) | **Manual** after tag (see below)                                   |
+| `@query-grid/core`              | [npmjs.com](https://www.npmjs.com) | Tag `v*` → [publish workflow](../../.github/workflows/publish.yml) |
+| `@query-grid/primeng`           | [npmjs.com](https://www.npmjs.com) | same                                                               |
+| `@query-grid/ui`                | [npmjs.com](https://www.npmjs.com) | same                                                               |
 
 NuGet `RepositoryUrl` links packages to this repo on first GitHub Packages publish.
 
@@ -37,68 +38,49 @@ NuGet `RepositoryUrl` links packages to this repo on first GitHub Packages publi
    npm run pack:npm
    ```
 
-4. Commit, tag, push — **NuGet publishes automatically** (or use the release script):
+4. Push a release tag — **CI publishes everything**:
 
    ```powershell
-   npm run release:dry-run   # preview steps
-   npm run release           # test → pack → tag → push → npm → GitHub Release
+   npm run release:dry-run   # preview
+   npm run release           # test → git tag + push → CI does the rest
    ```
 
-   Manual alternative:
+   Or manually:
 
    ```powershell
    git tag v0.1.0-preview.4
    git push origin v0.1.0-preview.4
    ```
 
-5. **npm** — included in `npm run release`, or manual after tag push:
+   On tag push, [publish.yml](../../.github/workflows/publish.yml) runs tests, then publishes:
+   - NuGet → nuget.org + GitHub Packages
+   - npm → npmjs.com (`preview` tag for prereleases, `latest` for stable)
+   - GitHub Release with notes from `CHANGELOG.md`
 
-   ```powershell
-   npm login
-   npm run build:npm
-   npm publish -w @query-grid/core --access public --tag preview
-   npm publish src/npm/packages/primeng/dist --access public --tag preview
-   npm publish src/npm/packages/ui/dist --access public --tag preview
-   ```
+5. **One-time GitHub secrets** (Settings → Secrets and variables → Actions):
 
-   Prerelease versions need `--tag preview` (or `alpha` / `beta`). Stable releases use `--tag latest` or omit `--tag`.
+   | Secret | Value |
+   | ------ | ----- |
+   | `NUGET_USER` | nuget.org profile name (not email) |
+   | `NPM_TOKEN` | npm automation token with publish access to `@query-grid/*` |
 
-6. Create a GitHub Release from the tag with the matching `CHANGELOG.md` section (included in `npm run release` when `RELEASE_CREATE_GITHUB_RELEASE=true`).
+6. **One-time nuget.org trusted publishing** — see below.
 
-### Release script (`.env`)
+### Publish workflow (tag `v*`)
 
-Copy [`.env.example`](../../.env.example) to `.env` and fill in tokens. Then:
+[`.github/workflows/publish.yml`](../../.github/workflows/publish.yml) on tag push:
 
-| Command | What it does |
-| ------- | ------------ |
-| `npm run release:dry-run` | Prints all steps without executing |
-| `npm run release` | `test:all` → pack → git tag + push → npm publish → `gh release create` |
+- Tests + lint
+- Pack NuGet + npm
+- Publish NuGet to **nuget.org** via [trusted publishing](https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing) (OIDC)
+- Mirror NuGet to GitHub Packages
+- Publish npm to npmjs.com
+- Create GitHub Release from `CHANGELOG.md`
 
-| `.env` variable | Required for |
-| --------------- | ------------ |
-| `NPM_TOKEN` | npm publish |
-| `GITHUB_TOKEN` | `gh release create` (optional if `gh auth login` is active) |
-| `NUGET_USER` | GitHub secret for CI NuGet trusted publishing (not used by the script directly) |
-| `RELEASE_DRY_RUN` | Default dry-run mode when `true` |
-| `RELEASE_CREATE_GITHUB_RELEASE` | Set `false` to skip GitHub Release |
-| `RELEASE_PRERELEASE` | `true` for `-preview` / prerelease versions |
-
-Flags: `--skip-tests`, `--skip-tag`, `--skip-npm`, `--skip-github-release`.
-
-**Prerequisites:** clean git working tree, `CHANGELOG.md` section for the current version, `gh` CLI installed, nuget.org trusted publishing policy + `NUGET_USER` secret configured for CI.
-
-### Publish workflow (NuGet)
-
-[`.github/workflows/publish.yml`](../../.github/workflows/publish.yml) on tag `v*`:
-
-- Tests + lint (including npm unit tests)
-- Packs and pushes NuGet to **nuget.org** via [trusted publishing](https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing) (OIDC — no long-lived API key in CI)
-- Mirrors the same packages to GitHub Packages
-
-**One-time nuget.org setup:**
+**One-time nuget.org trusted publishing:**
 
 1. Log in at [nuget.org](https://www.nuget.org) → your profile → **Trusted Publishing** → **Add**.
-2. Policy fields (match the repo):
+2. Policy fields:
 
    | Field             | Value              |
    | ----------------- | ------------------ |
@@ -108,11 +90,9 @@ Flags: `--skip-tests`, `--skip-tag`, `--skip-npm`, `--skip-github-release`.
    | Workflow File     | `publish.yml`      |
    | Environment       | *(leave empty)*    |
 
-3. GitHub repo → **Settings → Secrets and variables → Actions** → **New repository secret**:
-   - Name: `NUGET_USER`
-   - Value: your **nuget.org profile name** (not email) — same as `NUGET_USER` in `.env`
+3. GitHub repo → **Settings → Secrets and variables → Actions** → add `NUGET_USER` (see step 5 above).
 
-Copy [`.env.example`](../../.env.example) to `.env` for local release tokens (npm, optional local NuGet push). Never commit `.env`.
+Copy [`.env.example`](../../.env.example) to `.env` for local `npm run release` defaults. Never commit `.env`.
 
 **GitHub settings:** Actions enabled; workflow permissions allow `packages: write` and OIDC (`id-token: write` is set in the workflow).
 
@@ -155,4 +135,4 @@ dotnet nuget push artifacts/nuget/QueryGrid.EntityFrameworkCore.*.nupkg --api-ke
 
 1. Bump all version locations.
 2. `CHANGELOG.md` section.
-3. Tag → verify NuGet on GitHub **Packages** → publish npm manually → GitHub Release.
+3. `npm run release` (or push tag manually) → CI publishes everything.
