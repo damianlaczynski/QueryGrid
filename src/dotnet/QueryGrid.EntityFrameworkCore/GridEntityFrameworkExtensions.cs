@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using QueryGrid.Abstractions;
 using QueryGrid.Core;
 using QueryGrid.Core.Internal;
+using QueryGrid.EntityFrameworkCore.Internal;
 
 namespace QueryGrid.EntityFrameworkCore;
 
@@ -23,7 +24,7 @@ public static class GridEntityFrameworkExtensions
   {
     ArgumentNullException.ThrowIfNull(source);
     ArgumentNullException.ThrowIfNull(query);
-    options ??= GridOptions.Default;
+    options = EfGridOptions.WithProviderSearch(source, options);
 
     var plan = GridResultExecutor.Plan(source, query, options);
     var totalCount = await plan.FilteredQuery.CountAsync(cancellationToken).ConfigureAwait(false);

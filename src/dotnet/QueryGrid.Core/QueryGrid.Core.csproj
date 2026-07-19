@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="QueryGrid.EntityFrameworkCore" />
+    <InternalsVisibleTo Include="QueryGrid.IntegrationTests" />
   </ItemGroup>
 
 </Project>
