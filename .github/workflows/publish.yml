@@ -19,19 +19,10 @@ jobs:
       - name: Validate secrets
         env:
           NUGET_USER: ${{ secrets.NUGET_USER }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          missing=0
           if [ -z "$NUGET_USER" ]; then
             echo "::error::Missing repository secret NUGET_USER (nuget.org profile name, not email)."
-            missing=1
-          fi
-          if [ -z "$NPM_TOKEN" ]; then
-            echo "::error::Missing repository secret NPM_TOKEN (npm automation token with publish access)."
-            missing=1
-          fi
-          if [ "$missing" -ne 0 ]; then
-            echo "Add secrets under Settings → Secrets and variables → Actions."
+            echo "Add it under Settings → Secrets and variables → Actions."
             exit 1
           fi
 
@@ -44,6 +35,7 @@ jobs:
           node-version: "24"
           cache: npm
           cache-dependency-path: package-lock.json
+          registry-url: https://registry.npmjs.org
 
       - name: Test
         run: |
@@ -86,21 +78,17 @@ jobs:
           dotnet nuget push artifacts/nuget/*.snupkg --source github --skip-duplicate
 
       - name: Publish npm to npmjs.com
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
+          npm install -g npm@latest
           VERSION="${GITHUB_REF_NAME#v}"
           if [[ "$VERSION" == *-* ]]; then
             NPM_TAG=preview
           else
             NPM_TAG=latest
           fi
-          cat > .npmrc <<EOF
-          //registry.npmjs.org/:_authToken=${NPM_TOKEN}
-          EOF
-          npm publish "artifacts/npm/query-grid-core-${VERSION}.tgz" --access public --tag "$NPM_TAG"
-          npm publish "artifacts/npm/query-grid-primeng-${VERSION}.tgz" --access public --tag "$NPM_TAG"
-          npm publish "artifacts/npm/query-grid-ui-${VERSION}.tgz" --access public --tag "$NPM_TAG"
+          npm publish "artifacts/npm/query-grid-core-${VERSION}.tgz" --access public --tag "$NPM_TAG" --provenance
+          npm publish "artifacts/npm/query-grid-primeng-${VERSION}.tgz" --access public --tag "$NPM_TAG" --provenance
+          npm publish "artifacts/npm/query-grid-ui-${VERSION}.tgz" --access public --tag "$NPM_TAG" --provenance
 
       - name: Publish npm to GitHub Packages
         run: |

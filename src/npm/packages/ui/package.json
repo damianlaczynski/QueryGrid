@@ -35,7 +35,8 @@
     "sorting"
   ],
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   },
   "scripts": {
     "build": "node ../../../../scripts/build-ng-package.mjs .",

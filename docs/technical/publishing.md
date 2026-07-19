@@ -51,14 +51,26 @@ NuGet `RepositoryUrl` links packages to this repo on first GitHub Packages publi
    - npm → npmjs.com + GitHub Packages
    - GitHub Release with notes from `CHANGELOG.md`
 
-5. **One-time GitHub secrets** (Settings → Secrets and variables → Actions):
+5. **One-time GitHub secret** (Settings → Secrets and variables → Actions):
 
    | Secret | Value |
    | ------ | ----- |
    | `NUGET_USER` | nuget.org profile name (not email) |
-   | `NPM_TOKEN` | npm **Granular Access Token** or **Automation** token with **Publish** on `@query-grid/*` (classic tokens that bypass 2FA are being restricted) |
 
-6. **One-time nuget.org trusted publishing** — see below.
+6. **One-time npm trusted publishing** — for each package (`@query-grid/core`, `@query-grid/primeng`, `@query-grid/ui`):
+
+   npmjs.com → package → **Settings** → **Trusted Publisher** → **GitHub Actions**:
+
+   | Field | Value |
+   | ----- | ----- |
+   | Organization or user | `damianlaczynski` |
+   | Repository | `QueryGrid` |
+   | Workflow filename | `publish.yml` |
+   | Environment | *(leave empty)* |
+
+   No `NPM_TOKEN` secret is required — CI uses OIDC (npm CLI ≥ 11.5.1).
+
+7. **One-time nuget.org trusted publishing** — see below.
 
 ### Publish workflow (tag `v*`)
 
@@ -68,7 +80,7 @@ NuGet `RepositoryUrl` links packages to this repo on first GitHub Packages publi
 - Pack NuGet + npm
 - Publish NuGet to **nuget.org** via [trusted publishing](https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing) (OIDC)
 - Mirror NuGet to GitHub Packages
-- Publish npm to npmjs.com (`preview` / `latest` dist-tag) and GitHub Packages
+- Publish npm to npmjs.com via [trusted publishing](https://docs.npmjs.com/trusted-publishers/) (OIDC) and GitHub Packages
 - Create GitHub Release from `CHANGELOG.md`
 
 **One-time nuget.org trusted publishing:**

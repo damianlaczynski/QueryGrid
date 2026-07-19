@@ -33,7 +33,8 @@
     "datagrid"
   ],
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "provenance": true
   },
   "scripts": {
     "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.json",
