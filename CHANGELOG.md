@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## 0.1.0-preview.6 — 2026-07-19
+
+### Fixed
+
+- CI: pass `--tag preview` when publishing prerelease npm packages to GitHub Packages
+
 ## 0.1.0-preview.5 — 2026-07-19
 
 ### Changed

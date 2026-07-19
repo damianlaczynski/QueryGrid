@@ -1,6 +1,6 @@
 {
   "name": "@query-grid/core",
-  "version": "0.1.0-preview.5",
+  "version": "0.1.0-preview.6",
   "description": "Framework-agnostic GridQuery/GridResult types for QueryGrid.",
   "license": "MIT",
   "type": "module",
