@@ -23,6 +23,11 @@ For build, test, and pack commands, see [`AGENTS.md`](../../AGENTS.md).
 
 - Field operators are inferred from CLR type — do not add per-entity configuration maps.
 - Use `[GridIgnore]`, `[GridSort(false)]`, `[GridFilter(false)]` for opt-out on DTO properties.
+- Use `[GridEnumOrder(...)]` on enum properties when business sort order differs from the underlying numeric enum values.
+- Use `[GridSortKey("rankProperty")]` when the grid column should sort by a different row property (often a hidden rank on a list-row DTO).
+- Use `[GridSortWith("companionProperty")]` on date-like columns that should always sort together with a related time column.
+- Prefer **grid list-row DTOs** with computed properties in `Select` for virtual filter/sort fields (for example effective status, next service date) instead of per-endpoint mapping tables.
+- String and enum filter values are trimmed before conversion; whitespace-only values on nullable fields are treated as `null`.
 - Reject invalid operator/type combinations with `GridValidationException` — never silently ignore.
 - String filtering uses case-insensitive matching consistent with existing `FilterExpressionBuilder` behavior.
 - `GridQuery.Search` uses `ToLower().Contains()` for text — provider-agnostic, translated by all relational providers and InMemory.

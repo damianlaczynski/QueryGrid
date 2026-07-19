@@ -4,13 +4,24 @@ import type { GridColumnFilterType } from "./table/grid-column";
 
 type TranslateFn = (key: string) => string;
 
-/** Match modes for enum columns (`in` / `notIn`). */
-export function buildEnumMatchModeOptions(translate: TranslateFn): SelectItem[] {
+/** Match modes for enum columns (`in` / `notIn`, plus null checks when nullable). */
+export function buildEnumMatchModeOptions(translate: TranslateFn, nullable = false): SelectItem[] {
   const t = translate;
-  return [
+  const modes: SelectItem[] = [
     { label: t("in") ?? "In", value: "in" },
     { label: t("notIn") ?? "Not in", value: "notIn" },
   ];
+
+  if (nullable) {
+    modes.push(
+      { label: t("equals") ?? "Equals", value: FilterMatchMode.EQUALS },
+      { label: t("notEquals") ?? "Not equals", value: FilterMatchMode.NOT_EQUALS },
+      { label: t("is") ?? "Is empty", value: FilterMatchMode.IS },
+      { label: t("isNot") ?? "Is not empty", value: FilterMatchMode.IS_NOT },
+    );
+  }
+
+  return modes;
 }
 
 /** Match modes for nullable columns, including PrimeNG `is` / `isNot` (empty / not empty). */

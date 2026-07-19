@@ -56,6 +56,51 @@ public sealed class Issue
   public int CreatedBy { get; set; }
 }
 
+public enum AppointmentStatus
+{
+  Cancelled = 0,
+  Scheduled = 10,
+  Completed = 20,
+}
+
+public sealed class Appointment
+{
+  public int Id { get; set; }
+
+  public AppointmentStatus Status { get; set; }
+
+  public AppointmentStatus? OptionalStatus { get; set; }
+
+  public DateOnly ReceptionDate { get; set; }
+
+  public TimeOnly ReceptionTime { get; set; }
+
+  public string PriorityLabel { get; set; } = string.Empty;
+
+  public int PriorityRank { get; set; }
+}
+
+public sealed class AppointmentListRow
+{
+  public int Id { get; init; }
+
+  [GridEnumOrder(AppointmentStatus.Scheduled, AppointmentStatus.Completed, AppointmentStatus.Cancelled)]
+  public AppointmentStatus Status { get; init; }
+
+  public AppointmentStatus? OptionalStatus { get; init; }
+
+  [GridSortWith(nameof(ReceptionTime))]
+  public DateOnly ReceptionDate { get; init; }
+
+  public TimeOnly ReceptionTime { get; init; }
+
+  [GridSortKey(nameof(PriorityRank))]
+  public string PriorityLabel { get; init; } = string.Empty;
+
+  [GridIgnore]
+  public int PriorityRank { get; init; }
+}
+
 public sealed class RoleListItemDto
 {
   public int Id { get; init; }
@@ -99,9 +144,16 @@ public sealed class SearchTestDbContext(DbContextOptions<SearchTestDbContext> op
 
   public DbSet<Issue> Issues => Set<Issue>();
 
+  public DbSet<Appointment> Appointments => Set<Appointment>();
+
   protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
     modelBuilder.Entity<UserRole>().HasKey(ur => new { ur.UserId, ur.RoleId });
+
+    modelBuilder.Entity<Role>().Property(r => r.Id).ValueGeneratedNever();
+    modelBuilder.Entity<AppUser>().Property(u => u.Id).ValueGeneratedNever();
+    modelBuilder.Entity<RolePermission>().Property(rp => rp.Id).ValueGeneratedNever();
+    modelBuilder.Entity<Appointment>().Property(a => a.Id).ValueGeneratedNever();
   }
 }
 
@@ -135,7 +187,16 @@ public static class SearchTestData
       Permissions = [new RolePermission { Id = 3 }],
     };
 
-    context.Roles.AddRange(admin, viewer);
+    var guest = new Role
+    {
+      Id = 3,
+      Name = "Guest",
+      Description = null,
+      IsSystem = false,
+      Permissions = [],
+    };
+
+    context.Roles.AddRange(admin, viewer, guest);
     context.Users.AddRange(
       new AppUser { Id = 1, Name = "Alice" },
       new AppUser { Id = 2, Name = "Bob" });
@@ -157,6 +218,58 @@ public static class SearchTestData
         Title = "Dashboard polish",
         Description = "Improve layout spacing",
         CreatedBy = 2,
+      });
+
+    await context.SaveChangesAsync();
+  }
+
+  public static async Task SeedAppointmentsAsync(SearchTestDbContext context)
+  {
+    if (await context.Appointments.AnyAsync())
+    {
+      return;
+    }
+
+    context.Appointments.AddRange(
+      new Appointment
+      {
+        Id = 1,
+        Status = AppointmentStatus.Scheduled,
+        OptionalStatus = AppointmentStatus.Scheduled,
+        ReceptionDate = new DateOnly(2024, 6, 1),
+        ReceptionTime = new TimeOnly(10, 0),
+        PriorityLabel = "High",
+        PriorityRank = 3,
+      },
+      new Appointment
+      {
+        Id = 2,
+        Status = AppointmentStatus.Cancelled,
+        OptionalStatus = null,
+        ReceptionDate = new DateOnly(2024, 6, 1),
+        ReceptionTime = new TimeOnly(8, 0),
+        PriorityLabel = "Low",
+        PriorityRank = 1,
+      },
+      new Appointment
+      {
+        Id = 3,
+        Status = AppointmentStatus.Completed,
+        OptionalStatus = AppointmentStatus.Completed,
+        ReceptionDate = new DateOnly(2024, 6, 2),
+        ReceptionTime = new TimeOnly(7, 0),
+        PriorityLabel = "Medium",
+        PriorityRank = 2,
+      },
+      new Appointment
+      {
+        Id = 4,
+        Status = AppointmentStatus.Scheduled,
+        OptionalStatus = AppointmentStatus.Scheduled,
+        ReceptionDate = new DateOnly(2024, 6, 2),
+        ReceptionTime = new TimeOnly(6, 0),
+        PriorityLabel = "High",
+        PriorityRank = 3,
       });
 
     await context.SaveChangesAsync();

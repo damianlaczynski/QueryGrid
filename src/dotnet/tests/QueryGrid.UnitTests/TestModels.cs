@@ -55,6 +55,8 @@ public sealed class Person
   public string FilterDisabled { get; set; } = string.Empty;
 
   public List<string> Tags { get; set; } = [];
+
+  public PersonStatus? OptionalStatus { get; set; }
 }
 
 public static class TestData
@@ -72,7 +74,8 @@ public static class TestData
       IsActive = true, CreatedAt = new DateTime(2024, 1, 1), DeletedAt = null,
       Status = PersonStatus.Active, ExternalId = Guid1, TrackingId = null,
       RegisteredOn = new DateOnly(2024, 1, 15), ShiftStart = new TimeOnly(9, 0),
-      SessionLength = TimeSpan.FromHours(2), UpdatedAt = new DateTimeOffset(2024, 1, 1, 8, 0, 0, TimeSpan.Zero)
+      SessionLength = TimeSpan.FromHours(2), UpdatedAt = new DateTimeOffset(2024, 1, 1, 8, 0, 0, TimeSpan.Zero),
+      OptionalStatus = PersonStatus.Active
     },
     new Person
     {
@@ -80,7 +83,8 @@ public static class TestData
       IsActive = false, CreatedAt = new DateTime(2024, 6, 1), DeletedAt = new DateTime(2024, 7, 1),
       Status = PersonStatus.Pending, ExternalId = Guid2, TrackingId = null,
       RegisteredOn = new DateOnly(2024, 6, 1), ShiftStart = new TimeOnly(14, 30),
-      SessionLength = TimeSpan.FromMinutes(90), UpdatedAt = new DateTimeOffset(2024, 6, 1, 12, 0, 0, TimeSpan.FromHours(2))
+      SessionLength = TimeSpan.FromMinutes(90), UpdatedAt = new DateTimeOffset(2024, 6, 1, 12, 0, 0, TimeSpan.FromHours(2)),
+      OptionalStatus = null
     },
     new Person
     {
@@ -89,7 +93,8 @@ public static class TestData
       Status = PersonStatus.Suspended, ExternalId = Guid3,
       TrackingId = Guid.Parse("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"),
       RegisteredOn = new DateOnly(2023, 12, 10), ShiftStart = new TimeOnly(7, 45),
-      SessionLength = TimeSpan.FromHours(1), UpdatedAt = new DateTimeOffset(2023, 12, 1, 6, 30, 0, TimeSpan.Zero)
+      SessionLength = TimeSpan.FromHours(1), UpdatedAt = new DateTimeOffset(2023, 12, 1, 6, 30, 0, TimeSpan.Zero),
+      OptionalStatus = PersonStatus.Suspended
     },
     new Person
     {
@@ -97,7 +102,8 @@ public static class TestData
       IsActive = true, CreatedAt = new DateTime(2024, 3, 15), DeletedAt = null,
       Status = PersonStatus.Active, ExternalId = Guid4, TrackingId = null,
       RegisteredOn = new DateOnly(2024, 3, 15), ShiftStart = new TimeOnly(10, 15),
-      SessionLength = TimeSpan.FromHours(3), UpdatedAt = new DateTimeOffset(2024, 3, 15, 9, 0, 0, TimeSpan.Zero)
+      SessionLength = TimeSpan.FromHours(3), UpdatedAt = new DateTimeOffset(2024, 3, 15, 9, 0, 0, TimeSpan.Zero),
+      OptionalStatus = PersonStatus.Pending
     }
   ];
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildPrimeTableFilters,
-  fixOperatorForColumnType,
+  coerceOperatorForColumnType,
   isSameGridPatch,
   lazyLoadEventToGridPatch,
   mapLazyLoadSort,
@@ -70,9 +70,7 @@ describe("lazy-load-mapper", () => {
       conditions: [{ field: "Status", operator: "notIn" as const, value: [0] }],
     };
 
-    expect(buildPrimeTableFilters(filter, columns).Status?.[0]?.matchMode).toBe(
-      "notIn",
-    );
+    expect(buildPrimeTableFilters(filter, columns).Status?.[0]?.matchMode).toBe("notIn");
   });
 
   it("round-trips Match Any operator through buildPrimeTableFilters", () => {
@@ -132,7 +130,7 @@ describe("lazy-load-mapper", () => {
     ).toBe(false);
   });
 
-  it("fixOperatorForColumnType keeps notIn for enum", () => {
-    expect(fixOperatorForColumnType("notIn", "enum")).toBe("notIn");
+  it("coerceOperatorForColumnType keeps notIn for enum", () => {
+    expect(coerceOperatorForColumnType("notIn", "enum")).toBe("notIn");
   });
 });

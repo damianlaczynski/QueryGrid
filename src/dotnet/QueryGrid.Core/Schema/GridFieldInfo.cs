@@ -34,5 +34,18 @@ public sealed class GridFieldInfo
   /// <summary>Whether this field is the explicit sort tie-breaker via <see cref="GridSortTieBreakerAttribute"/>.</summary>
   public required bool IsSortTieBreaker { get; init; }
 
+  /// <summary>
+  /// When set via <see cref="GridSortKeyAttribute"/>, sorting this field uses the referenced property.
+  /// </summary>
+  public PropertyInfo? SortKeyProperty { get; init; }
+
+  /// <summary>
+  /// Companion fields appended when sorting this field, from <see cref="GridSortWithAttribute"/>.
+  /// </summary>
+  public IReadOnlyList<string> SortCompanionNames { get; init; } = [];
+
+  /// <summary>Custom enum member order for sorting, from <see cref="GridEnumOrderAttribute"/>.</summary>
+  public IReadOnlyList<object>? EnumSortOrder { get; init; }
+
   internal FieldCategory Category { get; init; }
 }

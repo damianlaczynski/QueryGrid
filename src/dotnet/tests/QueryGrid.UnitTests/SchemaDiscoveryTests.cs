@@ -80,11 +80,25 @@ public class SchemaDiscoveryTests
   {
     Assert.Contains(FilterOperator.IsNull, Schema.Require("DeletedAt").AllowedOperators);
     Assert.DoesNotContain(FilterOperator.IsNull, Schema.Require("Age").AllowedOperators);
+    Assert.Contains(FilterOperator.IsNull, Schema.Require("OptionalStatus").AllowedOperators);
   }
 
   [Fact]
   public void Uses_Id_as_default_sort_tie_breaker_by_convention()
   {
     Assert.Equal("Id", Schema.SortTieBreakerField?.Name);
+  }
+
+  [Fact]
+  public void Discovers_sort_extension_metadata()
+  {
+    var schema = GridSchemaProvider.GetSchema<SortExtensionsRow>();
+    var status = schema.Require("Status");
+    var receptionDate = schema.Require("ReceptionDate");
+    var priority = schema.Require("PriorityLabel");
+
+    Assert.Equal(3, status.EnumSortOrder!.Count);
+    Assert.Equal(nameof(SortExtensionsRow.PriorityRank), priority.SortKeyProperty!.Name);
+    Assert.Equal(["ReceptionTime"], receptionDate.SortCompanionNames);
   }
 }

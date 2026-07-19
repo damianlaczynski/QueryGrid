@@ -27,6 +27,12 @@ public sealed class ShowcaseRowDto
 
   public DateOnly OccurredOn { get; init; }
 
+  [GridEnumOrder(
+    ShowcaseCategory.Beta,
+    ShowcaseCategory.Alpha,
+    ShowcaseCategory.Gamma,
+    ShowcaseCategory.Delta,
+    ShowcaseCategory.Epsilon)]
   public ShowcaseCategory Category { get; init; }
 
   [GridSearchable]

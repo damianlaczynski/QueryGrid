@@ -48,6 +48,9 @@ public static class GridSchemaProvider
       var searchable = property.GetCustomAttribute<GridSearchableAttribute>() is not null
         && category is FieldCategory.Text or FieldCategory.Guid;
       var sortTieBreaker = property.GetCustomAttribute<GridSortTieBreakerAttribute>() is not null;
+      var enumSortOrder = ResolveEnumSortOrder(property, category);
+      var sortKeyProperty = ResolveSortKeyProperty(rowType, property);
+      var sortCompanionNames = property.GetCustomAttribute<GridSortWithAttribute>()?.PropertyNames ?? [];
 
       fields.Add(new GridFieldInfo
       {
@@ -59,10 +62,99 @@ public static class GridSchemaProvider
         CanFilter = filterEnabled,
         IsSearchable = searchable,
         IsSortTieBreaker = sortTieBreaker,
-        AllowedOperators = TypeClassifier.GetAllowedOperators(category, nullable)
+        AllowedOperators = TypeClassifier.GetAllowedOperators(category, nullable),
+        SortKeyProperty = sortKeyProperty,
+        SortCompanionNames = sortCompanionNames,
+        EnumSortOrder = enumSortOrder,
       });
     }
 
+    ValidateFieldMetadata(rowType, fields);
     return new GridSchema(rowType, fields);
+  }
+
+  private static IReadOnlyList<object>? ResolveEnumSortOrder(PropertyInfo property, FieldCategory category)
+  {
+    var attribute = property.GetCustomAttribute<GridEnumOrderAttribute>();
+    if (attribute is null)
+    {
+      return null;
+    }
+
+    if (category is not FieldCategory.Enum)
+    {
+      throw new InvalidOperationException(
+        $"[GridEnumOrder] on '{property.DeclaringType?.Name}.{property.Name}' requires an enum property.");
+    }
+
+    var enumType = TypeClassifier.UnwrapNullable(property.PropertyType);
+    var values = attribute.Values;
+    var distinct = new HashSet<object>();
+    foreach (var value in values)
+    {
+      if (value.GetType() != enumType)
+      {
+        throw new InvalidOperationException(
+          $"[GridEnumOrder] value '{value}' on '{property.DeclaringType?.Name}.{property.Name}' is not of type '{enumType.Name}'.");
+      }
+
+      if (!distinct.Add(value))
+      {
+        throw new InvalidOperationException(
+          $"[GridEnumOrder] on '{property.DeclaringType?.Name}.{property.Name}' contains duplicate value '{value}'.");
+      }
+    }
+
+    return values;
+  }
+
+  private static PropertyInfo? ResolveSortKeyProperty(Type rowType, PropertyInfo property)
+  {
+    var attribute = property.GetCustomAttribute<GridSortKeyAttribute>();
+    if (attribute is null)
+    {
+      return null;
+    }
+
+    var sortKey = rowType.GetProperty(
+      attribute.PropertyName,
+      BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+
+    if (sortKey is null)
+    {
+      throw new InvalidOperationException(
+        $"[GridSortKey] on '{rowType.Name}.{property.Name}' references unknown property '{attribute.PropertyName}'.");
+    }
+
+    if (sortKey.GetIndexParameters().Length > 0 || sortKey.GetMethod is null)
+    {
+      throw new InvalidOperationException(
+        $"[GridSortKey] on '{rowType.Name}.{property.Name}' references property '{attribute.PropertyName}' that is not readable.");
+    }
+
+    return sortKey;
+  }
+
+  private static void ValidateFieldMetadata(Type rowType, List<GridFieldInfo> fields)
+  {
+    var byName = fields.ToDictionary(f => f.Name, StringComparer.OrdinalIgnoreCase);
+
+    foreach (var field in fields)
+    {
+      foreach (var companionName in field.SortCompanionNames)
+      {
+        if (!byName.TryGetValue(companionName, out var companion))
+        {
+          throw new InvalidOperationException(
+            $"[GridSortWith] on '{rowType.Name}.{field.Name}' references unknown field '{companionName}'.");
+        }
+
+        if (!companion.CanSort)
+        {
+          throw new InvalidOperationException(
+            $"[GridSortWith] on '{rowType.Name}.{field.Name}' references non-sortable field '{companionName}'.");
+        }
+      }
+    }
   }
 }

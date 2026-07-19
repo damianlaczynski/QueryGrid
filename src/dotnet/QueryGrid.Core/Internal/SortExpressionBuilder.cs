@@ -35,7 +35,7 @@ internal static class SortExpressionBuilder
   }
 
   /// <summary>
-  /// Returns the sort descriptors that <see cref="Apply"/> would use, including any implicit tie-breaker.
+  /// Returns the sort descriptors that <see cref="Apply"/> would use, including companions and tie-breaker.
   /// </summary>
   public static IReadOnlyList<SortDescriptor> ResolveEffectiveSort(
     IList<SortDescriptor> sorts, GridSchema schema, GridOptions options)
@@ -51,7 +51,7 @@ internal static class SortExpressionBuilder
         GridValidationCodes.TooManySorts, $"Sort exceeds the maximum of {options.MaxSortDescriptors} descriptors.");
     }
 
-    var result = new List<SortDescriptor>(sorts.Count + 1);
+    var result = new List<SortDescriptor>(sorts.Count + 4);
     var appliedSortFields = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
     foreach (var descriptor in sorts)
@@ -65,10 +65,29 @@ internal static class SortExpressionBuilder
 
       appliedSortFields.Add(field.Name);
       result.Add(descriptor);
+      AppendSortCompanions(result, field, descriptor.Desc, appliedSortFields);
     }
 
     AppendSortTieBreaker(result, schema, appliedSortFields);
     return result;
+  }
+
+  private static void AppendSortCompanions(
+    List<SortDescriptor> sorts,
+    GridFieldInfo field,
+    bool descending,
+    HashSet<string> appliedSortFields)
+  {
+    foreach (var companionName in field.SortCompanionNames)
+    {
+      if (appliedSortFields.Contains(companionName))
+      {
+        continue;
+      }
+
+      sorts.Add(new SortDescriptor(companionName, descending));
+      appliedSortFields.Add(companionName);
+    }
   }
 
   private static void AppendSortTieBreaker(
@@ -84,8 +103,18 @@ internal static class SortExpressionBuilder
   private static IOrderedQueryable<T> ApplyOne<T>(IQueryable<T> source, GridFieldInfo field, bool desc, bool first)
   {
     var parameter = Expression.Parameter(typeof(T), "x");
-    var member = Expression.Property(parameter, field.Property);
-    var keySelector = Expression.Lambda(member, parameter);
+    var sortProperty = field.SortKeyProperty ?? field.Property;
+    var member = Expression.Property(parameter, sortProperty);
+
+    Expression keyBody = field.EnumSortOrder is { Count: > 0 }
+      ? EnumSortExpressions.BuildRank(member, field.EnumSortOrder)
+      : member;
+
+    var keyType = keyBody.Type;
+    var keySelector = Expression.Lambda(
+      typeof(Func<,>).MakeGenericType(typeof(T), keyType),
+      keyBody,
+      parameter);
 
     var methodName = (first, desc) switch
     {
@@ -98,7 +127,7 @@ internal static class SortExpressionBuilder
     var call = Expression.Call(
       typeof(Queryable),
       methodName,
-      [typeof(T), field.Property.PropertyType],
+      [typeof(T), keyType],
       source.Expression,
       Expression.Quote(keySelector));
 
