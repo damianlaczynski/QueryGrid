@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented here.
 
+## 0.1.0-preview.3 — 2026-07-18
+
+### Changed
+
+- String filters and global search use `string.ToLower()` instead of `ToLowerInvariant()` so EF Core can translate them to SQL `LOWER` (Npgsql, SQLite, SQL Server)
+
+### Fixed
+
+- **QueryGrid.Core / QueryGrid.EntityFrameworkCore** — `Contains` / `StartsWith` / `EndsWith` / `NotContains` and `[GridSearchable]` search no longer throw `Translation of method 'string.ToLowerInvariant' failed` under relational EF providers
+
 ## 0.1.0-preview.1 — 2026-07-01
 
 First public preview.

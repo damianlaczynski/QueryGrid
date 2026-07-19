@@ -63,7 +63,7 @@ internal static class SearchExpressionBuilder
     }
 
     var text = Expression.Call(guidValue, _guidToString);
-    var loweredText = Expression.Call(text, StringExpressionMethods.ToLowerInvariant);
+    var loweredText = Expression.Call(text, StringExpressionMethods.ToLower);
     var match = Expression.Call(loweredText, StringExpressionMethods.Contains, loweredSearch);
     return notNull is null ? match : Expression.AndAlso(notNull, match);
   }
