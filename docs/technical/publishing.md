@@ -13,6 +13,7 @@
 | `@query-grid/core`              | [npmjs.com](https://www.npmjs.com) | Tag `v*` → [publish workflow](../../.github/workflows/publish.yml) |
 | `@query-grid/primeng`           | [npmjs.com](https://www.npmjs.com) | same                                                               |
 | `@query-grid/ui`                | [npmjs.com](https://www.npmjs.com) | same                                                               |
+| `@query-grid/*` (mirror)        | GitHub Packages (npm)              | same workflow (secondary feed)                                     |
 
 NuGet `RepositoryUrl` links packages to this repo on first GitHub Packages publish.
 
@@ -38,14 +39,7 @@ NuGet `RepositoryUrl` links packages to this repo on first GitHub Packages publi
    npm run pack:npm
    ```
 
-4. Push a release tag — **CI publishes everything**:
-
-   ```powershell
-   npm run release:dry-run   # preview
-   npm run release           # test → git tag + push → CI does the rest
-   ```
-
-   Or manually:
+4. Tag and push — **CI publishes everything**:
 
    ```powershell
    git tag v0.1.0-preview.4
@@ -54,7 +48,7 @@ NuGet `RepositoryUrl` links packages to this repo on first GitHub Packages publi
 
    On tag push, [publish.yml](../../.github/workflows/publish.yml) runs tests, then publishes:
    - NuGet → nuget.org + GitHub Packages
-   - npm → npmjs.com (`preview` tag for prereleases, `latest` for stable)
+   - npm → npmjs.com + GitHub Packages
    - GitHub Release with notes from `CHANGELOG.md`
 
 5. **One-time GitHub secrets** (Settings → Secrets and variables → Actions):
@@ -74,7 +68,7 @@ NuGet `RepositoryUrl` links packages to this repo on first GitHub Packages publi
 - Pack NuGet + npm
 - Publish NuGet to **nuget.org** via [trusted publishing](https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing) (OIDC)
 - Mirror NuGet to GitHub Packages
-- Publish npm to npmjs.com
+- Publish npm to npmjs.com (`preview` / `latest` dist-tag) and GitHub Packages
 - Create GitHub Release from `CHANGELOG.md`
 
 **One-time nuget.org trusted publishing:**
@@ -91,8 +85,6 @@ NuGet `RepositoryUrl` links packages to this repo on first GitHub Packages publi
    | Environment       | *(leave empty)*    |
 
 3. GitHub repo → **Settings → Secrets and variables → Actions** → add `NUGET_USER` (see step 5 above).
-
-Copy [`.env.example`](../../.env.example) to `.env` for local `npm run release` defaults. Never commit `.env`.
 
 **GitHub settings:** Actions enabled; workflow permissions allow `packages: write` and OIDC (`id-token: write` is set in the workflow).
 
@@ -115,8 +107,23 @@ Public packages — no special `.npmrc` required:
 
 ```powershell
 npm install @query-grid/core@preview @query-grid/primeng@preview @query-grid/ui@preview
-# or: npm install @query-grid/core@0.1.0-preview.3
+# or: npm install @query-grid/core@0.1.0-preview.4
 ```
+
+### npm (GitHub Packages)
+
+Add to the consuming app's `.npmrc` (use a PAT with `read:packages` for private repos; public repo packages may work with `GITHUB_TOKEN` in CI):
+
+```ini
+@query-grid:registry=https://npm.pkg.github.com
+//npm.pkg.github.com/:_authToken=YOUR_GITHUB_PAT
+```
+
+```powershell
+npm install @query-grid/core@0.1.0-preview.4
+```
+
+Packages appear under the repository **Packages** tab after the first successful publish. Because the scope is `@query-grid` (not `@damianlaczynski`), link them to this repo manually once in **Package settings → Connect repository** if GitHub does not auto-link.
 
 ### App integration
 
@@ -124,7 +131,7 @@ See [getting-started.md](../getting-started.md).
 
 ## Optional: local NuGet.org push (API key)
 
-Trusted publishing works in CI only. For a local push without OIDC, set `NUGET_ORG_API_KEY` in `.env` (see `.env.example`) or:
+Trusted publishing works in CI only. For a local push without OIDC:
 
 ```powershell
 $apiKey = "<nuget.org-api-key>"
@@ -135,4 +142,4 @@ dotnet nuget push artifacts/nuget/QueryGrid.EntityFrameworkCore.*.nupkg --api-ke
 
 1. Bump all version locations.
 2. `CHANGELOG.md` section.
-3. `npm run release` (or push tag manually) → CI publishes everything.
+3. Push tag → CI publishes everything.
