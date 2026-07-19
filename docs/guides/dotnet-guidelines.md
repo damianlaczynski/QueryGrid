@@ -25,7 +25,7 @@ For build, test, and pack commands, see [`AGENTS.md`](../../AGENTS.md).
 - Use `[GridIgnore]`, `[GridSort(false)]`, `[GridFilter(false)]` for opt-out on DTO properties.
 - Reject invalid operator/type combinations with `GridValidationException` — never silently ignore.
 - String filtering uses case-insensitive matching consistent with existing `FilterExpressionBuilder` behavior.
-- `GridQuery.Search` on PostgreSQL uses `EF.Functions.ILike` via `ToGridResultAsync`; InMemory and other providers use `ToLower().Contains()`.
+- `GridQuery.Search` uses `ToLower().Contains()` for text — provider-agnostic, translated by all relational providers and InMemory.
 - Guid search uses equality when the search text parses as a `Guid`; non-Guid text does not search Guid fields.
 - For projections that cannot translate search to SQL, use `ApplyEntitySearch` on the entity query and `GridQuery.WithoutSearch()` on `ToGridResultAsync` (see [getting-started.md](../getting-started.md)).
 

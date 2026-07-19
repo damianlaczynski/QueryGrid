@@ -34,14 +34,6 @@ public static class GridEntitySearchExtensions
     this IQueryable<TEntity> source,
     string? search,
     params Expression<Func<TEntity, string?>>[] fields)
-    => ApplyEntitySearch(source, search, options: null, fields);
-
-  /// <inheritdoc cref="ApplyEntitySearch{TEntity}(IQueryable{TEntity}, string?, Expression{Func{TEntity, string?}}[])"/>
-  public static IQueryable<TEntity> ApplyEntitySearch<TEntity>(
-    this IQueryable<TEntity> source,
-    string? search,
-    GridOptions? options,
-    params Expression<Func<TEntity, string?>>[] fields)
   {
     ArgumentNullException.ThrowIfNull(source);
     ArgumentNullException.ThrowIfNull(fields);
@@ -51,30 +43,19 @@ public static class GridEntitySearchExtensions
       return source;
     }
 
-    options ??= GridOptions.Default;
-    var matchBuilder = options.ResolveSearchMatchBuilder();
-    var trimmed = search.Trim();
+    var lowered = Expression.Constant(search.Trim().ToLowerInvariant());
     var parameter = fields[0].Parameters[0];
 
     Expression? combined = null;
     foreach (var field in fields)
     {
       var member = new ParameterReplacer(field.Parameters[0], parameter).Visit(field.Body);
-      var match = matchBuilder.BuildTextMatch(member, trimmed, typeof(string));
-      if (match is null)
-      {
-        continue;
-      }
-
+      var match = CaseInsensitiveStringExpressions.BuildMatch(
+        member, lowered, StringExpressionMethods.Contains, typeof(string));
       combined = combined is null ? match : Expression.OrElse(combined, match);
     }
 
-    if (combined is null)
-    {
-      return source;
-    }
-
-    var predicate = Expression.Lambda<Func<TEntity, bool>>(combined, parameter);
+    var predicate = Expression.Lambda<Func<TEntity, bool>>(combined!, parameter);
     return source.Where(predicate);
   }
 

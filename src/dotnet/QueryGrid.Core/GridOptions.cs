@@ -1,5 +1,3 @@
-using QueryGrid.Core.Internal;
-
 namespace QueryGrid.Core;
 
 /// <summary>
@@ -10,25 +8,6 @@ public sealed class GridOptions
 {
   /// <summary>The shared default instance used when no options are supplied.</summary>
   public static GridOptions Default { get; } = new();
-
-  internal ISearchMatchBuilder? SearchMatchBuilder { get; set; }
-
-  internal ISearchMatchBuilder ResolveSearchMatchBuilder()
-    => SearchMatchBuilder ?? DefaultSearchMatchBuilder.Instance;
-
-  internal GridOptions CloneWithSearchMatchBuilder(ISearchMatchBuilder builder)
-  {
-    return new GridOptions
-    {
-      DefaultPageSize = DefaultPageSize,
-      MaxTake = MaxTake,
-      MaxFilterDepth = MaxFilterDepth,
-      MaxConditions = MaxConditions,
-      MaxInListLength = MaxInListLength,
-      MaxSortDescriptors = MaxSortDescriptors,
-      SearchMatchBuilder = builder,
-    };
-  }
 
   /// <summary>Page size applied when <see cref="Abstractions.GridQuery.Take"/> is not specified. Default 20.</summary>
   public int DefaultPageSize { get; set; } = 20;

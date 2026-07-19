@@ -27,8 +27,7 @@ public static class GridQueryableExtensions
       source = source.Where(filter);
     }
 
-    var search = SearchExpressionBuilder.Build<T>(
-      query.Search, schema, options.ResolveSearchMatchBuilder());
+    var search = SearchExpressionBuilder.Build<T>(query.Search, schema);
     if (search is not null)
     {
       source = source.Where(search);
