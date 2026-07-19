@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## 0.1.0-preview.5 — 2026-07-19
+
+### Changed
+
+- CI: npm publish via trusted publishing (OIDC) with provenance
+
 ## 0.1.0-preview.4 — 2026-07-19
 
 ### Added

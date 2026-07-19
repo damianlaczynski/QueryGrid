@@ -42,8 +42,8 @@ NuGet `RepositoryUrl` links packages to this repo on first GitHub Packages publi
 4. Tag and push — **CI publishes everything**:
 
    ```powershell
-   git tag v0.1.0-preview.4
-   git push origin v0.1.0-preview.4
+   git tag v0.1.0-preview.5
+   git push origin v0.1.0-preview.5
    ```
 
    On tag push, [publish.yml](../../.github/workflows/publish.yml) runs tests, then publishes:
@@ -119,7 +119,7 @@ Public packages — no special `.npmrc` required:
 
 ```powershell
 npm install @query-grid/core@preview @query-grid/primeng@preview @query-grid/ui@preview
-# or: npm install @query-grid/core@0.1.0-preview.4
+# or: npm install @query-grid/core@0.1.0-preview.5
 ```
 
 ### npm (GitHub Packages)
@@ -132,7 +132,7 @@ Add to the consuming app's `.npmrc` (use a PAT with `read:packages` for private 
 ```
 
 ```powershell
-npm install @query-grid/core@0.1.0-preview.4
+npm install @query-grid/core@0.1.0-preview.5
 ```
 
 Packages appear under the repository **Packages** tab after the first successful publish. Because the scope is `@query-grid` (not `@damianlaczynski`), link them to this repo manually once in **Package settings → Connect repository** if GitHub does not auto-link.
