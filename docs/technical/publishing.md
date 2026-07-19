@@ -13,7 +13,6 @@
 | `@query-grid/core`              | [npmjs.com](https://www.npmjs.com) | Tag `v*` → [publish workflow](../../.github/workflows/publish.yml) |
 | `@query-grid/primeng`           | [npmjs.com](https://www.npmjs.com) | same                                                               |
 | `@query-grid/ui`                | [npmjs.com](https://www.npmjs.com) | same                                                               |
-| `@query-grid/*` (mirror)        | GitHub Packages (npm)              | same workflow (secondary feed)                                     |
 
 NuGet `RepositoryUrl` links packages to this repo on first GitHub Packages publish.
 
@@ -42,13 +41,13 @@ NuGet `RepositoryUrl` links packages to this repo on first GitHub Packages publi
 4. Tag and push — **CI publishes everything**:
 
    ```powershell
-   git tag v0.1.0-preview.6
-   git push origin v0.1.0-preview.6
+   git tag v0.1.0-preview.7
+   git push origin v0.1.0-preview.7
    ```
 
    On tag push, [publish.yml](../../.github/workflows/publish.yml) runs tests, then publishes:
    - NuGet → nuget.org + GitHub Packages
-   - npm → npmjs.com + GitHub Packages
+   - npm → npmjs.com
    - GitHub Release with notes from `CHANGELOG.md`
 
 5. **One-time GitHub secret** (Settings → Secrets and variables → Actions):
@@ -80,8 +79,10 @@ NuGet `RepositoryUrl` links packages to this repo on first GitHub Packages publi
 - Pack NuGet + npm
 - Publish NuGet to **nuget.org** via [trusted publishing](https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing) (OIDC)
 - Mirror NuGet to GitHub Packages
-- Publish npm to npmjs.com via [trusted publishing](https://docs.npmjs.com/trusted-publishers/) (OIDC) and GitHub Packages
+- Publish npm to npmjs.com via [trusted publishing](https://docs.npmjs.com/trusted-publishers/) (OIDC)
 - Create GitHub Release from `CHANGELOG.md`
+
+npm packages use the `@query-grid` scope on npmjs.com. GitHub Packages npm requires the scope to match the GitHub owner (e.g. `@damianlaczynski/...`), so npm is not mirrored to GitHub Packages. NuGet packages are still mirrored.
 
 **One-time nuget.org trusted publishing:**
 
@@ -119,23 +120,8 @@ Public packages — no special `.npmrc` required:
 
 ```powershell
 npm install @query-grid/core@preview @query-grid/primeng@preview @query-grid/ui@preview
-# or: npm install @query-grid/core@0.1.0-preview.6
+# or: npm install @query-grid/core@0.1.0-preview.7
 ```
-
-### npm (GitHub Packages)
-
-Add to the consuming app's `.npmrc` (use a PAT with `read:packages` for private repos; public repo packages may work with `GITHUB_TOKEN` in CI):
-
-```ini
-@query-grid:registry=https://npm.pkg.github.com
-//npm.pkg.github.com/:_authToken=YOUR_GITHUB_PAT
-```
-
-```powershell
-npm install @query-grid/core@0.1.0-preview.6
-```
-
-Packages appear under the repository **Packages** tab after the first successful publish. Because the scope is `@query-grid` (not `@damianlaczynski`), link them to this repo manually once in **Package settings → Connect repository** if GitHub does not auto-link.
 
 ### App integration
 

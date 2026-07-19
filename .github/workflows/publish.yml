@@ -90,22 +90,6 @@ jobs:
           npm publish "artifacts/npm/query-grid-primeng-${VERSION}.tgz" --access public --tag "$NPM_TAG" --provenance
           npm publish "artifacts/npm/query-grid-ui-${VERSION}.tgz" --access public --tag "$NPM_TAG" --provenance
 
-      - name: Publish npm to GitHub Packages
-        run: |
-          VERSION="${GITHUB_REF_NAME#v}"
-          if [[ "$VERSION" == *-* ]]; then
-            NPM_TAG=preview
-          else
-            NPM_TAG=latest
-          fi
-          cat > .npmrc <<EOF
-          @query-grid:registry=https://npm.pkg.github.com
-          //npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}
-          EOF
-          npm publish "artifacts/npm/query-grid-core-${VERSION}.tgz" --registry https://npm.pkg.github.com --tag "$NPM_TAG"
-          npm publish "artifacts/npm/query-grid-primeng-${VERSION}.tgz" --registry https://npm.pkg.github.com --tag "$NPM_TAG"
-          npm publish "artifacts/npm/query-grid-ui-${VERSION}.tgz" --registry https://npm.pkg.github.com --tag "$NPM_TAG"
-
       - name: Extract release notes
         run: node scripts/extract-changelog.mjs "${GITHUB_REF_NAME#v}" > release-notes.md
 

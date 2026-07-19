@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## 0.1.0-preview.7 — 2026-07-19
+
+### Changed
+
+- CI: drop npm GitHub Packages mirror (`@query-grid` scope is incompatible with GitHub owner `damianlaczynski`)
+
 ## 0.1.0-preview.6 — 2026-07-19
 
 ### Fixed
