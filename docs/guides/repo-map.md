@@ -4,7 +4,7 @@
 
 ## Top level
 
-- Root `package.json` defines the npm workspace and orchestration scripts (`build`, `test`, `lint`, `pack:dotnet`) so you can run common dotnet and npm tasks from the repository root.
+- Root `package.json` defines the npm workspace and orchestration scripts (`build:all`, `test:all`, `start:all`, `lint:frontend`, `pack:backend`) so you can run common dotnet and npm tasks from the repository root.
 - `src/dotnet/` contains the .NET solution and publishable NuGet packages.
 - `src/npm/` contains the npm workspace and publishable `@query-grid/*` packages.
 - `samples/` contains runnable demo applications that reference the library packages (local path or published versions).
@@ -50,6 +50,7 @@
 | --------------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | `@query-grid/core`    | TypeScript models mirroring `GridQuery` / `GridResult`, `formatGridError`, `formatLocalDateTime`                       |
 | `@query-grid/primeng` | `createGridResource()`, `GridResourceFactory`, `<qg-prime-data-grid>`, `qgColumn` / `qgEmpty` directives, filter chips |
+| `@query-grid/ui`      | `createGridResource()`, `GridResourceFactory`, `<qg-ui-data-grid>`, `qgColumn` / `qgEmpty` directives, filter chips (laczynski/ui) |
 
 ### PrimeNG package layout
 
@@ -80,7 +81,8 @@ QueryGrid.Abstractions
         │
 @query-grid/core
         │
-        └── @query-grid/primeng
+        ├── @query-grid/primeng
+        └── @query-grid/ui
 ```
 
 Transport contracts must stay aligned between `QueryGrid.Abstractions` and `@query-grid/core`.

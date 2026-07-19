@@ -41,9 +41,26 @@ describe("lazy-load-mapper", () => {
       columns,
     );
 
+    expect(filter).toEqual({ field: "Status", operator: "notIn", value: [0, 1] });
+  });
+
+  it("maps Match Any as a field-level or group", () => {
+    const filter = mapPrimeFiltersToGridFilter(
+      {
+        Name: [
+          { value: "a", matchMode: "contains", operator: "or" },
+          { value: "b", matchMode: "contains", operator: "or" },
+        ],
+      },
+      columns,
+    );
+
     expect(filter).toEqual({
-      logic: "and",
-      conditions: [{ field: "Status", operator: "notIn", value: [0, 1] }],
+      logic: "or",
+      conditions: [
+        { field: "Name", operator: "contains", value: "a" },
+        { field: "Name", operator: "contains", value: "b" },
+      ],
     });
   });
 
@@ -56,6 +73,19 @@ describe("lazy-load-mapper", () => {
     expect(buildPrimeTableFilters(filter, columns).Status?.[0]?.matchMode).toBe(
       "notIn",
     );
+  });
+
+  it("round-trips Match Any operator through buildPrimeTableFilters", () => {
+    const filter = {
+      logic: "or" as const,
+      conditions: [
+        { field: "Name", operator: "contains" as const, value: "a" },
+        { field: "Name", operator: "contains" as const, value: "b" },
+      ],
+    };
+
+    const built = buildPrimeTableFilters(filter, columns).Name;
+    expect(built?.map((meta) => meta.operator)).toEqual(["or", "or"]);
   });
 
   it("lazyLoadEventToGridPatch maps paging and search", () => {

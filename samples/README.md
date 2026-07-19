@@ -65,14 +65,13 @@ Unit tests in `src/dotnet` prove expression correctness; samples prove **wiring*
 
 ## Local workflow
 
-1. Install and build from repo root:
+1. Install from repo root:
 
    ```powershell
    npm install
-   npm run build
    ```
 
-2. During development, `samples/showcase-ui` resolves `@query-grid/*` via the root npm workspace (symlinks — no manual sync).
+2. During development, `samples/showcase-ui` resolves `@query-grid/*` via the root npm workspace (symlinks — no manual sync). Always prefer `start:all` or `start:frontend` so packages are rebuilt before the UI starts.
 
 3. Start API and UI; walk the scenario matrix above before a release.
 
@@ -88,18 +87,21 @@ Unit tests in `src/dotnet` prove expression correctness; samples prove **wiring*
 
 ## Status
 
-- **showcase-api** — `GET /rows`, 300 seeded rows, full `ShowcaseRowDto` type matrix. Run: `npm run start:showcase-api` (http://localhost:5180).
-- **showcase-ui** — Angular + `@query-grid/primeng` grid with a `qgColumn` per DTO field (except `[GridIgnore]`). Proxies API to :5180.
+- **showcase-api** — `GET /rows`, 300 seeded rows, full `ShowcaseRowDto` type matrix. Run: `npm run start:backend` (http://localhost:5180).
+- **showcase-ui** — Angular + `@query-grid/primeng` / `@query-grid/ui` grids. Routes `/primeng` and `/ui`. Proxies API to :5180.
 
 ## Quick start (full stack)
 
 ```powershell
-# Terminal 1 — API
-npm run start:showcase-api
+# Builds @query-grid/* then starts API + UI together
+npm run start:all
+```
 
-# Terminal 2 — UI (build packages first if not done yet)
-npm run build:npm
-npm run start:showcase-ui
+Or separately:
+
+```powershell
+npm run start:backend    # http://localhost:5180
+npm run start:frontend   # rebuilds packages, then http://localhost:4200
 ```
 
 ## Development with package watch
@@ -107,7 +109,7 @@ npm run start:showcase-ui
 From the repository root, rebuild and sync `@query-grid/*` into the UI sample while editing library code:
 
 ```powershell
-npm run dev:showcase-ui
+npm run dev:frontend
 ```
 
-This runs `watch:core`, `watch:primeng`, and the Angular dev server together.
+This runs `watch:core`, `watch:primeng`, `watch:ui`, and the Angular dev server together.

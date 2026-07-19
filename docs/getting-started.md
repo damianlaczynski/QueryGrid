@@ -104,7 +104,7 @@ protected readonly rowType!: IssueDto;
 
 ### Multi-sort
 
-`qg-prime-data-grid` enables multi-sort by default (`sortMode="multiple"`). Click another column header to add a sort level (no Shift). Click again to toggle asc/desc; remove a level via the column menu or **Clear**.
+`qg-prime-data-grid` and `qg-ui-data-grid` use the same multi-sort UX: a plain header click sorts a single column (replaces previous sorts); **Ctrl/Cmd + click** adds or toggles a column within multi-sort. Clear via **Clear**.
 
 ### Field naming
 

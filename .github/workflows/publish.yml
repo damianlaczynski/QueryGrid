@@ -29,7 +29,7 @@ jobs:
         run: |
           dotnet test src/dotnet/QueryGrid.slnx -c Release
           npm ci
-          npm run lint
+          npm run lint:frontend
           npm run test:npm
 
       - name: Pack NuGet

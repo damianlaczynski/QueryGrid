@@ -4,8 +4,14 @@ All notable changes to this project are documented here.
 
 ## 0.1.0-preview.3 — 2026-07-18
 
+### Added
+
+- **@query-grid/ui** — `<qg-ui-data-grid>` adapter on `@laczynski/ui` (column filters with Add Rule, search, chips, multi-sort, persistence)
+
 ### Changed
 
+- Multi-sort UX aligned with PrimeNG `sortMode="multiple"`: plain header click replaces with a single column; Ctrl/Cmd + click adds or toggles within multi-sort (`@query-grid/ui`, `@query-grid/primeng`)
+- PrimeNG column filters support Match All / Match Any with up to five rules per column
 - String filters and global search use `string.ToLower()` instead of `ToLowerInvariant()` so EF Core can translate them to SQL `LOWER` (Npgsql, SQLite, SQL Server)
 
 ### Fixed
