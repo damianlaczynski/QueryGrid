@@ -12,8 +12,8 @@ import {
   ButtonComponent,
   CheckboxComponent,
   DateComponent,
-  DropdownComponent,
-  type DropdownItem,
+  SelectComponent,
+  type SelectItem,
   NumberComponent,
   PopoverDirective,
   TextComponent,
@@ -43,7 +43,7 @@ type DraftRule = {
 const MULTI_RULE_TYPES: GridColumnFilterType[] = ["text", "number", "date", "guid"];
 const MAX_RULES = 5;
 
-const LOGIC_ITEMS: DropdownItem[] = [
+const LOGIC_ITEMS: SelectItem[] = [
   { label: "Match All", value: "and" },
   { label: "Match Any", value: "or" },
 ];
@@ -56,7 +56,7 @@ const LOGIC_ITEMS: DropdownItem[] = [
     ButtonComponent,
     CheckboxComponent,
     DateComponent,
-    DropdownComponent,
+    SelectComponent,
     NumberComponent,
     PopoverDirective,
     TextComponent,
@@ -110,14 +110,14 @@ export class QgColumnFilterComponent<T = unknown> {
     return buildMatchModeOptions(filter.type, filter.nullable) ?? [];
   });
 
-  protected readonly operatorItems = computed<DropdownItem[]>(() =>
+  protected readonly operatorItems = computed<SelectItem[]>(() =>
     this.matchModeOptions().map((option) => ({
       label: option.label,
       value: option.value,
     })),
   );
 
-  protected readonly enumItems = computed<DropdownItem[]>(() => {
+  protected readonly enumItems = computed<SelectItem[]>(() => {
     const options = this.column().filter?.options ?? [];
     return options.map((option) => ({
       label: option.label,

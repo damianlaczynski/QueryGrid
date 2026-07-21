@@ -10,9 +10,15 @@
 }
 
 .qg-ui-grid__toolbar {
+  position: relative;
+  z-index: 4;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+}
+
+.qg-ui-grid__toolbar :where(ui-button) {
+  pointer-events: auto;
 }
 
 .qg-ui-grid__toolbar-row {
@@ -50,10 +56,45 @@
 }
 
 .qg-ui-grid__table-wrap {
+  position: relative;
   overflow: auto;
   border: 1px solid var(--color-neutral-stroke-rest, #d1d1d1);
   border-radius: 0.5rem;
   background: var(--color-neutral-background-rest, #ffffff);
+}
+
+.qg-ui-grid__body .qg-ui-grid__row {
+  transition: opacity 150ms ease;
+}
+
+.qg-ui-grid__table-wrap--refreshing .qg-ui-grid__body {
+  opacity: 0.72;
+  pointer-events: none;
+}
+
+.qg-ui-grid__table-overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 4.5rem;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--color-neutral-background-rest, #ffffff) 55%, transparent),
+    color-mix(in srgb, var(--color-neutral-background-rest, #ffffff) 35%, transparent) 40%,
+    transparent
+  );
+}
+
+.qg-ui-grid__loading-cell {
+  padding: 3rem 1rem;
+  text-align: center;
+  vertical-align: middle;
 }
 
 :host(:not(.qg-ui-grid--bordered)) .qg-ui-grid__table-wrap {
@@ -70,7 +111,7 @@
 .qg-ui-grid__head {
   position: sticky;
   top: 0;
-  z-index: 1;
+  z-index: 3;
   background: var(--color-neutral-background2-rest, #fafafa);
 }
 

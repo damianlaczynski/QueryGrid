@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented here.
 
+## 0.1.0-preview.8 — 2026-07-22
+
+### Changed
+
+- **@query-grid/ui** — lighter table loading UX (tbody-only refresh overlay, deferred spinner, stable row tracking via `dataKey`)
+- **@query-grid/ui** — peer dependency `@laczynski/ui` `^2.0.0-preview`
+- **showcase-ui** — uses `@laczynski/ui` `2.0.0-preview`
+
+### Fixed
+
+- **@query-grid/ui** — disabled Clear no longer passes clicks through to column headers (sort no longer changes accidentally)
+- **@query-grid/ui** — Clear resets filters/search only, not sort
+- **@query-grid/primeng / @query-grid/ui** — build `prebuild` ensures `@query-grid/core` is compiled; tsconfig paths resolve core sources
+
 ## 0.1.0-preview.7 — 2026-07-19
 
 ### Changed

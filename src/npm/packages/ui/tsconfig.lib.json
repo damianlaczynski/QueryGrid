@@ -5,7 +5,7 @@
     "declaration": true,
     "declarationMap": true,
     "paths": {
-      "@query-grid/core": ["../core/dist/index.d.ts"]
+      "@query-grid/core": ["../core/src/index.ts"]
     }
   },
   "angularCompilerOptions": {

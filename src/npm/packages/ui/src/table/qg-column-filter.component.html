@@ -20,7 +20,7 @@
           </div>
         } @else {
           @if (showLogicSelect()) {
-            <ui-dropdown
+            <ui-select
               class="qg-column-filter__control"
               [items]="logicItems"
               [size]="size()"
@@ -33,7 +33,7 @@
           @for (rule of draftRules(); track rule.id) {
             <div class="qg-column-filter__rule">
               @if (showOperatorSelect()) {
-                <ui-dropdown
+                <ui-select
                   class="qg-column-filter__control"
                   [items]="operatorItems()"
                   [size]="size()"
@@ -95,7 +95,7 @@
                     />
                   }
                   @case ("enum") {
-                    <ui-dropdown
+                    <ui-select
                       class="qg-column-filter__control"
                       mode="multi"
                       [items]="enumItems()"

@@ -15,29 +15,25 @@ import {
   ButtonComponent,
   IconComponent,
   type IconName,
-  LoadingStateComponent,
   PaginationComponent,
   type PaginationConfig,
   SearchComponent,
+  SpinnerComponent,
   TagComponent,
 } from "@laczynski/ui";
 import type { FilterCondition, FilterLogic } from "@query-grid/core";
 import { DEFAULT_GRID_OPTIONS } from "@query-grid/core";
 import type { GridResource } from "./create-grid-resource";
 import { buildGridFilterChips, type GridFilterChip, removeFilterCondition } from "./filter-chips";
-import {
-  getFieldFilterConditions,
-  getFieldFilterLogic,
-  upsertFieldFilter,
-} from "./filter-mapper";
+import { getFieldFilterConditions, getFieldFilterLogic, upsertFieldFilter } from "./filter-mapper";
 import { getSortDirection, toggleSortField } from "./sort-mapper";
 import type { QgColumnContext } from "./table/column-context";
 import { QgColumnDirective } from "./table/column.directive";
 import { QgEmptyDirective } from "./table/empty.directive";
 import type { GridColumn } from "./table/grid-column";
 import {
-  QgColumnFilterComponent,
   type ColumnFilterApplyEvent,
+  QgColumnFilterComponent,
 } from "./table/qg-column-filter.component";
 import { resolveGridColumns } from "./table/resolve-grid-columns";
 import { QgToolbarDirective } from "./toolbar.directive";
@@ -59,7 +55,7 @@ const GRID_IMPORTS = [
   SearchComponent,
   TagComponent,
   PaginationComponent,
-  LoadingStateComponent,
+  SpinnerComponent,
   QgColumnFilterComponent,
 ];
 
@@ -93,6 +89,8 @@ export class UiDataGridComponent<T = unknown> {
   /** Alias for `bordered` (PrimeNG `showGridlines` DX parity). */
   readonly showGridlines = input<boolean | undefined>(undefined);
   readonly extraChips = input<GridExtraChip[]>([]);
+  /** Stable row identity for `@for` tracking (e.g. `"id"`). */
+  readonly dataKey = input<string | undefined>(undefined);
 
   readonly extraChipRemove = output<string>();
   readonly cleared = output<void>();
@@ -103,6 +101,7 @@ export class UiDataGridComponent<T = unknown> {
 
   protected readonly searchText = signal("");
   protected readonly filtersExpanded = signal(false);
+  protected readonly showRefreshOverlay = signal(false);
 
   protected readonly DEFAULT_GRID_OPTIONS = DEFAULT_GRID_OPTIONS;
 
@@ -112,6 +111,22 @@ export class UiDataGridComponent<T = unknown> {
       if (search !== this.searchText()) {
         this.searchText.set(search);
       }
+    });
+
+    effect((onCleanup) => {
+      const loading = this.grid().loading();
+      const hasRows = (this.grid().items() ?? []).length > 0;
+
+      if (!loading || !hasRows) {
+        this.showRefreshOverlay.set(false);
+        return;
+      }
+
+      const timer = setTimeout(() => this.showRefreshOverlay.set(true), 200);
+      onCleanup(() => {
+        clearTimeout(timer);
+        this.showRefreshOverlay.set(false);
+      });
     });
   }
 
@@ -173,7 +188,19 @@ export class UiDataGridComponent<T = unknown> {
 
   protected readonly hasRows = computed(() => (this.grid().items() ?? []).length > 0);
 
+  protected readonly isRefreshing = computed(() => this.grid().loading() && this.hasRows());
+
   protected readonly hasGridlines = computed(() => this.showGridlines() ?? this.bordered());
+
+  protected trackRow(row: T, index: number): unknown {
+    const key = this.dataKey();
+    if (!key) {
+      return index;
+    }
+
+    const value = (row as Record<string, unknown>)[key];
+    return value ?? index;
+  }
 
   protected toolbarTemplate(): TemplateRef<unknown> | undefined {
     return this.toolbarDirectiveQueries()[0]?.template;
@@ -331,9 +358,13 @@ export class UiDataGridComponent<T = unknown> {
   }
 
   protected clear(): void {
+    if (!this.hasActiveFilters()) {
+      return;
+    }
+
     this.searchText.set("");
     this.filtersExpanded.set(false);
-    this.grid().resetQuery();
+    this.grid().patchQuery({ filter: undefined, search: undefined, skip: 0 });
     this.cleared.emit();
   }
 }
