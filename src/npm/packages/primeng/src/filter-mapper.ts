@@ -5,7 +5,7 @@ import type {
   FilterOperator,
   GridQuery,
 } from "@query-grid/core";
-import { isFilterCondition, isFilterGroup } from "@query-grid/core";
+import { coerceOperatorForColumnType, isFilterCondition, isFilterGroup } from "@query-grid/core";
 import type { FilterMetadata } from "primeng/api";
 import { FilterOperator as PrimeFilterOperator } from "primeng/api";
 import type { Table } from "primeng/table";
@@ -55,42 +55,6 @@ function mapMatchMode(matchMode?: string): FilterOperator | null {
 
 const STRING_OPERATORS: FilterOperator[] = ["contains", "notContains", "startsWith", "endsWith"];
 
-/** Coerces a filter operator to one allowed for the column filter type. */
-export function fixOperatorForColumnType(
-  operator: FilterOperator,
-  columnType?: string,
-  nullable?: boolean,
-): FilterOperator {
-  if (nullable && (operator === "isNull" || operator === "isNotNull")) {
-    return operator;
-  }
-
-  switch (columnType) {
-    case "boolean":
-      return operator === "ne" ? "ne" : "eq";
-    case "guid":
-      if (operator === "eq" || operator === "ne" || operator === "in" || operator === "notIn") {
-        return operator;
-      }
-      return "eq";
-    case "enum":
-      if (operator === "in" || operator === "notIn" || operator === "eq" || operator === "ne") {
-        return operator;
-      }
-      return "in";
-    case "number":
-    case "date":
-      if (STRING_OPERATORS.includes(operator)) {
-        return "eq";
-      }
-      return operator;
-    case "text":
-      return operator;
-    default:
-      return operator;
-  }
-}
-
 const GUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function fixOperatorFromValue(operator: FilterOperator, value: unknown): FilterOperator {
@@ -126,7 +90,7 @@ function resolveOperatorForColumn(
     if (columnType === "text" || columnType === "guid") {
       return mapped;
     }
-    return fixOperatorForColumnType(mapped, columnType, nullable);
+    return coerceOperatorForColumnType(mapped, columnType, nullable);
   }
 
   return fixOperatorFromValue(mapped, meta.value);
@@ -316,8 +280,7 @@ export function buildPrimeTableFilters(
 
   for (const [field, entry] of collectFieldFilters(filter)) {
     const column = columnByField.get(field);
-    const primeOperator =
-      entry.logic === "or" ? PrimeFilterOperator.OR : PrimeFilterOperator.AND;
+    const primeOperator = entry.logic === "or" ? PrimeFilterOperator.OR : PrimeFilterOperator.AND;
 
     result[field] = entry.conditions.map((condition) => ({
       value:

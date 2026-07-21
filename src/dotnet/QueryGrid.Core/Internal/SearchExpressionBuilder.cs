@@ -7,10 +7,13 @@ namespace QueryGrid.Core.Internal;
 
 /// <summary>
 /// Builds a provider-agnostic OR predicate across the row type's searchable fields:
-/// case-insensitive contains for text, equality for Guid values.
+/// case-insensitive contains for text; full or partial Guid match for Guid fields.
 /// </summary>
 internal static class SearchExpressionBuilder
 {
+  private static readonly MethodInfo GuidToString =
+    typeof(Guid).GetMethod(nameof(Guid.ToString), Type.EmptyTypes)!;
+
   public static Expression<Func<T, bool>>? Build<T>(string? search, GridSchema schema)
   {
     if (string.IsNullOrWhiteSpace(search) || schema.SearchableFields.Count == 0)
@@ -29,7 +32,7 @@ internal static class SearchExpressionBuilder
       var match = field.Category switch
       {
         FieldCategory.Text => BuildStringContains(member, lowered),
-        FieldCategory.Guid => BuildGuidEquality(member, trimmed),
+        FieldCategory.Guid => BuildGuidSearch(member, trimmed, lowered),
         _ => throw new InvalidOperationException(
           $"Field '{field.Name}' is searchable but has unsupported category '{field.Category}'."),
       };
@@ -53,28 +56,76 @@ internal static class SearchExpressionBuilder
       member, loweredSearch, StringExpressionMethods.Contains, typeof(string));
   }
 
-  private static Expression? BuildGuidEquality(Expression member, string search)
+  private static Expression? BuildGuidSearch(Expression member, string search, Expression loweredSearch)
   {
-    if (!Guid.TryParse(search, out var parsed))
+    if (Guid.TryParse(search, out var parsed))
+    {
+      return BuildGuidEquality(member, parsed);
+    }
+
+    if (!LooksLikeGuidFragment(search))
     {
       return null;
     }
 
-    var underlying = TypeClassifier.UnwrapNullable(member.Type);
-    Expression guidValue = member;
-    Expression? notNull = null;
+    return BuildGuidStringContains(member, loweredSearch);
+  }
 
-    if (underlying != member.Type)
+  private static bool LooksLikeGuidFragment(string search)
+  {
+    if (search.Length == 0)
     {
-      notNull = Expression.Property(member, nameof(Nullable<Guid>.HasValue));
-      var valueProperty = member.Type.GetProperty(
-        nameof(Nullable<Guid>.Value),
-        BindingFlags.Public | BindingFlags.Instance)!;
-      guidValue = Expression.Property(member, valueProperty);
+      return false;
     }
+
+    foreach (var c in search)
+    {
+      if (c is '-' or '{' or '}')
+      {
+        continue;
+      }
+
+      if (!Uri.IsHexDigit(c))
+      {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  private static Expression BuildGuidStringContains(Expression member, Expression loweredSearch)
+  {
+    var (guidValue, notNull) = UnwrapGuidMember(member);
+    var loweredGuid = Expression.Call(
+      Expression.Call(guidValue, GuidToString),
+      StringExpressionMethods.ToLower);
+    var contains = Expression.Call(loweredGuid, StringExpressionMethods.Contains, loweredSearch);
+    return notNull is null ? contains : Expression.AndAlso(notNull, contains);
+  }
+
+  private static Expression BuildGuidEquality(Expression member, Guid parsed)
+  {
+    var underlying = TypeClassifier.UnwrapNullable(member.Type);
+    var (guidValue, notNull) = UnwrapGuidMember(member);
 
     var constant = Expression.Constant(parsed, underlying);
     var equal = Expression.Equal(guidValue, constant, liftToNull: false, method: null);
     return notNull is null ? equal : Expression.AndAlso(notNull, equal);
+  }
+
+  private static (Expression GuidValue, Expression? NotNull) UnwrapGuidMember(Expression member)
+  {
+    var underlying = TypeClassifier.UnwrapNullable(member.Type);
+    if (underlying == member.Type)
+    {
+      return (member, null);
+    }
+
+    var notNull = Expression.Property(member, nameof(Nullable<Guid>.HasValue));
+    var valueProperty = member.Type.GetProperty(
+      nameof(Nullable<Guid>.Value),
+      BindingFlags.Public | BindingFlags.Instance)!;
+    return (Expression.Property(member, valueProperty), notNull);
   }
 }

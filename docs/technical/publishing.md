@@ -63,13 +63,13 @@ Settings → Secrets and variables → Actions:
 1. [nuget.org](https://www.nuget.org) → profile → **Trusted Publishing** → **Add**.
 2. Policy fields:
 
-   | Field            | Value              |
-   | ---------------- | ------------------ |
+   | Field            | Value                  |
+   | ---------------- | ---------------------- |
    | Package Owner    | your nuget.org account |
-   | Repository Owner | `damianlaczynski`  |
-   | Repository       | `QueryGrid`        |
-   | Workflow File    | `publish.yml`      |
-   | Environment      | *(leave empty)*    |
+   | Repository Owner | `damianlaczynski`      |
+   | Repository       | `QueryGrid`            |
+   | Workflow File    | `publish.yml`          |
+   | Environment      | _(leave empty)_        |
 
 ### npm trusted publishing
 
@@ -82,7 +82,7 @@ npmjs.com → package → **Settings** → **Trusted Publisher** → **GitHub Ac
 | Organization or user | `damianlaczynski` |
 | Repository           | `QueryGrid`       |
 | Workflow filename    | `publish.yml`     |
-| Environment          | *(leave empty)*   |
+| Environment          | _(leave empty)_   |
 
 No `NPM_TOKEN` secret — CI uses OIDC (npm CLI ≥ 11.5.1, upgraded in the workflow).
 
@@ -107,7 +107,7 @@ Prerelease tags (`v*-*`) publish npm with dist-tag `preview`; stable tags use `l
 ### NuGet (nuget.org)
 
 ```powershell
-dotnet add package QueryGrid.EntityFrameworkCore --version 0.1.0-preview.7
+dotnet add package QueryGrid.EntityFrameworkCore --version 0.1.0-preview.8
 ```
 
 ### NuGet (GitHub Packages)
@@ -116,7 +116,7 @@ Copy [`nuget.config.example`](nuget.config.example). Replace `OWNER` with `damia
 
 ```powershell
 dotnet nuget add source --username YOUR_GITHUB_USERNAME --password YOUR_PAT --store-password-in-clear-text --name github "https://nuget.pkg.github.com/OWNER/index.json"
-dotnet add package QueryGrid.EntityFrameworkCore --version 0.1.0-preview.7
+dotnet add package QueryGrid.EntityFrameworkCore --version 0.1.0-preview.8
 ```
 
 In GitHub Actions on a consuming repo, use `GITHUB_TOKEN` with read access to the package.

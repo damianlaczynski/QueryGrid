@@ -63,8 +63,11 @@ export class QgColumnFilterComponent<T = unknown> {
     );
   }
 
-  protected enumMatchModeOptions() {
-    return buildEnumMatchModeOptions((key) => this.primeConfig.getTranslation(key));
+  protected enumMatchModeOptions(column: GridColumn<T>) {
+    return buildEnumMatchModeOptions(
+      (key) => this.primeConfig.getTranslation(key),
+      column.filter?.nullable,
+    );
   }
 
   protected booleanFilterTrueLabel(column: GridColumn<T>): string {

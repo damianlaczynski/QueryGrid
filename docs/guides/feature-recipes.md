@@ -21,6 +21,14 @@ See [Change coupling checklist](../../AGENTS.md#change-coupling-checklist). Step
 4. Update `GridQueryJson.CreateOptions()` / `samples/showcase-api/GridQueryBinding.cs` if serializer options change.
 5. Run `npm run test:all`.
 
+## Custom sort semantics (enum order, sort key, companions)
+
+1. Add or apply attributes in `QueryGrid.Abstractions`: `GridEnumOrderAttribute`, `GridSortKeyAttribute`, `GridSortWithAttribute`.
+2. Extend schema discovery in `GridSchemaProvider` and sorting in `SortExpressionBuilder`.
+3. Add unit tests in `SortExtensionTests` and schema tests in `SchemaDiscoveryTests`.
+4. Add PostgreSQL integration coverage in `PostgreSqlSortExtensionTests`.
+5. Document the grid list-row DTO pattern in [dotnet-guidelines.md](dotnet-guidelines.md).
+
 ## Add a grid state field (e.g. new load option)
 
 1. Add property to `GridQuery` (Abstractions + core TS model).

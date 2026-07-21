@@ -87,6 +87,31 @@ public class FilterTests
   }
 
   [Fact]
+  public void Nullable_enum_supports_is_null_and_is_not_null()
+  {
+    Assert.Equal([2], FilteredIds(Cond("OptionalStatus", FilterOperator.IsNull)));
+    Assert.Equal([1, 3, 4], FilteredIds(Cond("OptionalStatus", FilterOperator.IsNotNull)));
+  }
+
+  [Fact]
+  public void Nullable_enum_eq_matches_value_and_null()
+  {
+    Assert.Equal([1], FilteredIds(Cond("OptionalStatus", FilterOperator.Eq, "Active")));
+    Assert.Equal([2], FilteredIds(Cond("OptionalStatus", FilterOperator.Eq, null)));
+  }
+
+  [Fact]
+  public void Nullable_enum_in_matches_multiple_values()
+  {
+    Assert.Equal([1, 3, 4], FilteredIds(Cond("OptionalStatus", FilterOperator.In, new object?[]
+    {
+      PersonStatus.Active,
+      PersonStatus.Suspended,
+      PersonStatus.Pending,
+    })));
+  }
+
+  [Fact]
   public void Eq_on_guid_from_string()
   {
     Assert.Equal([2], FilteredIds(Cond("ExternalId", FilterOperator.Eq, TestData.Guid2.ToString())));
