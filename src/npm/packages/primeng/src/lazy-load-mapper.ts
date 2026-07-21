@@ -6,11 +6,11 @@ import { mapPrimeFiltersToGridFilter } from "./filter-mapper";
 import { mapLazyLoadSort } from "./sort-mapper";
 import type { GridColumn } from "./table/grid-column";
 
+export { coerceOperatorForColumnType } from "@query-grid/core";
 export {
   applyGridQueryToPrimeTable,
   buildPrimeTableFilters,
   defaultPrimeMatchMode,
-  fixOperatorForColumnType,
   mapPrimeFiltersToGridFilter,
   syncPrimeTableFieldFilters,
 } from "./filter-mapper";

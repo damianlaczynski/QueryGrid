@@ -59,3 +59,74 @@ public sealed class GridSearchableAttribute : Attribute
 public sealed class GridSortTieBreakerAttribute : Attribute
 {
 }
+
+/// <summary>
+/// Defines the business sort order for an enum property. Values are listed from lowest to highest rank.
+/// </summary>
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+public sealed class GridEnumOrderAttribute : Attribute
+{
+  /// <summary>Enum members in ascending sort order.</summary>
+  public object[] Values { get; }
+
+  /// <summary>Creates the attribute.</summary>
+  /// <param name="values">Enum members in ascending sort order.</param>
+  public GridEnumOrderAttribute(params object[] values)
+  {
+    ArgumentNullException.ThrowIfNull(values);
+    if (values.Length == 0)
+    {
+      throw new ArgumentException("At least one enum value is required.", nameof(values));
+    }
+
+    Values = values;
+  }
+}
+
+/// <summary>
+/// Sorts this field using another property (for example a hidden rank column on a grid row DTO).
+/// The wire field name stays the annotated property; only the sort key changes.
+/// </summary>
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+public sealed class GridSortKeyAttribute : Attribute
+{
+  /// <summary>The property name used for <c>OrderBy</c> when this field is sorted.</summary>
+  public string PropertyName { get; }
+
+  /// <summary>Creates the attribute.</summary>
+  /// <param name="propertyName">Sort key property on the same row type.</param>
+  public GridSortKeyAttribute(string propertyName)
+  {
+    ArgumentException.ThrowIfNullOrWhiteSpace(propertyName);
+    PropertyName = propertyName;
+  }
+}
+
+/// <summary>
+/// When this field is sorted, the listed companion properties are appended with the same direction
+/// before any implicit tie-breaker (for example date + time columns).
+/// </summary>
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+public sealed class GridSortWithAttribute : Attribute
+{
+  /// <summary>Companion property names on the same row type.</summary>
+  public string[] PropertyNames { get; }
+
+  /// <summary>Creates the attribute.</summary>
+  /// <param name="propertyNames">One or more companion property names.</param>
+  public GridSortWithAttribute(params string[] propertyNames)
+  {
+    ArgumentNullException.ThrowIfNull(propertyNames);
+    if (propertyNames.Length == 0)
+    {
+      throw new ArgumentException("At least one companion property is required.", nameof(propertyNames));
+    }
+
+    if (propertyNames.Any(string.IsNullOrWhiteSpace))
+    {
+      throw new ArgumentException("Companion property names cannot be empty.", nameof(propertyNames));
+    }
+
+    PropertyNames = propertyNames;
+  }
+}

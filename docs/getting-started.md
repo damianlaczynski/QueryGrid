@@ -38,7 +38,7 @@ var grid = await db.Issues.AsNoTracking()
 `GridQuery.Search` works on projected `IQueryable` DTOs, including typical EF Core projections with correlated subqueries (counts, lookups). Mark searchable fields with `[GridSearchable]` on the DTO.
 
 - **String fields** — case-insensitive contains (`ToLower().Contains()`, translated to `LOWER(...) LIKE` by every relational provider).
-- **Guid fields** — equality when the search text parses as a `Guid`; otherwise the field is skipped (no `ToString().Contains()` in SQL).
+- **Guid fields** — full `Guid` equality when the search text parses as a `Guid`; otherwise case-insensitive substring match on the canonical string form when the text looks like a Guid fragment (hex digits, dashes, optional braces). Plain text such as `login` does not search Guid fields.
 
 For very heavy projections where provider translation still fails, apply search on the entity **before** `.Select()` and clear search from the grid query:
 

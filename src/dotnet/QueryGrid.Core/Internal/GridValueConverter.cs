@@ -16,6 +16,8 @@ internal static class GridValueConverter
   /// </summary>
   public static object? Convert(object? raw, Type targetType, string field)
   {
+    raw = NormalizeRaw(raw, targetType);
+
     var underlying = TypeClassifier.UnwrapNullable(targetType);
 
     if (raw is null)
@@ -52,6 +54,27 @@ internal static class GridValueConverter
         GridValidationCodes.InvalidValue,
         $"Value '{raw}' is not valid for field '{field}' of type '{underlying.Name}'.");
     }
+  }
+
+  private static object? NormalizeRaw(object? raw, Type targetType)
+  {
+    if (raw is JsonElement { ValueKind: JsonValueKind.String } jsonString)
+    {
+      raw = jsonString.GetString();
+    }
+
+    if (raw is not string text)
+    {
+      return raw;
+    }
+
+    text = text.Trim();
+    if (text.Length == 0 && TypeClassifier.IsNullable(targetType))
+    {
+      return null;
+    }
+
+    return text;
   }
 
   private static object? ExtractJson(JsonElement json)

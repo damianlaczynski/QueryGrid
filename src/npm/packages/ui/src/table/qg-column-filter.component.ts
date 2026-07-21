@@ -19,12 +19,9 @@ import {
   TextComponent,
 } from "@laczynski/ui";
 import type { FilterCondition, FilterLogic, FilterOperator } from "@query-grid/core";
+import { coerceOperatorForColumnType } from "@query-grid/core";
 import { defaultOperatorForType, hasFilterValue } from "../filter-mapper";
-import {
-  buildEnumMatchModeOptions,
-  buildMatchModeOptions,
-  fixOperatorForColumnType,
-} from "../match-mode-options";
+import { buildEnumMatchModeOptions, buildMatchModeOptions } from "../match-mode-options";
 import type { GridSize } from "../types";
 import type { GridColumn, GridColumnFilterType } from "./grid-column";
 
@@ -197,7 +194,7 @@ export class QgColumnFilterComponent<T = unknown> {
   }
 
   protected onOperatorChange(ruleId: number, operator: string | number): void {
-    const next = fixOperatorForColumnType(
+    const next = coerceOperatorForColumnType(
       String(operator) as FilterOperator,
       this.column().filter?.type,
       this.column().filter?.nullable,
@@ -319,7 +316,7 @@ export class QgColumnFilterComponent<T = unknown> {
     condition: FilterCondition,
     filterType: GridColumnFilterType | undefined,
   ): DraftRule {
-    const operator = fixOperatorForColumnType(
+    const operator = coerceOperatorForColumnType(
       condition.operator,
       filterType,
       this.column().filter?.nullable,

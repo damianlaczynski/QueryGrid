@@ -14,13 +14,13 @@
 
 ## Layer ownership
 
-| Layer                                | Owns                                                                                                 | Does not own                                       |
-| ------------------------------------ | ---------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| .NET unit (`QueryGrid.UnitTests`)    | Expression building, schema discovery, operator validation, JSON contract (`GridQueryContractTests`) | Browser, Angular, real HTTP servers                |
-| .NET integration (`QueryGrid.IntegrationTests`) | PostgreSQL + Testcontainers: search on projected EF queries | Browser, Angular, real HTTP servers                |
-| npm unit (`@query-grid/core` Vitest) | Model helpers, error codes, formatting                                                               | DOM, Angular change detection, JSON transport      |
-| npm unit (`@query-grid/primeng`)     | Lazy-load mapping, filter chips                                                                      | Full browser E2E                                   |
-| Samples                              | Full stack: API + grid UI + real lazy load                                                           | Exhaustive operator matrix (covered by unit tests) |
+| Layer                                           | Owns                                                                                                                    | Does not own                                       |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| .NET unit (`QueryGrid.UnitTests`)               | Expression building, schema discovery, operator validation, JSON contract (`GridQueryContractTests`)                    | Browser, Angular, real HTTP servers                |
+| .NET integration (`QueryGrid.IntegrationTests`) | SQLite (in-memory), PostgreSQL, SQL Server via Testcontainers — shared `GridBehaviorScenarios` for provider-agnostic UX | Browser, Angular, real HTTP servers                |
+| npm unit (`@query-grid/core` Vitest)            | Model helpers, error codes, formatting                                                                                  | DOM, Angular change detection, JSON transport      |
+| npm unit (`@query-grid/primeng`)                | Lazy-load mapping, filter chips                                                                                         | Full browser E2E                                   |
+| Samples                                         | Full stack: API + grid UI + real lazy load                                                                              | Exhaustive operator matrix (covered by unit tests) |
 
 ## Anti-patterns
 
@@ -37,14 +37,15 @@
 - Adding a filter operator or changing operator/type rules
 - Changing `GridQuery` / `GridResult` JSON shape (`GridQueryContractTests`)
 - Changing sort tie-breaker or paging edge cases
-- Changing PrimeNG ↔ QueryGrid lazy-load mapping (`lazy-load-mapper.spec.ts`)
+- Changing PrimeNG ↔ QueryGrid lazy-load mapping (`lazy-load-mapper.spec.ts`, `filter-mapper-ux.spec.ts`)
+- User-visible grid behavior that must work the same on every relational provider (`GridBehaviorScenarios` + per-provider test classes)
 
 ## What to run
 
 Prefer the smallest relevant check. Command details: [`AGENTS.md`](../../AGENTS.md).
 
-| Change                                 | Run                                                                 |
-| -------------------------------------- | ------------------------------------------------------------------- |
+| Change                                 | Run                                                                  |
+| -------------------------------------- | -------------------------------------------------------------------- |
 | `QueryGrid.Core` only                  | `npm run test:backend` (or `dotnet test` filtered if fast iteration) |
 | `QueryGrid.Abstractions` JSON contract | `dotnet test`                                                        |
 | `@query-grid/core`                     | `npm run test:npm` (or test core workspace only from `src/npm`)      |
@@ -56,8 +57,10 @@ CI runs the equivalent on every push — see [ci.md](../technical/ci.md). ESLint
 ## Test file locations
 
 - .NET: `src/dotnet/tests/QueryGrid.UnitTests/*.cs`
-- .NET integration (PostgreSQL + Docker): `src/dotnet/tests/QueryGrid.IntegrationTests/*.cs`
+- .NET integration (SQLite + Docker PostgreSQL/SQL Server): `src/dotnet/tests/QueryGrid.IntegrationTests/*.cs`
+  - Shared scenarios: `GridBehaviorScenarios.cs`
+  - Provider runners: `SqliteGridBehaviorTests`, `PostgreSqlGridBehaviorTests`, `SqlServerGridBehaviorTests`
 - npm core: `src/npm/packages/core/src/*.spec.ts`
-- npm primeng: `src/npm/packages/primeng/src/*.spec.ts`
+- npm primeng: `src/npm/packages/primeng/src/*.spec.ts` (include `filter-mapper-ux.spec.ts` for defensive UI mapping)
 
 Colocate new tests with the feature they cover; extend existing test classes before adding parallel files.

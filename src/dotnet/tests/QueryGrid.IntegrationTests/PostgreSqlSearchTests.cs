@@ -83,7 +83,7 @@ public sealed class PostgreSqlSearchTests(PostgreSqlFixture fixture) : PostgreSq
   }
 
   [Fact]
-  public async Task Guid_search_with_non_guid_text_skips_guid_field()
+  public async Task Guid_search_with_fragment_matches_equality()
   {
     await using var context = await CreateContextAsync();
     await SearchTestData.SeedAsync(context);
@@ -98,7 +98,30 @@ public sealed class PostgreSqlSearchTests(PostgreSqlFixture fixture) : PostgreSq
       });
 
     var result = await projected.ToGridResultAsync(
-      new GridQuery { Take = 10, Search = "bbbb-cccc" },
+      new GridQuery { Take = 10, Search = "dddd-1111" },
+      cancellationToken: TestContext.Current.CancellationToken);
+
+    Assert.Single(result.Items);
+    Assert.Equal(SearchTestData.IssueId1, result.Items[0].Id);
+  }
+
+  [Fact]
+  public async Task Guid_search_with_plain_text_skips_guid_field()
+  {
+    await using var context = await CreateContextAsync();
+    await SearchTestData.SeedAsync(context);
+
+    var projected = context.Issues.AsNoTracking()
+      .Select(i => new IssueListItemDto
+      {
+        Id = i.Id,
+        Title = i.Title,
+        Description = i.Description,
+        CreatedByName = null,
+      });
+
+    var result = await projected.ToGridResultAsync(
+      new GridQuery { Take = 10, Search = "not-a-guid" },
       cancellationToken: TestContext.Current.CancellationToken);
 
     Assert.Empty(result.Items);
