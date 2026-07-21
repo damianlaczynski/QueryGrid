@@ -24,7 +24,7 @@ export function getAllowedOperatorsForColumnType(
     case "date":
       return ["eq", "ne", "lt", "lte", "gt", "gte", "between", "in", "notIn", ...nullOps];
     case "text":
-      return ["contains", "notContains", "startsWith", "endsWith", "eq", "ne", ...nullOps];
+      return [...STRING_OPERATORS, "eq", "ne", ...nullOps];
     default:
       return [];
   }
