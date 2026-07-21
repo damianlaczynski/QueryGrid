@@ -1,160 +1,174 @@
-<ui-loading-state [isLoading]="grid().loading()" [overlay]="true" [blurContent]="true">
-  <div class="qg-ui-grid__layout">
-    <div class="qg-ui-grid__toolbar">
-      <div class="qg-ui-grid__toolbar-row">
-        @if (searchable()) {
-          <ui-search
-            class="qg-ui-grid__search"
-            [size]="size()"
-            [placeholder]="searchPlaceholder()"
-            [ngModel]="searchText()"
-            (ngModelChange)="onSearchChange($event)"
-          />
-        }
+<div class="qg-ui-grid__layout">
+  <div class="qg-ui-grid__toolbar">
+    <div class="qg-ui-grid__toolbar-row">
+      @if (searchable()) {
+        <ui-search
+          class="qg-ui-grid__search"
+          [size]="size()"
+          [placeholder]="searchPlaceholder()"
+          [ngModel]="searchText()"
+          (ngModelChange)="onSearchChange($event)"
+        />
+      }
 
-        <div class="qg-ui-grid__toolbar-actions">
-          @if (toolbarTemplate()) {
-            <ui-button
-              appearance="outline"
-              [size]="size()"
-              icon="filter"
-              text="Filters"
-              [variant]="filtersExpanded() ? 'primary' : 'secondary'"
-              (click)="toggleFiltersExpanded()"
-            />
-          }
-
+      <div class="qg-ui-grid__toolbar-actions">
+        @if (toolbarTemplate()) {
           <ui-button
             appearance="outline"
             [size]="size()"
-            icon="filter_dismiss"
-            text="Clear"
-            [disabled]="!hasActiveFilters()"
-            (click)="clear()"
+            icon="filter"
+            text="Filters"
+            [variant]="filtersExpanded() ? 'primary' : 'secondary'"
+            (click)="toggleFiltersExpanded()"
           />
-        </div>
+        }
+
+        <ui-button
+          appearance="outline"
+          [size]="size()"
+          icon="filter_dismiss"
+          text="Clear"
+          [disabled]="!hasActiveFilters()"
+          (click)="clear()"
+        />
       </div>
-
-      @if (filtersExpanded() && toolbarTemplate(); as toolbar) {
-        <div class="qg-ui-grid__toolbar-filters">
-          <ng-container [ngTemplateOutlet]="toolbar" />
-        </div>
-      }
-
-      @if (allChips().length > 0) {
-        <div class="qg-ui-grid__chips">
-          @for (chip of allChips(); track chip.id) {
-            <ui-tag
-              [text]="chip.label"
-              [size]="size()"
-              variant="secondary"
-              appearance="outline"
-              [dismissible]="true"
-              (dismiss)="removeChip(chip)"
-            />
-          }
-        </div>
-      }
     </div>
 
-    <div class="qg-ui-grid__table-wrap">
-      <table class="qg-ui-grid__table">
-        <thead class="qg-ui-grid__head">
-          <tr class="qg-ui-grid__header-row">
-            @for (column of resolvedColumns(); track column.field) {
-              <th
-                scope="col"
-                class="qg-ui-grid__header-cell"
-                [class.qg-ui-grid__header-cell--sortable]="isSortable(column)"
-                [class.qg-ui-grid__header-cell--sorted]="sortDirection(column.field) !== null"
-                [attr.aria-sort]="ariaSort(column)"
-                [style.minWidth]="column.width"
-                [style.textAlign]="column.align ?? 'left'"
+    @if (filtersExpanded() && toolbarTemplate(); as toolbar) {
+      <div class="qg-ui-grid__toolbar-filters">
+        <ng-container [ngTemplateOutlet]="toolbar" />
+      </div>
+    }
+
+    @if (allChips().length > 0) {
+      <div class="qg-ui-grid__chips">
+        @for (chip of allChips(); track chip.id) {
+          <ui-tag
+            [text]="chip.label"
+            [size]="size()"
+            variant="secondary"
+            appearance="outline"
+            [dismissible]="true"
+            (dismiss)="removeChip(chip)"
+          />
+        }
+      </div>
+    }
+  </div>
+
+  <div
+    class="qg-ui-grid__table-wrap"
+    [class.qg-ui-grid__table-wrap--refreshing]="isRefreshing()"
+    [attr.aria-busy]="grid().loading() || null"
+  >
+    <table class="qg-ui-grid__table">
+      <thead class="qg-ui-grid__head">
+        <tr class="qg-ui-grid__header-row">
+          @for (column of resolvedColumns(); track column.field) {
+            <th
+              scope="col"
+              class="qg-ui-grid__header-cell"
+              [class.qg-ui-grid__header-cell--sortable]="isSortable(column)"
+              [class.qg-ui-grid__header-cell--sorted]="sortDirection(column.field) !== null"
+              [attr.aria-sort]="ariaSort(column)"
+              [style.minWidth]="column.width"
+              [style.textAlign]="column.align ?? 'left'"
+            >
+              <div
+                class="qg-ui-grid__header"
+                [class.qg-ui-grid__header--sortable]="isSortable(column)"
+                (click)="onSortClick(column, $event)"
               >
-                <div
-                  class="qg-ui-grid__header"
-                  [class.qg-ui-grid__header--sortable]="isSortable(column)"
-                  (click)="onSortClick(column, $event)"
-                >
-                  <div class="qg-ui-grid__header-label">{{ column.header }}</div>
-                  <div class="qg-ui-grid__header-actions">
-                    @if (isSortable(column)) {
-                      <span class="qg-ui-grid__sort">
-                        <button
-                          type="button"
-                          class="qg-ui-grid__sort-button"
-                          [class.qg-ui-grid__sort-button--active]="
-                            sortDirection(column.field) !== null
-                          "
-                          [attr.aria-label]="sortAriaLabel(column)"
-                          (click)="onSortClick(column, $event)"
-                        >
-                          <ui-icon
-                            [icon]="sortIcon(column)"
-                            [size]="size()"
-                            [variant]="sortDirection(column.field) !== null ? 'filled' : 'regular'"
-                          />
-                        </button>
-                        @if (showSortPriority(column.field)) {
-                          <span class="qg-ui-grid__sort-index">{{ sortIndex(column.field) }}</span>
-                        }
-                      </span>
-                    }
-                    @if (column.filter) {
-                      <qg-column-filter
-                        [column]="column"
-                        [size]="size()"
-                        [conditions]="columnConditions(column.field)"
-                        [logic]="columnFilterLogic(column.field)"
-                        (applyFilter)="onColumnFilterChange(column.field, $event)"
-                      />
-                    }
-                  </div>
+                <div class="qg-ui-grid__header-label">{{ column.header }}</div>
+                <div class="qg-ui-grid__header-actions">
+                  @if (isSortable(column)) {
+                    <span class="qg-ui-grid__sort">
+                      <button
+                        type="button"
+                        class="qg-ui-grid__sort-button"
+                        [class.qg-ui-grid__sort-button--active]="
+                          sortDirection(column.field) !== null
+                        "
+                        [attr.aria-label]="sortAriaLabel(column)"
+                        (click)="onSortClick(column, $event)"
+                      >
+                        <ui-icon
+                          [icon]="sortIcon(column)"
+                          [size]="size()"
+                          [variant]="sortDirection(column.field) !== null ? 'filled' : 'regular'"
+                        />
+                      </button>
+                      @if (showSortPriority(column.field)) {
+                        <span class="qg-ui-grid__sort-index">{{ sortIndex(column.field) }}</span>
+                      }
+                    </span>
+                  }
+                  @if (column.filter) {
+                    <qg-column-filter
+                      [column]="column"
+                      [size]="size()"
+                      [conditions]="columnConditions(column.field)"
+                      [logic]="columnFilterLogic(column.field)"
+                      (applyFilter)="onColumnFilterChange(column.field, $event)"
+                    />
+                  }
                 </div>
-              </th>
-            }
-          </tr>
-        </thead>
-        <tbody class="qg-ui-grid__body">
-          @if (hasRows()) {
-            @for (row of grid().items() ?? []; track $index) {
-              <tr class="qg-ui-grid__row">
-                @for (column of resolvedColumns(); track column.field) {
-                  <td class="qg-ui-grid__cell" [style.textAlign]="column.align ?? 'left'">
-                    @if (cellTemplate(column.field); as template) {
-                      <ng-container
-                        [ngTemplateOutlet]="template"
-                        [ngTemplateOutletContext]="cellContext(row, column.field)"
-                      />
-                    } @else {
-                      {{ formatCell(column, row) }}
-                    }
-                  </td>
-                }
-              </tr>
-            }
-          } @else if (!grid().loading()) {
-            <tr class="qg-ui-grid__empty-row">
-              <td class="qg-ui-grid__empty-cell" [attr.colspan]="resolvedColumns().length">
-                @if (emptyTemplate(); as template) {
-                  <ng-container [ngTemplateOutlet]="template" />
-                } @else {
-                  No data
-                }
-              </td>
+              </div>
+            </th>
+          }
+        </tr>
+      </thead>
+      <tbody class="qg-ui-grid__body">
+        @if (hasRows()) {
+          @for (row of grid().items() ?? []; track trackRow(row, $index)) {
+            <tr class="qg-ui-grid__row">
+              @for (column of resolvedColumns(); track column.field) {
+                <td class="qg-ui-grid__cell" [style.textAlign]="column.align ?? 'left'">
+                  @if (cellTemplate(column.field); as template) {
+                    <ng-container
+                      [ngTemplateOutlet]="template"
+                      [ngTemplateOutletContext]="cellContext(row, column.field)"
+                    />
+                  } @else {
+                    {{ formatCell(column, row) }}
+                  }
+                </td>
+              }
             </tr>
           }
-        </tbody>
-      </table>
-    </div>
+        } @else if (grid().loading()) {
+          <tr class="qg-ui-grid__loading-row">
+            <td class="qg-ui-grid__loading-cell" [attr.colspan]="resolvedColumns().length">
+              <ui-spinner [size]="size()" ariaLabel="Loading data" />
+            </td>
+          </tr>
+        } @else {
+          <tr class="qg-ui-grid__empty-row">
+            <td class="qg-ui-grid__empty-cell" [attr.colspan]="resolvedColumns().length">
+              @if (emptyTemplate(); as template) {
+                <ng-container [ngTemplateOutlet]="template" />
+              } @else {
+                No data
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
 
-    <div class="qg-ui-grid__footer">
-      <ui-pagination
-        [config]="paginationConfig()"
-        [size]="size()"
-        (pageChange)="onPageChange($event)"
-        (pageSizeChange)="onPageSizeChange($event)"
-      />
-    </div>
+    @if (showRefreshOverlay()) {
+      <div class="qg-ui-grid__table-overlay" aria-hidden="true">
+        <ui-spinner [size]="size()" ariaLabel="Loading data" />
+      </div>
+    }
   </div>
-</ui-loading-state>
+
+  <div class="qg-ui-grid__footer">
+    <ui-pagination
+      [config]="paginationConfig()"
+      [size]="size()"
+      (pageChange)="onPageChange($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    />
+  </div>
+</div>
