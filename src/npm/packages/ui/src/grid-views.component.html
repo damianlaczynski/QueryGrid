@@ -1,47 +1,51 @@
 @if (viewsEnabled()) {
-  <div class="qg-grid-views">
-    <ui-select
-      class="qg-grid-views__select"
-      [items]="presetItems()"
-      [size]="size()"
-      [ngModel]="selectedPresetId()"
-      (selectionChange)="onPresetSelected($event)"
-      placeholder="Views"
-    />
+  <div class="qg-grid-views-group">
+    <div class="qg-grid-views">
+      <ui-select
+        class="qg-grid-views__select"
+        [items]="presetItems()"
+        [size]="size()"
+        [ngModel]="selectedPresetId()"
+        (selectionChange)="onPresetSelected($event)"
+        placeholder="Views"
+      />
 
-    @if (isPresetDirty()) {
+      @if (isPresetDirty()) {
+        <ui-button
+          appearance="outline"
+          [size]="size()"
+          icon="save"
+          variant="secondary"
+          title="Update view"
+          aria-label="Update view"
+          (click)="updatePreset()"
+        />
+      }
+
       <ui-button
         appearance="outline"
         [size]="size()"
-        icon="save"
+        icon="add"
         variant="secondary"
-        title="Update view"
-        aria-label="Update view"
-        (click)="updatePreset()"
+        title="Save as view"
+        aria-label="Save as view"
+        (click)="openSaveDialog()"
       />
-    }
 
-    <ui-button
-      appearance="outline"
-      [size]="size()"
-      icon="add"
-      variant="secondary"
-      title="Save as view"
-      aria-label="Save as view"
-      (click)="openSaveDialog()"
-    />
+      @if (canDeleteSelected()) {
+        <ui-button
+          appearance="outline"
+          [size]="size()"
+          icon="delete"
+          variant="danger"
+          title="Delete view"
+          aria-label="Delete view"
+          (click)="deleteSelected()"
+        />
+      }
+    </div>
 
-    @if (canDeleteSelected()) {
-      <ui-button
-        appearance="outline"
-        [size]="size()"
-        icon="delete"
-        variant="danger"
-        title="Delete view"
-        aria-label="Delete view"
-        (click)="deleteSelected()"
-      />
-    }
+    <span class="qg-grid-views__divider" aria-hidden="true"></span>
   </div>
 
   <dialog #saveDialog class="qg-grid-views__dialog" (cancel)="closeSaveDialog()">

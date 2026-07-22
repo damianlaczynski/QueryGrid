@@ -23,6 +23,7 @@ import { InputText } from "primeng/inputtext";
 import { Table, TableModule, type TableLazyLoadEvent } from "primeng/table";
 import type { GridResource } from "./create-grid-resource";
 import { buildGridFilterChips, removeFilterCondition, type GridFilterChip } from "./filter-chips";
+import { QgGridViewsComponent } from "./grid-views.component";
 import {
   applyGridQueryToPrimeTable,
   isSameGridPatch,
@@ -39,7 +40,6 @@ import { QgEmptyDirective } from "./table/empty.directive";
 import type { GridColumn } from "./table/grid-column";
 import { QgColumnFilterComponent } from "./table/qg-column-filter.component";
 import { resolveGridColumns } from "./table/resolve-grid-columns";
-import { QgGridViewsComponent } from "./grid-views.component";
 import { QgToolbarDirective } from "./toolbar.directive";
 import type { GridAppearance } from "./types";
 

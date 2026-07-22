@@ -28,11 +28,29 @@ function asGridWithViews<T>(
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: "./grid-views.component.html",
   styles: `
+    :host {
+      display: contents;
+    }
+
+    .qg-grid-views-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
     .qg-grid-views {
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
       flex-wrap: wrap;
+    }
+
+    .qg-grid-views__divider {
+      width: 1px;
+      align-self: stretch;
+      min-height: 1.5rem;
+      margin-inline: 0.125rem;
+      background: var(--p-content-border-color, #e2e8f0);
     }
 
     .qg-grid-views__select {
