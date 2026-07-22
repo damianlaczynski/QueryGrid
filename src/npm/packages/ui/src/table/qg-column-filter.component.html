@@ -6,12 +6,14 @@
         @if (column.filter.type === "boolean") {
           <div class="qg-column-filter__boolean">
             <ui-checkbox
+              labelPosition="after"
               [size]="size()"
               [label]="booleanFilterTrueLabel()"
               [ngModel]="draftBooleanTrue()"
               (ngModelChange)="onBooleanTrueChange($event)"
             />
             <ui-checkbox
+              labelPosition="after"
               [size]="size()"
               [label]="booleanFilterFalseLabel()"
               [ngModel]="draftBooleanFalse()"
