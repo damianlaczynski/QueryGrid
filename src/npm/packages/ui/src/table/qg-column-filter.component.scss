@@ -60,7 +60,6 @@
 
 .qg-column-filter__trigger--active {
   color: var(--color-brand-foreground, #1267b4);
-  background: var(--color-neutral-background-brand-selected, #cdd8ef);
 }
 
 :host ::ng-deep .qg-column-filter__trigger--active.button--selected ui-icon,

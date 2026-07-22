@@ -17,6 +17,8 @@
   [showGridlines]="appearance() === 'plain' ? true : showGridlines()"
   [stripedRows]="appearance() === 'plain' ? false : stripedRows()"
   [dataKey]="dataKey()"
+  [scrollable]="!!scrollHeight()"
+  [scrollHeight]="scrollHeight() ?? undefined"
   [styleClass]="appearance() === 'plain' ? 'qg-plain-table' : undefined"
 >
   <ng-template #caption>
@@ -98,10 +100,7 @@
               }
             </div>
             @if (column.filter) {
-              <qg-column-filter
-                [column]="column"
-                [filterLocale]="resolvedFilterLocale()"
-              />
+              <qg-column-filter [column]="column" [filterLocale]="resolvedFilterLocale()" />
             }
           </div>
         </th>
