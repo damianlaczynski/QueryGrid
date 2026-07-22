@@ -145,7 +145,7 @@ readonly grid = this.gridFactory.create<IssueDto>({
 });
 ```
 
-Use `<qg-grid-views [grid]="grid" />` for a preset picker with **Save as**, **Update view** (when modified), and **Delete** actions.
+Use `<qg-grid-views [grid]="grid" />` for a preset picker with **Save as**, **Update view** (when modified), and **Delete** actions. When `views` is configured, the picker is also rendered automatically in `<qg-prime-data-grid>` / `<qg-ui-data-grid>` toolbars.
 
 Declare columns with `qgColumn` — each template defines header, filters, and cell content:
 

@@ -376,18 +376,28 @@ export function applyGridQueryToPrimeTable(
   columns: GridColumn[],
 ): void {
   const search = query.search?.trim();
-  if (search) {
-    table.filterGlobal(search, "contains");
-  }
+  table.filterGlobal(search ?? "", "contains");
 
   const columnFilters = buildPrimeTableFilters(query.filter, columns);
+  const managedFields = new Set(
+    columns.filter((column) => column.filter).map((column) => column.field),
+  );
+  const existingFilters = (table.filters ?? {}) as Record<
+    string,
+    FilterMetadata | FilterMetadata[]
+  >;
+  const nextFilters: Record<string, FilterMetadata | FilterMetadata[]> = {};
+
+  for (const [field, metadata] of Object.entries(existingFilters)) {
+    if (!managedFields.has(field)) {
+      nextFilters[field] = metadata;
+    }
+  }
+
   table.filters = {
-    ...((table.filters ?? {}) as Record<string, FilterMetadata | FilterMetadata[]>),
+    ...nextFilters,
     ...columnFilters,
   };
 
-  const sortMeta = mapSortToPrimeMeta(query.sort);
-  if (sortMeta.length > 0) {
-    table.multiSortMeta = sortMeta;
-  }
+  table.multiSortMeta = mapSortToPrimeMeta(query.sort);
 }

@@ -69,10 +69,7 @@ export function isGridViewPresetDirty(
   query: GridQuery,
   extra?: Record<string, unknown>,
 ): boolean {
-  return (
-    !areGridQueriesEqual(preset.query, query) ||
-    !areExtrasEqual(preset.extra, extra)
-  );
+  return !areGridQueriesEqual(preset.query, query) || !areExtrasEqual(preset.extra, extra);
 }
 
 function resolveStorageKey(storageKey: string): string {
@@ -102,8 +99,7 @@ export function loadStoredGridViews(storageKey: string): StoredGridViews {
     const parsed = JSON.parse(raw) as StoredGridViews;
     return {
       userPresets: Array.isArray(parsed.userPresets) ? parsed.userPresets : [],
-      activePresetId:
-        typeof parsed.activePresetId === "string" ? parsed.activePresetId : null,
+      activePresetId: typeof parsed.activePresetId === "string" ? parsed.activePresetId : null,
     };
   } catch {
     storage.removeItem(resolveStorageKey(storageKey));
@@ -111,10 +107,7 @@ export function loadStoredGridViews(storageKey: string): StoredGridViews {
   }
 }
 
-export function saveStoredGridViews(
-  storageKey: string,
-  state: StoredGridViews,
-): void {
+export function saveStoredGridViews(storageKey: string, state: StoredGridViews): void {
   const storage = resolveStorage();
   if (!storage) {
     return;

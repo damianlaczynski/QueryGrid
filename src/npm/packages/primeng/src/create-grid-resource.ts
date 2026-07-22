@@ -22,7 +22,6 @@ import {
   type SortDescriptor,
 } from "@query-grid/core";
 import { catchError, finalize, Observable, of, switchMap, tap } from "rxjs";
-import { createGridViewsControls } from "./grid-views-controls";
 import {
   readGridQueryFromRoute,
   resolveGridRouteSyncConfig,
@@ -35,10 +34,11 @@ import {
   savePersistedGridState,
   type GridStatePersistence,
 } from "./grid-state-storage";
+import { createGridViewsControls } from "./grid-views-controls";
 
-export type { GridRouteSyncConfig, GridStatePersistence };
-export type { GridViewsConfig, GridViewPreset } from "@query-grid/core";
+export type { GridViewPreset, GridViewsConfig } from "@query-grid/core";
 export type { GridResourceWithViews } from "./grid-views-controls";
+export type { GridRouteSyncConfig, GridStatePersistence };
 
 export interface GridResourceConfig<T> {
   load: (query: GridQuery) => Observable<GridResult<T>>;

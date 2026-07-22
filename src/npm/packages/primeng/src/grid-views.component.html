@@ -15,22 +15,26 @@
     @if (isPresetDirty()) {
       <p-button
         type="button"
-        label="Update view"
         icon="pi pi-save"
         severity="secondary"
         [outlined]="true"
         size="small"
+        aria-label="Update view"
+        pTooltip="Update view"
+        tooltipPosition="top"
         (onClick)="updatePreset()"
       />
     }
 
     <p-button
       type="button"
-      label="Save as"
       icon="pi pi-plus"
       severity="secondary"
       [outlined]="true"
       size="small"
+      aria-label="Save as view"
+      pTooltip="Save as view"
+      tooltipPosition="top"
       (onClick)="openSaveDialog()"
     />
 
@@ -41,6 +45,9 @@
         severity="danger"
         [outlined]="true"
         size="small"
+        aria-label="Delete view"
+        pTooltip="Delete view"
+        tooltipPosition="top"
         (onClick)="deleteSelected()"
       />
     }
@@ -63,7 +70,16 @@
         placeholder="View name"
         (keydown.enter)="saveAs()"
       />
-      <p-button type="button" label="Save" (onClick)="saveAs()" />
     </div>
+    <ng-template pTemplate="footer">
+      <p-button
+        type="button"
+        label="Cancel"
+        severity="secondary"
+        [text]="true"
+        (onClick)="closeSaveDialog()"
+      />
+      <p-button type="button" label="Save" (onClick)="saveAs()" />
+    </ng-template>
   </p-dialog>
 }

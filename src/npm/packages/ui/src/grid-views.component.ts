@@ -3,8 +3,10 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  ElementRef,
   input,
   signal,
+  viewChild,
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import {
@@ -35,7 +37,8 @@ export class QgGridViewsComponent<T = unknown> {
   readonly grid = input.required<GridResource<T>>();
   readonly size = input<GridSize>("medium");
 
-  protected readonly showSaveForm = signal(false);
+  private readonly saveDialog = viewChild<ElementRef<HTMLDialogElement>>("saveDialog");
+
   protected readonly newPresetName = signal("");
 
   protected readonly viewsEnabled = computed(() => asGridWithViews(this.grid()) != null);
@@ -52,9 +55,13 @@ export class QgGridViewsComponent<T = unknown> {
     }));
   });
 
-  protected readonly selectedPresetId = computed(() => asGridWithViews(this.grid())?.activePresetId() ?? null);
+  protected readonly selectedPresetId = computed(
+    () => asGridWithViews(this.grid())?.activePresetId() ?? null,
+  );
 
-  protected readonly isPresetDirty = computed(() => asGridWithViews(this.grid())?.isPresetDirty() ?? false);
+  protected readonly isPresetDirty = computed(
+    () => asGridWithViews(this.grid())?.isPresetDirty() ?? false,
+  );
 
   protected readonly canDeleteSelected = computed(() => {
     const grid = asGridWithViews(this.grid());
@@ -85,14 +92,19 @@ export class QgGridViewsComponent<T = unknown> {
     grid.applyPreset(id);
   }
 
-  protected openSaveForm(): void {
+  protected openSaveDialog(): void {
     this.newPresetName.set("");
-    this.showSaveForm.set(true);
+    this.saveDialog()?.nativeElement.showModal();
   }
 
-  protected cancelSaveForm(): void {
-    this.showSaveForm.set(false);
+  protected closeSaveDialog(): void {
+    this.saveDialog()?.nativeElement.close();
     this.newPresetName.set("");
+  }
+
+  protected onSaveSubmit(event: Event): void {
+    event.preventDefault();
+    this.saveAs();
   }
 
   protected saveAs(): void {
@@ -103,7 +115,7 @@ export class QgGridViewsComponent<T = unknown> {
     }
 
     grid.saveCurrentAsPreset(name);
-    this.cancelSaveForm();
+    this.closeSaveDialog();
   }
 
   protected updatePreset(): void {

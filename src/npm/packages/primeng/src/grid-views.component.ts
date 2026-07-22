@@ -11,6 +11,7 @@ import { Button } from "primeng/button";
 import { Dialog } from "primeng/dialog";
 import { InputText } from "primeng/inputtext";
 import { Select } from "primeng/select";
+import { Tooltip } from "primeng/tooltip";
 import type { GridResource } from "./create-grid-resource";
 import { hasGridViews, type GridResourceWithViews } from "./grid-views-controls";
 
@@ -23,7 +24,7 @@ function asGridWithViews<T>(
 @Component({
   selector: "qg-grid-views",
   standalone: true,
-  imports: [CommonModule, FormsModule, Select, Button, Dialog, InputText],
+  imports: [CommonModule, FormsModule, Select, Button, Dialog, InputText, Tooltip],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: "./grid-views.component.html",
   styles: `
@@ -104,6 +105,11 @@ export class QgGridViewsComponent<T = unknown> {
     this.showSaveDialog.set(true);
   }
 
+  protected closeSaveDialog(): void {
+    this.showSaveDialog.set(false);
+    this.newPresetName.set("");
+  }
+
   protected saveAs(): void {
     const name = this.newPresetName().trim();
     const grid = asGridWithViews(this.grid());
@@ -112,8 +118,7 @@ export class QgGridViewsComponent<T = unknown> {
     }
 
     grid.saveCurrentAsPreset(name);
-    this.showSaveDialog.set(false);
-    this.newPresetName.set("");
+    this.closeSaveDialog();
   }
 
   protected updatePreset(): void {

@@ -39,6 +39,7 @@ import { QgEmptyDirective } from "./table/empty.directive";
 import type { GridColumn } from "./table/grid-column";
 import { QgColumnFilterComponent } from "./table/qg-column-filter.component";
 import { resolveGridColumns } from "./table/resolve-grid-columns";
+import { QgGridViewsComponent } from "./grid-views.component";
 import { QgToolbarDirective } from "./toolbar.directive";
 import type { GridAppearance } from "./types";
 
@@ -58,6 +59,7 @@ const GRID_TABLE_IMPORTS = [
   IconField,
   InputIcon,
   QgColumnFilterComponent,
+  QgGridViewsComponent,
 ];
 
 const GRID_TABLE_HOST = {
@@ -287,10 +289,10 @@ export class PrimeDataGridComponent<T = unknown> {
   }
 
   protected clear(table: Table): void {
-    table.clear();
+    this.grid().resetQuery();
     this.searchText.set("");
     this.filtersExpanded.set(false);
-    this.grid().resetQuery();
+    applyGridQueryToPrimeTable(table, this.grid().query(), this.resolvedColumns());
     this.cleared.emit();
   }
 }
