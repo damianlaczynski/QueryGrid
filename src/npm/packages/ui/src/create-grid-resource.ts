@@ -18,9 +18,11 @@ import {
   totalPages,
   type GridQuery,
   type GridResult,
+  type GridViewsConfig,
   type SortDescriptor,
 } from "@query-grid/core";
 import { catchError, finalize, Observable, of, switchMap, tap } from "rxjs";
+import { createGridViewsControls } from "./grid-views-controls";
 import {
   readGridQueryFromRoute,
   resolveGridRouteSyncConfig,
@@ -35,6 +37,8 @@ import {
 } from "./grid-state-storage";
 
 export type { GridRouteSyncConfig, GridStatePersistence };
+export type { GridViewsConfig, GridViewPreset } from "@query-grid/core";
+export type { GridResourceWithViews } from "./grid-views-controls";
 
 export interface GridResourceConfig<T> {
   load: (query: GridQuery) => Observable<GridResult<T>>;
@@ -46,6 +50,8 @@ export interface GridResourceConfig<T> {
   persistState?: boolean | GridStatePersistence;
   /** Syncs shareable query fields with a router query parameter (default: `grid`). */
   syncRoute?: boolean | GridRouteSyncConfig;
+  /** Named view presets stored in localStorage. */
+  views?: GridViewsConfig;
   getExtraState?: () => Record<string, unknown> | undefined;
   applyExtraState?: (state: Record<string, unknown>) => void;
   /** Component/environment injector — pass `inject(EnvironmentInjector)` from a field initializer. */
@@ -156,6 +162,23 @@ export function createGridResource<T>(config: GridResourceConfig<T>): GridResour
       persistState(next);
     };
 
+    const applyQueryState = (next: GridQuery) => {
+      query.set(clampQuery(next));
+      persistState(query());
+    };
+
+    const viewsControls = config.views
+      ? createGridViewsControls({
+          config: config.views,
+          query,
+          clampQuery,
+          defaultQuery: createDefaultQuery,
+          applyQuery: applyQueryState,
+          getExtraState: config.getExtraState,
+          applyExtraState: config.applyExtraState,
+        })
+      : null;
+
     toObservable(computed(() => ({ q: query(), token: reloadToken() })))
       .pipe(
         switchMap(({ q }) => {
@@ -234,6 +257,7 @@ export function createGridResource<T>(config: GridResourceConfig<T>): GridResour
         if (config.applyExtraState) {
           config.applyExtraState({});
         }
+        viewsControls?.clearActivePreset();
         query.set(next);
         clearPersistedGridState(config.persistState);
         if (config.persistState) {
@@ -243,6 +267,18 @@ export function createGridResource<T>(config: GridResourceConfig<T>): GridResour
       reload() {
         reloadToken.update((value) => value + 1);
       },
+      ...(viewsControls
+        ? {
+            presets: viewsControls.presets,
+            activePresetId: viewsControls.activePresetId,
+            isPresetDirty: viewsControls.isPresetDirty,
+            applyPreset: viewsControls.applyPreset,
+            saveCurrentAsPreset: viewsControls.saveCurrentAsPreset,
+            updateActivePreset: viewsControls.updateActivePreset,
+            deletePreset: viewsControls.deletePreset,
+            clearActivePreset: viewsControls.clearActivePreset,
+          }
+        : {}),
     };
   });
 }

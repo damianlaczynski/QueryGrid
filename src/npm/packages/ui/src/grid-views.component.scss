@@ -1,0 +1,18 @@
+.qg-grid-views {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.qg-grid-views__select {
+  min-width: 12rem;
+}
+
+.qg-grid-views__save {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}

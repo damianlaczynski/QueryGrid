@@ -16,6 +16,20 @@ function showcaseGridOptions(injector: Injector, api: ShowcaseApiService, persis
     defaultTake: 20,
     persistState: { key: persistKey, storage: 'session' as const },
     syncRoute: true,
+    views: {
+      storageKey: persistKey,
+      builtins: [
+        {
+          id: 'showcase-active',
+          name: 'Active only',
+          builtin: true,
+          createdAt: '2026-01-01T00:00:00.000Z',
+          query: {
+            filter: { field: 'IsActive', operator: 'eq', value: true },
+          },
+        },
+      ],
+    },
   };
 }
 

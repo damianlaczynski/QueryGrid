@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, inject, Injector, signal } from '@angular/core';
 import { ButtonComponent, CardComponent, MessageBarComponent, TagComponent } from '@laczynski/ui';
 import { buildGridQueryUrl, formatGridError } from '@query-grid/core';
-import { QgColumnDirective, QgEmptyDirective, UiDataGridComponent } from '@query-grid/ui';
+import { QgColumnDirective, QgEmptyDirective, QgGridViewsComponent, UiDataGridComponent } from '@query-grid/ui';
 import { ShowcaseRow } from './models/showcase-row.model';
 import { ShowcaseApiService } from './services/showcase-api.service';
 import { createUiShowcaseGrid } from './showcase-grid.factory';
@@ -17,6 +17,7 @@ import { getShowcaseCategoryLabel, showcaseCategories } from './utils/showcase.u
     MessageBarComponent,
     TagComponent,
     UiDataGridComponent,
+    QgGridViewsComponent,
     QgColumnDirective,
     QgEmptyDirective,
   ],

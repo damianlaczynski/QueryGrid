@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, Injector, signal } from '@angular/core';
 import { buildGridQueryUrl, formatGridError } from '@query-grid/core';
-import { PrimeDataGridComponent, QgColumnDirective, QgEmptyDirective } from '@query-grid/primeng';
+import { PrimeDataGridComponent, QgColumnDirective, QgEmptyDirective, QgGridViewsComponent } from '@query-grid/primeng';
 import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Message } from 'primeng/message';
@@ -20,6 +20,7 @@ import { getShowcaseCategoryLabel, showcaseCategories } from './utils/showcase.u
     Message,
     Tag,
     PrimeDataGridComponent,
+    QgGridViewsComponent,
     QgColumnDirective,
     QgEmptyDirective,
   ],

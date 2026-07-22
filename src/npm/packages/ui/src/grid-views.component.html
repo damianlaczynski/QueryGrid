@@ -1,0 +1,63 @@
+@if (viewsEnabled()) {
+  <div class="qg-grid-views">
+    <ui-select
+      class="qg-grid-views__select"
+      [items]="presetItems()"
+      [size]="size()"
+      [ngModel]="selectedPresetId()"
+      (selectionChange)="onPresetSelected($event)"
+      placeholder="Views"
+    />
+
+    @if (isPresetDirty()) {
+      <ui-button
+        appearance="outline"
+        [size]="size()"
+        icon="save"
+        text="Update view"
+        variant="secondary"
+        (click)="updatePreset()"
+      />
+    }
+
+    <ui-button
+      appearance="outline"
+      [size]="size()"
+      icon="add"
+      text="Save as"
+      variant="secondary"
+      (click)="openSaveForm()"
+    />
+
+    @if (canDeleteSelected()) {
+      <ui-button
+        appearance="outline"
+        [size]="size()"
+        icon="delete"
+        text="Delete"
+        variant="danger"
+        (click)="deleteSelected()"
+      />
+    }
+  </div>
+
+  @if (showSaveForm()) {
+    <div class="qg-grid-views__save">
+      <ui-text
+        [size]="size()"
+        [ngModel]="newPresetName()"
+        (ngModelChange)="newPresetName.set($event)"
+        placeholder="View name"
+        (keydown.enter)="saveAs()"
+      />
+      <ui-button [size]="size()" text="Save" variant="primary" (click)="saveAs()" />
+      <ui-button
+        [size]="size()"
+        text="Cancel"
+        appearance="outline"
+        variant="secondary"
+        (click)="cancelSaveForm()"
+      />
+    </div>
+  }
+}
