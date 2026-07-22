@@ -75,15 +75,17 @@
         (keydown.enter)="saveAs()"
       />
     </div>
-    <ng-template pTemplate="footer">
-      <p-button
-        type="button"
-        label="Cancel"
-        severity="secondary"
-        [text]="true"
-        (onClick)="closeSaveDialog()"
-      />
-      <p-button type="button" label="Save" (onClick)="saveAs()" />
+    <ng-template #footer>
+      <div class="qg-grid-views__dialog-footer">
+        <p-button
+          type="button"
+          label="Cancel"
+          severity="secondary"
+          [text]="true"
+          (onClick)="closeSaveDialog()"
+        />
+        <p-button type="button" label="Save" (onClick)="saveAs()" />
+      </div>
     </ng-template>
   </p-dialog>
 }

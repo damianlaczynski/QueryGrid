@@ -1,11 +1,5 @@
 import { CommonModule } from "@angular/common";
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  input,
-  signal,
-} from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, input, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { Button } from "primeng/button";
 import { Dialog } from "primeng/dialog";
@@ -17,7 +11,7 @@ import { hasGridViews, type GridResourceWithViews } from "./grid-views-controls"
 
 function asGridWithViews<T>(
   grid: GridResource<T>,
-): GridResource<T> & GridResourceWithViews<T> | null {
+): (GridResource<T> & GridResourceWithViews<T>) | null {
   return hasGridViews(grid) ? grid : null;
 }
 
@@ -63,6 +57,13 @@ function asGridWithViews<T>(
       gap: 0.75rem;
       width: 100%;
     }
+
+    .qg-grid-views__dialog-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+      width: 100%;
+    }
   `,
 })
 export class QgGridViewsComponent<T = unknown> {
@@ -85,9 +86,13 @@ export class QgGridViewsComponent<T = unknown> {
     }));
   });
 
-  protected readonly selectedPresetId = computed(() => asGridWithViews(this.grid())?.activePresetId() ?? null);
+  protected readonly selectedPresetId = computed(
+    () => asGridWithViews(this.grid())?.activePresetId() ?? null,
+  );
 
-  protected readonly isPresetDirty = computed(() => asGridWithViews(this.grid())?.isPresetDirty() ?? false);
+  protected readonly isPresetDirty = computed(
+    () => asGridWithViews(this.grid())?.isPresetDirty() ?? false,
+  );
 
   protected readonly canDeleteSelected = computed(() => {
     const grid = asGridWithViews(this.grid());

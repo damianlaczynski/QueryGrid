@@ -16,7 +16,8 @@
           [size]="size()"
           icon="save"
           variant="secondary"
-          title="Update view"
+          uiTooltip="Update view"
+          uiTooltipPosition="top"
           aria-label="Update view"
           (click)="updatePreset()"
         />
@@ -27,7 +28,8 @@
         [size]="size()"
         icon="add"
         variant="secondary"
-        title="Save as view"
+        uiTooltip="Save as view"
+        uiTooltipPosition="top"
         aria-label="Save as view"
         (click)="openSaveDialog()"
       />
@@ -38,7 +40,8 @@
           [size]="size()"
           icon="delete"
           variant="danger"
-          title="Delete view"
+          uiTooltip="Delete view"
+          uiTooltipPosition="top"
           aria-label="Delete view"
           (click)="deleteSelected()"
         />

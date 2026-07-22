@@ -4,6 +4,7 @@ import {
   isGridViewPresetDirty,
   loadStoredGridViews,
   mergeGridViewPresets,
+  pickGridViewPresetQuery,
   saveStoredGridViews,
   trimUserGridViewPresets,
   type GridQuery,
@@ -42,9 +43,7 @@ export function createGridViewsControls(options: {
 
   const persistViewsState = () => {
     const builtinIds = new Set(builtins.map((preset) => preset.id));
-    const userPresets = presets().filter(
-      (preset) => !preset.builtin && !builtinIds.has(preset.id),
-    );
+    const userPresets = presets().filter((preset) => !preset.builtin && !builtinIds.has(preset.id));
 
     saveStoredGridViews(options.config.storageKey, {
       userPresets: trimUserGridViewPresets(userPresets, maxUserPresets),
@@ -62,11 +61,7 @@ export function createGridViewsControls(options: {
       return false;
     }
 
-    return isGridViewPresetDirty(
-      preset,
-      options.query(),
-      options.getExtraState?.(),
-    );
+    return isGridViewPresetDirty(preset, options.query(), options.getExtraState?.());
   });
 
   const applyPreset = (id: string) => {
@@ -75,9 +70,7 @@ export function createGridViewsControls(options: {
       return;
     }
 
-    options.applyQuery(
-      options.clampQuery({ ...options.defaultQuery(), ...preset.query }),
-    );
+    options.applyQuery(options.clampQuery({ ...options.defaultQuery(), ...preset.query }));
 
     if (options.applyExtraState) {
       options.applyExtraState(preset.extra ?? {});
@@ -88,20 +81,13 @@ export function createGridViewsControls(options: {
   };
 
   const saveCurrentAsPreset = (name: string) => {
-    const preset = createGridViewPreset(
-      name,
-      options.query(),
-      options.getExtraState?.(),
-    );
+    const preset = createGridViewPreset(name, options.query(), options.getExtraState?.());
 
     presets.update((current) => {
       const userOnly = current.filter(
         (item) => !item.builtin && !builtins.some((builtin) => builtin.id === item.id),
       );
-      const nextUser = trimUserGridViewPresets(
-        [...userOnly, preset],
-        maxUserPresets,
-      );
+      const nextUser = trimUserGridViewPresets([...userOnly, preset], maxUserPresets);
       return mergeGridViewPresets(builtins, nextUser);
     });
     activePresetId.set(preset.id);
@@ -123,7 +109,7 @@ export function createGridViewsControls(options: {
         preset.id === id
           ? {
               ...preset,
-              query: structuredClone(options.query()),
+              query: pickGridViewPresetQuery(options.query()),
               extra: extra ? structuredClone(extra) : undefined,
               updatedAt: now,
             }

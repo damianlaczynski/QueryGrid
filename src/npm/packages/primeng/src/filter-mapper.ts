@@ -5,11 +5,17 @@ import type {
   FilterOperator,
   GridQuery,
 } from "@query-grid/core";
-import { coerceOperatorForColumnType, isFilterCondition, isFilterGroup } from "@query-grid/core";
+import {
+  areSortDescriptorsEqual,
+  coerceOperatorForColumnType,
+  isFilterCondition,
+  isFilterGroup,
+  sameFilterNode,
+} from "@query-grid/core";
 import type { FilterMetadata } from "primeng/api";
 import { FilterOperator as PrimeFilterOperator } from "primeng/api";
 import type { Table } from "primeng/table";
-import { mapSortToPrimeMeta } from "./sort-mapper";
+import { mapLazyLoadSort, syncPrimeTableSort } from "./sort-mapper";
 import type { GridColumn } from "./table/grid-column";
 
 function mapMatchMode(matchMode?: string): FilterOperator | null {
@@ -399,5 +405,37 @@ export function applyGridQueryToPrimeTable(
     ...columnFilters,
   };
 
-  table.multiSortMeta = mapSortToPrimeMeta(query.sort);
+  syncPrimeTableSort(table, query.sort);
+}
+
+function readPrimeTableSearch(table: Table): string {
+  const global = (table.filters as Record<string, FilterMetadata | FilterMetadata[] | undefined>)?.[
+    "global"
+  ];
+  const metadata = Array.isArray(global) ? global[0] : global;
+  const value = metadata?.value;
+  return typeof value === "string" ? value.trim() : "";
+}
+
+/** Returns true when PrimeNG table chrome is out of sync with a grid query snapshot. */
+export function needsPrimeTableQuerySync(
+  table: Table,
+  query: GridQuery,
+  columns: GridColumn[],
+): boolean {
+  const tableSort = mapLazyLoadSort({ multiSortMeta: table.multiSortMeta }, table);
+  const tableFilter = mapPrimeFiltersToGridFilter(
+    table.filters as Record<string, FilterMetadata | FilterMetadata[]> | undefined,
+    columns,
+  );
+
+  if (!areSortDescriptorsEqual(tableSort, query.sort)) {
+    return true;
+  }
+
+  if (!sameFilterNode(tableFilter, query.filter)) {
+    return true;
+  }
+
+  return readPrimeTableSearch(table) !== (query.search ?? "");
 }

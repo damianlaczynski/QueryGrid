@@ -13,6 +13,7 @@ import {
   clampTake,
   createEmptyGridQuery,
   DEFAULT_GRID_OPTIONS,
+  readActiveGridViewPreset,
   sameFilterNode,
   skipToPage,
   totalPages,
@@ -112,7 +113,24 @@ export function createGridResource<T>(config: GridResourceConfig<T>): GridResour
         config.applyExtraState(persisted.extra);
       }
 
-      return persisted?.query ? { ...base, ...persisted.query } : base;
+      if (persisted?.query) {
+        return { ...base, ...persisted.query };
+      }
+
+      if (config.views) {
+        const activePreset = readActiveGridViewPreset(
+          config.views.storageKey,
+          config.views.builtins,
+        );
+        if (activePreset) {
+          if (activePreset.extra && config.applyExtraState) {
+            config.applyExtraState(activePreset.extra);
+          }
+          return { ...base, ...activePreset.query };
+        }
+      }
+
+      return base;
     };
 
     const clampQuery = (value: GridQuery): GridQuery => ({

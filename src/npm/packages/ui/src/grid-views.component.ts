@@ -13,11 +13,12 @@ import {
   ButtonComponent,
   SelectComponent,
   TextComponent,
+  TooltipDirective,
   type SelectItem,
 } from "@laczynski/ui";
-import type { GridSize } from "./types";
 import type { GridResource } from "./create-grid-resource";
 import { hasGridViews, type GridResourceWithViews } from "./grid-views-controls";
+import type { GridSize } from "./types";
 
 function asGridWithViews<T>(
   grid: GridResource<T>,
@@ -28,7 +29,14 @@ function asGridWithViews<T>(
 @Component({
   selector: "qg-grid-views",
   standalone: true,
-  imports: [CommonModule, FormsModule, SelectComponent, ButtonComponent, TextComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    SelectComponent,
+    ButtonComponent,
+    TextComponent,
+    TooltipDirective,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: "./grid-views.component.html",
   styleUrl: "./grid-views.component.scss",

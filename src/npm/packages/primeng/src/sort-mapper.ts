@@ -44,6 +44,21 @@ export function toggleSortField(
   return [{ field, desc: false }];
 }
 
+/** Maps PrimeNG sort metadata to QueryGrid sort descriptors. */
+export function mapPrimeSortMetaToDescriptors(
+  meta: SortMeta[] | null | undefined,
+): SortDescriptor[] {
+  return (meta ?? [])
+    .filter(
+      (item): item is SortMeta & { field: string } =>
+        typeof item.field === "string" && item.field.length > 0,
+    )
+    .map((item) => ({
+      field: item.field,
+      desc: (item.order ?? 1) < 0,
+    }));
+}
+
 /** Maps PrimeNG lazy-load sort metadata to QueryGrid sort descriptors. */
 export function mapLazyLoadSort(
   event: TableLazyLoadEvent,
@@ -53,16 +68,8 @@ export function mapLazyLoadSort(
     event.multiSortMeta && event.multiSortMeta.length > 0
       ? event.multiSortMeta
       : (table?.multiSortMeta ?? []);
-  if (multi && multi.length > 0) {
-    return multi
-      .filter(
-        (meta): meta is SortMeta & { field: string } =>
-          typeof meta.field === "string" && meta.field.length > 0,
-      )
-      .map((meta) => ({
-        field: meta.field,
-        desc: (meta.order ?? 1) < 0,
-      }));
+  if (multi.length > 0) {
+    return mapPrimeSortMetaToDescriptors(multi);
   }
 
   if (typeof event.sortField === "string" && event.sortField.length > 0) {
@@ -78,4 +85,11 @@ export function mapSortToPrimeMeta(sort: SortDescriptor[] | null | undefined): S
     field: descriptor.field,
     order: descriptor.desc ? -1 : 1,
   }));
+}
+
+/** Applies sort metadata to a PrimeNG table and refreshes header sort icons. */
+export function syncPrimeTableSort(table: Table, sort: SortDescriptor[] | null | undefined): void {
+  const meta = mapSortToPrimeMeta(sort);
+  table.multiSortMeta = meta;
+  table.tableService.onSort(meta.length > 0 ? meta : null);
 }

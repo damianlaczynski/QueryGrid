@@ -13,6 +13,7 @@ import {
   clampTake,
   createEmptyGridQuery,
   DEFAULT_GRID_OPTIONS,
+  readActiveGridViewPreset,
   sameFilterNode,
   skipToPage,
   totalPages,
@@ -22,7 +23,6 @@ import {
   type SortDescriptor,
 } from "@query-grid/core";
 import { catchError, finalize, Observable, of, switchMap, tap } from "rxjs";
-import { createGridViewsControls } from "./grid-views-controls";
 import {
   readGridQueryFromRoute,
   resolveGridRouteSyncConfig,
@@ -35,10 +35,11 @@ import {
   savePersistedGridState,
   type GridStatePersistence,
 } from "./grid-state-storage";
+import { createGridViewsControls } from "./grid-views-controls";
 
-export type { GridRouteSyncConfig, GridStatePersistence };
-export type { GridViewsConfig, GridViewPreset } from "@query-grid/core";
+export type { GridViewPreset, GridViewsConfig } from "@query-grid/core";
 export type { GridResourceWithViews } from "./grid-views-controls";
+export type { GridRouteSyncConfig, GridStatePersistence };
 
 export interface GridResourceConfig<T> {
   load: (query: GridQuery) => Observable<GridResult<T>>;
@@ -112,7 +113,24 @@ export function createGridResource<T>(config: GridResourceConfig<T>): GridResour
         config.applyExtraState(persisted.extra);
       }
 
-      return persisted?.query ? { ...base, ...persisted.query } : base;
+      if (persisted?.query) {
+        return { ...base, ...persisted.query };
+      }
+
+      if (config.views) {
+        const activePreset = readActiveGridViewPreset(
+          config.views.storageKey,
+          config.views.builtins,
+        );
+        if (activePreset) {
+          if (activePreset.extra && config.applyExtraState) {
+            config.applyExtraState(activePreset.extra);
+          }
+          return { ...base, ...activePreset.query };
+        }
+      }
+
+      return base;
     };
 
     const clampQuery = (value: GridQuery): GridQuery => ({

@@ -41,10 +41,30 @@ export function createGridViewPreset(
   return {
     id: createGridViewPresetId(),
     name: name.trim(),
-    query: structuredClone(query),
+    query: pickGridViewPresetQuery(query),
     extra: extra ? structuredClone(extra) : undefined,
     createdAt: now,
   };
+}
+
+export function pickGridViewPresetQuery(query: GridQuery): GridQuery {
+  const picked: GridQuery = {
+    sort: structuredClone(query.sort ?? []),
+  };
+
+  if (query.take != null) {
+    picked.take = query.take;
+  }
+
+  if (query.filter != null) {
+    picked.filter = structuredClone(query.filter);
+  }
+
+  if (query.search != null && query.search !== "") {
+    picked.search = query.search;
+  }
+
+  return picked;
 }
 
 export function mergeGridViewPresets(
@@ -55,6 +75,22 @@ export function mergeGridViewPresets(
   const builtinIds = new Set(builtinList.map((preset) => preset.id));
   const customPresets = userPresets.filter((preset) => !builtinIds.has(preset.id));
   return [...builtinList, ...customPresets];
+}
+
+export function readActiveGridViewPreset(
+  storageKey: string,
+  builtins?: GridViewPreset[],
+): GridViewPreset | null {
+  const stored = loadStoredGridViews(storageKey);
+  if (!stored.activePresetId) {
+    return null;
+  }
+
+  return (
+    mergeGridViewPresets(builtins, stored.userPresets).find(
+      (preset) => preset.id === stored.activePresetId,
+    ) ?? null
+  );
 }
 
 export function areExtrasEqual(

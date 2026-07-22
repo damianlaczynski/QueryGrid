@@ -12,10 +12,16 @@ export {
   buildPrimeTableFilters,
   defaultPrimeMatchMode,
   mapPrimeFiltersToGridFilter,
+  needsPrimeTableQuerySync,
   syncPrimeTableFieldFilters,
 } from "./filter-mapper";
 export { buildEnumMatchModeOptions, buildNullableMatchModeOptions } from "./match-mode-options";
-export { mapLazyLoadSort, mapSortToPrimeMeta } from "./sort-mapper";
+export {
+  mapLazyLoadSort,
+  mapPrimeSortMetaToDescriptors,
+  mapSortToPrimeMeta,
+  syncPrimeTableSort,
+} from "./sort-mapper";
 export type { GridAppearance } from "./types";
 
 /** Maps a PrimeNG lazy-load event to a partial {@link GridQuery} patch. */
