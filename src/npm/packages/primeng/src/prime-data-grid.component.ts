@@ -63,6 +63,7 @@ const GRID_TABLE_IMPORTS = [
 const GRID_TABLE_HOST = {
   "[class.qg-appearance-plain]": 'appearance() === "plain"',
   "[class.qg-appearance-prime]": 'appearance() === "prime"',
+  "[class.qg-scrollable]": "!!scrollHeight()",
 };
 
 /**
@@ -98,6 +99,8 @@ export class PrimeDataGridComponent<T = unknown> {
   readonly extraChips = input<GridExtraChip[]>([]);
   /** Locale for numeric column filters (decimal/grouping). Defaults to Angular `LOCALE_ID`. */
   readonly filterLocale = input<string | undefined>(undefined);
+  /** When set (e.g. `"flex"`), enables PrimeNG virtual scroll with a fixed viewport height. */
+  readonly scrollHeight = input<string | undefined>(undefined);
 
   readonly extraChipRemove = output<string>();
   readonly cleared = output<void>();

@@ -1,8 +1,4 @@
-<p-card
-  class="showcase-panel showcase-panel--primeng"
-  header="PrimeNG table"
-  subheader="qg-prime-data-grid — default PrimeNG styling; multi-sort with Ctrl/Cmd + header click."
->
+<p-card class="showcase-panel showcase-panel--primeng">
   @if (errorMessage()) {
     <p-message severity="error" class="error-banner">{{ errorMessage() }}</p-message>
   }
@@ -10,6 +6,7 @@
   <qg-prime-data-grid
     [grid]="grid"
     dataKey="id"
+    scrollHeight="flex"
     searchPlaceholder="Search labels…"
     [pageSizeOptions]="[10, 20, 50, 100]"
   >
