@@ -13,6 +13,7 @@ import {
   clampTake,
   createEmptyGridQuery,
   DEFAULT_GRID_OPTIONS,
+  mergeExtraState,
   readActiveGridViewPreset,
   sameFilterNode,
   skipToPage,
@@ -23,6 +24,7 @@ import {
   type SortDescriptor,
 } from "@query-grid/core";
 import { catchError, finalize, Observable, of, switchMap, tap } from "rxjs";
+import { createGridColumnVisibilityControls } from "./grid-column-visibility-controls";
 import {
   readGridQueryFromRoute,
   resolveGridRouteSyncConfig,
@@ -38,6 +40,7 @@ import {
 import { createGridViewsControls } from "./grid-views-controls";
 
 export type { GridViewPreset, GridViewsConfig } from "@query-grid/core";
+export type { GridResourceWithColumnChooser } from "./grid-column-visibility-controls";
 export type { GridResourceWithViews } from "./grid-views-controls";
 export type { GridRouteSyncConfig, GridStatePersistence };
 
@@ -53,6 +56,8 @@ export interface GridResourceConfig<T> {
   syncRoute?: boolean | GridRouteSyncConfig;
   /** Named view presets stored in localStorage. */
   views?: GridViewsConfig;
+  /** Client-side column visibility stored in persist extra state. */
+  columnChooser?: boolean;
   getExtraState?: () => Record<string, unknown> | undefined;
   applyExtraState?: (state: Record<string, unknown>) => void;
   /** Component/environment injector — pass `inject(EnvironmentInjector)` from a field initializer. */
@@ -97,6 +102,22 @@ export function createGridResource<T>(config: GridResourceConfig<T>): GridResour
       sort: config.defaultSort ?? [],
     });
 
+    let persistCurrentState = () => {};
+
+    const columnVisibility = config.columnChooser
+      ? createGridColumnVisibilityControls({
+          onStateChange: () => persistCurrentState(),
+        })
+      : null;
+
+    const getExtraState = (): Record<string, unknown> | undefined =>
+      mergeExtraState(config.getExtraState?.(), columnVisibility?.getExtraState());
+
+    const applyExtraState = (extra: Record<string, unknown>): void => {
+      config.applyExtraState?.(extra);
+      columnVisibility?.applyExtraState(extra);
+    };
+
     const readInitialQuery = (): GridQuery => {
       const base = createDefaultQuery();
 
@@ -109,8 +130,8 @@ export function createGridResource<T>(config: GridResourceConfig<T>): GridResour
 
       const persisted = loadPersistedGridState(config.persistState);
 
-      if (persisted?.extra && config.applyExtraState) {
-        config.applyExtraState(persisted.extra);
+      if (persisted?.extra) {
+        applyExtraState(persisted.extra);
       }
 
       if (persisted?.query) {
@@ -123,8 +144,8 @@ export function createGridResource<T>(config: GridResourceConfig<T>): GridResour
           config.views.builtins,
         );
         if (activePreset) {
-          if (activePreset.extra && config.applyExtraState) {
-            config.applyExtraState(activePreset.extra);
+          if (activePreset.extra) {
+            applyExtraState(activePreset.extra);
           }
           return { ...base, ...activePreset.query };
         }
@@ -151,8 +172,10 @@ export function createGridResource<T>(config: GridResourceConfig<T>): GridResour
         return;
       }
 
-      savePersistedGridState(config.persistState, next, config.getExtraState?.());
+      savePersistedGridState(config.persistState, next, getExtraState());
     };
+
+    persistCurrentState = () => persistState(query());
 
     persistState(query());
 
@@ -192,8 +215,8 @@ export function createGridResource<T>(config: GridResourceConfig<T>): GridResour
           clampQuery,
           defaultQuery: createDefaultQuery,
           applyQuery: applyQueryState,
-          getExtraState: config.getExtraState,
-          applyExtraState: config.applyExtraState,
+          getExtraState,
+          applyExtraState,
         })
       : null;
 
@@ -272,14 +295,12 @@ export function createGridResource<T>(config: GridResourceConfig<T>): GridResour
       },
       resetQuery() {
         const next = createDefaultQuery();
-        if (config.applyExtraState) {
-          config.applyExtraState({});
-        }
+        applyExtraState({});
         viewsControls?.clearActivePreset();
         query.set(next);
         clearPersistedGridState(config.persistState);
         if (config.persistState) {
-          savePersistedGridState(config.persistState, next, {});
+          savePersistedGridState(config.persistState, next, getExtraState());
         }
       },
       reload() {
@@ -295,6 +316,14 @@ export function createGridResource<T>(config: GridResourceConfig<T>): GridResour
             updateActivePreset: viewsControls.updateActivePreset,
             deletePreset: viewsControls.deletePreset,
             clearActivePreset: viewsControls.clearActivePreset,
+          }
+        : {}),
+      ...(columnVisibility
+        ? {
+            hiddenColumnFields: columnVisibility.hiddenColumnFields,
+            setColumnVisible: columnVisibility.setColumnVisible,
+            showAllColumns: columnVisibility.showAllColumns,
+            setAvailableColumnFields: columnVisibility.setAvailableColumnFields,
           }
         : {}),
     };

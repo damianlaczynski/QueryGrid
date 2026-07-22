@@ -33,6 +33,8 @@ export interface GridColumn<T = unknown> {
   header: string;
   /** Defaults to `true`. Set `false` for computed/non-server columns (e.g. actions). */
   sortable?: boolean;
+  /** Defaults to `true`. Set `false` to exclude the column from the column chooser. */
+  hideable?: boolean;
   /** Column header filter editor. Omit to disable filtering for the column. */
   filter?: GridColumnFilter;
   /** Cell horizontal alignment. */

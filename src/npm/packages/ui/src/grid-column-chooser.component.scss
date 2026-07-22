@@ -1,0 +1,20 @@
+:host {
+  display: contents;
+}
+
+.qg-grid-column-chooser__panel {
+  min-width: 14rem;
+}
+
+.qg-grid-column-chooser__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 20rem;
+  overflow: auto;
+}
+
+.qg-grid-column-chooser__footer {
+  display: flex;
+  justify-content: flex-end;
+}

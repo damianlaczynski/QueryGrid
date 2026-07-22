@@ -35,6 +35,8 @@ export class QgColumnDirective<T = unknown> {
   readonly header = input.required<string>();
   /** Defaults to `true`. Set `false` for computed/non-server columns. */
   readonly sortable = input<boolean | undefined>(undefined);
+  /** Defaults to `true`. Set `false` to exclude the column from the column chooser. */
+  readonly hideable = input<boolean | undefined>(undefined);
   /** Column header filter editor. Omit to disable filtering. */
   readonly filter = input<GridColumnFilter | undefined>(undefined);
   readonly align = input<GridCellAlign | undefined>(undefined);
@@ -50,6 +52,11 @@ export class QgColumnDirective<T = unknown> {
     const sortable = this.sortable();
     if (sortable !== undefined) {
       column.sortable = sortable;
+    }
+
+    const hideable = this.hideable();
+    if (hideable !== undefined) {
+      column.hideable = hideable;
     }
 
     const filter = this.filter();
