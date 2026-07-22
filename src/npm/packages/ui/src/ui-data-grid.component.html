@@ -12,6 +12,8 @@
       }
 
       <div class="qg-ui-grid__toolbar-actions">
+        <qg-grid-views [grid]="grid()" [size]="size()" />
+
         @if (toolbarTemplate()) {
           <ui-button
             appearance="outline"

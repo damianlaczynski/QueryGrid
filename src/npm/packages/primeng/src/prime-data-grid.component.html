@@ -40,6 +40,8 @@
         }
 
         <div class="qg-caption-actions">
+          <qg-grid-views [grid]="grid()" />
+
           @if (toolbarTemplate(); as toolbar) {
             <p-button
               type="button"

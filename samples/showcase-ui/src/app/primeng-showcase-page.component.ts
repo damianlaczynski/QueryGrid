@@ -1,11 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, Injector } from '@angular/core';
-import { formatGridError } from '@query-grid/core';
-import {
-    PrimeDataGridComponent,
-    QgColumnDirective,
-    QgEmptyDirective,
-} from '@query-grid/primeng';
+import { Component, computed, inject, Injector, signal } from '@angular/core';
+import { buildGridQueryUrl, formatGridError } from '@query-grid/core';
+import { PrimeDataGridComponent, QgColumnDirective, QgEmptyDirective } from '@query-grid/primeng';
+import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Message } from 'primeng/message';
 import { Tag } from 'primeng/tag';
@@ -18,6 +15,7 @@ import { getShowcaseCategoryLabel, showcaseCategories } from './utils/showcase.u
   selector: 'app-primeng-showcase-page',
   imports: [
     CommonModule,
+    Button,
     Card,
     Message,
     Tag,
@@ -41,4 +39,14 @@ export class PrimengShowcasePageComponent {
   protected readonly rowType!: ShowcaseRow;
 
   readonly errorMessage = computed(() => formatGridError(this.grid.error()));
+
+  readonly linkCopied = signal(false);
+
+  copyGridLink(): void {
+    const url = buildGridQueryUrl(globalThis.location.href, this.grid.query());
+    void navigator.clipboard.writeText(url).then(() => {
+      this.linkCopied.set(true);
+      globalThis.setTimeout(() => this.linkCopied.set(false), 2000);
+    });
+  }
 }

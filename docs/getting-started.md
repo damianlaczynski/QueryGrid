@@ -93,11 +93,59 @@ export class IssuesComponent {
     load: (q) => this.api.getAllIssues(q),
     defaultSort: [{ field: "LastActivityAt", desc: true }],
     persistState: { key: "my-app.issues-list", storage: "session" },
+    syncRoute: true,
   });
 }
 ```
 
 Serialize `GridQuery` in your HTTP service with `JSON.stringify` and the same query parameter name as on the server.
+
+### URL state
+
+Enable `syncRoute` to mirror shareable grid fields (`sort`, `filter`, `search`, `take`) in the router query string under `?grid=` — the same JSON shape as the backend transport. Page offset (`skip`) is omitted by default so links open on page 1.
+
+```typescript
+readonly grid = this.gridFactory.create<IssueDto>({
+  // …
+  syncRoute: { param: "grid", debounceMs: 300 },
+});
+```
+
+Priority on load: **URL → `persistState` → defaults**. When the grid returns to its default sort/filter/search, the `grid` param is removed from the URL.
+
+Build a shareable link manually with `@query-grid/core`:
+
+```typescript
+import { buildGridQueryUrl } from "@query-grid/core";
+
+const url = buildGridQueryUrl(location.href, grid.query());
+```
+
+### Saved views
+
+Enable `views` to store named presets in `localStorage` (built-in presets from code plus user-saved views):
+
+```typescript
+readonly grid = this.gridFactory.create<IssueDto>({
+  // …
+  views: {
+    storageKey: "my-app.issues",
+    builtins: [
+      {
+        id: "open",
+        name: "Open",
+        builtin: true,
+        createdAt: "2026-01-01T00:00:00.000Z",
+        query: {
+          filter: { field: "Status", operator: "eq", value: "Open" },
+        },
+      },
+    ],
+  },
+});
+```
+
+Use `<qg-grid-views [grid]="grid" />` for a preset picker with **Save as**, **Update view** (when modified), and **Delete** actions. When `views` is configured, the picker is also rendered automatically in `<qg-prime-data-grid>` / `<qg-ui-data-grid>` toolbars.
 
 Declare columns with `qgColumn` — each template defines header, filters, and cell content:
 

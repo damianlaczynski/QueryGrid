@@ -1,0 +1,77 @@
+@if (viewsEnabled()) {
+  <div class="qg-grid-views-group">
+    <div class="qg-grid-views">
+      <ui-select
+        class="qg-grid-views__select"
+        [items]="presetItems()"
+        [size]="size()"
+        [ngModel]="selectedPresetId()"
+        (selectionChange)="onPresetSelected($event)"
+        placeholder="Views"
+      />
+
+      @if (isPresetDirty()) {
+        <ui-button
+          appearance="outline"
+          [size]="size()"
+          icon="save"
+          variant="secondary"
+          uiTooltip="Update view"
+          uiTooltipPosition="top"
+          aria-label="Update view"
+          (click)="updatePreset()"
+        />
+      }
+
+      <ui-button
+        appearance="outline"
+        [size]="size()"
+        icon="add"
+        variant="secondary"
+        uiTooltip="Save as view"
+        uiTooltipPosition="top"
+        aria-label="Save as view"
+        (click)="openSaveDialog()"
+      />
+
+      @if (canDeleteSelected()) {
+        <ui-button
+          appearance="outline"
+          [size]="size()"
+          icon="delete"
+          variant="danger"
+          uiTooltip="Delete view"
+          uiTooltipPosition="top"
+          aria-label="Delete view"
+          (click)="deleteSelected()"
+        />
+      }
+    </div>
+
+    <span class="qg-grid-views__divider" aria-hidden="true"></span>
+  </div>
+
+  <dialog #saveDialog class="qg-grid-views__dialog" (cancel)="closeSaveDialog()">
+    <form class="qg-grid-views__dialog-form" (submit)="onSaveSubmit($event)">
+      <h3 class="qg-grid-views__dialog-title">Save view</h3>
+      <ui-text
+        [size]="size()"
+        [ngModel]="newPresetName()"
+        (ngModelChange)="newPresetName.set($event)"
+        name="viewName"
+        placeholder="View name"
+      />
+      <div class="qg-grid-views__dialog-actions">
+        <ui-button
+          type="button"
+          [size]="size()"
+          text="Cancel"
+          appearance="outline"
+          variant="secondary"
+          (click)="closeSaveDialog()"
+        />
+        <ui-button type="submit" [size]="size()" text="Save" variant="primary" />
+      </div>
+    </form>
+  </dialog>
+}

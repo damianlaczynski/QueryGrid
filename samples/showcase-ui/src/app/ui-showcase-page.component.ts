@@ -1,12 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, Injector } from '@angular/core';
-import { formatGridError } from '@query-grid/core';
-import {
-  QgColumnDirective,
-  QgEmptyDirective,
-  UiDataGridComponent,
-} from '@query-grid/ui';
-import { CardComponent, MessageBarComponent, TagComponent } from '@laczynski/ui';
+import { Component, computed, inject, Injector, signal } from '@angular/core';
+import { ButtonComponent, CardComponent, MessageBarComponent, TagComponent } from '@laczynski/ui';
+import { buildGridQueryUrl, formatGridError } from '@query-grid/core';
+import { QgColumnDirective, QgEmptyDirective, UiDataGridComponent } from '@query-grid/ui';
 import { ShowcaseRow } from './models/showcase-row.model';
 import { ShowcaseApiService } from './services/showcase-api.service';
 import { createUiShowcaseGrid } from './showcase-grid.factory';
@@ -16,6 +12,7 @@ import { getShowcaseCategoryLabel, showcaseCategories } from './utils/showcase.u
   selector: 'app-ui-showcase-page',
   imports: [
     CommonModule,
+    ButtonComponent,
     CardComponent,
     MessageBarComponent,
     TagComponent,
@@ -38,4 +35,14 @@ export class UiShowcasePageComponent {
   protected readonly rowType!: ShowcaseRow;
 
   readonly errorMessage = computed(() => formatGridError(this.grid.error()));
+
+  readonly linkCopied = signal(false);
+
+  copyGridLink(): void {
+    const url = buildGridQueryUrl(globalThis.location.href, this.grid.query());
+    void navigator.clipboard.writeText(url).then(() => {
+      this.linkCopied.set(true);
+      globalThis.setTimeout(() => this.linkCopied.set(false), 2000);
+    });
+  }
 }

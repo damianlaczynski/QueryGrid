@@ -1,0 +1,91 @@
+@if (viewsEnabled()) {
+  <div class="qg-grid-views-group">
+    <div class="qg-grid-views">
+      <p-select
+        class="qg-grid-views__select"
+        [options]="presetOptions()"
+        optionLabel="label"
+        optionValue="value"
+        [ngModel]="selectedPresetId()"
+        (ngModelChange)="onPresetSelected($event)"
+        placeholder="Views"
+        [showClear]="true"
+        size="small"
+      />
+
+      @if (isPresetDirty()) {
+        <p-button
+          type="button"
+          icon="pi pi-save"
+          severity="secondary"
+          [outlined]="true"
+          size="small"
+          aria-label="Update view"
+          pTooltip="Update view"
+          tooltipPosition="top"
+          (onClick)="updatePreset()"
+        />
+      }
+
+      <p-button
+        type="button"
+        icon="pi pi-plus"
+        severity="secondary"
+        [outlined]="true"
+        size="small"
+        aria-label="Save as view"
+        pTooltip="Save as view"
+        tooltipPosition="top"
+        (onClick)="openSaveDialog()"
+      />
+
+      @if (canDeleteSelected()) {
+        <p-button
+          type="button"
+          icon="pi pi-trash"
+          severity="danger"
+          [outlined]="true"
+          size="small"
+          aria-label="Delete view"
+          pTooltip="Delete view"
+          tooltipPosition="top"
+          (onClick)="deleteSelected()"
+        />
+      }
+    </div>
+
+    <span class="qg-grid-views__divider" aria-hidden="true"></span>
+  </div>
+
+  <p-dialog
+    header="Save view"
+    [modal]="true"
+    [draggable]="false"
+    [style]="{ width: '24rem' }"
+    [visible]="showSaveDialog()"
+    (visibleChange)="showSaveDialog.set($event)"
+  >
+    <div class="qg-grid-views__save-field">
+      <input
+        pInputText
+        type="text"
+        [ngModel]="newPresetName()"
+        (ngModelChange)="newPresetName.set($event)"
+        placeholder="View name"
+        (keydown.enter)="saveAs()"
+      />
+    </div>
+    <ng-template #footer>
+      <div class="qg-grid-views__dialog-footer">
+        <p-button
+          type="button"
+          label="Cancel"
+          severity="secondary"
+          [text]="true"
+          (onClick)="closeSaveDialog()"
+        />
+        <p-button type="button" label="Save" (onClick)="saveAs()" />
+      </div>
+    </ng-template>
+  </p-dialog>
+}

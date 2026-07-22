@@ -10,10 +10,12 @@ import {
   LOCALE_ID,
   output,
   signal,
+  untracked,
+  viewChild,
   type TemplateRef,
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
-import { DEFAULT_GRID_OPTIONS } from "@query-grid/core";
+import { DEFAULT_GRID_OPTIONS, type SortDescriptor } from "@query-grid/core";
 import type { SortMeta } from "primeng/api";
 import { Button } from "primeng/button";
 import { Chip } from "primeng/chip";
@@ -23,16 +25,17 @@ import { InputText } from "primeng/inputtext";
 import { Table, TableModule, type TableLazyLoadEvent } from "primeng/table";
 import type { GridResource } from "./create-grid-resource";
 import { buildGridFilterChips, removeFilterCondition, type GridFilterChip } from "./filter-chips";
+import { QgGridViewsComponent } from "./grid-views.component";
 import {
   applyGridQueryToPrimeTable,
   isSameGridPatch,
   lazyLoadEventToGridPatch,
-  mapLazyLoadSort,
   mergeInitialLazyPatch,
+  needsPrimeTableQuerySync,
   syncPrimeTableFieldFilters,
 } from "./lazy-load-mapper";
 import { GRID_TABLE_STYLES } from "./prime-data-grid.styles";
-import { mapSortToPrimeMeta, toggleSortField } from "./sort-mapper";
+import { mapPrimeSortMetaToDescriptors, syncPrimeTableSort, toggleSortField } from "./sort-mapper";
 import type { QgColumnContext } from "./table/column-context";
 import { QgColumnDirective } from "./table/column.directive";
 import { QgEmptyDirective } from "./table/empty.directive";
@@ -58,6 +61,7 @@ const GRID_TABLE_IMPORTS = [
   IconField,
   InputIcon,
   QgColumnFilterComponent,
+  QgGridViewsComponent,
 ];
 
 const GRID_TABLE_HOST = {
@@ -127,7 +131,9 @@ export class PrimeDataGridComponent<T = unknown> {
 
   protected readonly searchText = signal("");
   protected readonly filtersExpanded = signal(false);
+  private readonly tableRef = viewChild<Table>("table");
   private initialLazyLoadHandled = false;
+  private suppressLazyLoad = false;
 
   constructor() {
     effect(() => {
@@ -135,6 +141,31 @@ export class PrimeDataGridComponent<T = unknown> {
       if (search !== this.searchText()) {
         this.searchText.set(search);
       }
+    });
+
+    effect(() => {
+      const table = this.tableRef();
+      const query = this.grid().query();
+      const columns = this.resolvedColumns();
+      if (!table || !this.initialLazyLoadHandled) {
+        return;
+      }
+
+      untracked(() => {
+        if (!needsPrimeTableQuerySync(table, query, columns)) {
+          return;
+        }
+
+        this.suppressLazyLoad = true;
+        try {
+          applyGridQueryToPrimeTable(table, query, columns);
+          this.searchText.set(query.search ?? "");
+        } finally {
+          queueMicrotask(() => {
+            this.suppressLazyLoad = false;
+          });
+        }
+      });
     });
   }
 
@@ -207,27 +238,48 @@ export class PrimeDataGridComponent<T = unknown> {
     },
     table: Table,
   ): void {
-    const clickedField = event.field;
-    if (!clickedField) {
+    const primeMeta =
+      event.multisortmeta ??
+      event.multiSortMeta ??
+      (event.field ? [{ field: event.field, order: event.order ?? 1 }] : table.multiSortMeta);
+
+    let next: SortDescriptor[] | null =
+      primeMeta && primeMeta.length > 0 ? mapPrimeSortMetaToDescriptors(primeMeta) : null;
+
+    if (!next && event.field) {
+      const original = event.originalEvent;
+      next = toggleSortField(this.grid().query().sort, event.field, {
+        multi: !!(original?.ctrlKey || original?.metaKey),
+      });
+    }
+
+    if (!next) {
       return;
     }
 
-    const original = event.originalEvent;
-    const next = toggleSortField(this.grid().query().sort, clickedField, {
-      multi: !!(original?.ctrlKey || original?.metaKey),
-    });
-    table.multiSortMeta = mapSortToPrimeMeta(next);
+    syncPrimeTableSort(table, next);
+    this.grid().setSort(next);
   }
 
   protected onLazyLoad(event: TableLazyLoadEvent, table: Table): void {
-    const defaultPageSize = this.grid().query().take ?? DEFAULT_GRID_OPTIONS.defaultPageSize;
-    const sort = mapLazyLoadSort(event, table);
+    if (this.suppressLazyLoad) {
+      return;
+    }
 
-    const patch = {
-      ...lazyLoadEventToGridPatch(event, this.resolvedColumns(), defaultPageSize, table),
-      sort,
-    };
+    const defaultPageSize = this.grid().query().take ?? DEFAULT_GRID_OPTIONS.defaultPageSize;
     const current = this.grid().query();
+    const basePatch = lazyLoadEventToGridPatch(
+      event,
+      this.resolvedColumns(),
+      defaultPageSize,
+      table,
+    );
+    const lazySort = basePatch.sort ?? [];
+    const querySort = current.sort ?? [];
+    const patch = {
+      ...basePatch,
+      sort: lazySort.length > 0 ? lazySort : querySort,
+    };
 
     if (!this.initialLazyLoadHandled) {
       this.initialLazyLoadHandled = true;
@@ -290,10 +342,10 @@ export class PrimeDataGridComponent<T = unknown> {
   }
 
   protected clear(table: Table): void {
-    table.clear();
+    this.grid().resetQuery();
     this.searchText.set("");
     this.filtersExpanded.set(false);
-    this.grid().resetQuery();
+    applyGridQueryToPrimeTable(table, this.grid().query(), this.resolvedColumns());
     this.cleared.emit();
   }
 }
