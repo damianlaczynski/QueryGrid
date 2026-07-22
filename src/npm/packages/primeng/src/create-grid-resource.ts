@@ -13,11 +13,13 @@ import {
   clampTake,
   createEmptyGridQuery,
   DEFAULT_GRID_OPTIONS,
+  readActiveGridViewPreset,
   sameFilterNode,
   skipToPage,
   totalPages,
   type GridQuery,
   type GridResult,
+  type GridViewsConfig,
   type SortDescriptor,
 } from "@query-grid/core";
 import { catchError, finalize, Observable, of, switchMap, tap } from "rxjs";
@@ -33,7 +35,10 @@ import {
   savePersistedGridState,
   type GridStatePersistence,
 } from "./grid-state-storage";
+import { createGridViewsControls } from "./grid-views-controls";
 
+export type { GridViewPreset, GridViewsConfig } from "@query-grid/core";
+export type { GridResourceWithViews } from "./grid-views-controls";
 export type { GridRouteSyncConfig, GridStatePersistence };
 
 export interface GridResourceConfig<T> {
@@ -46,6 +51,8 @@ export interface GridResourceConfig<T> {
   persistState?: boolean | GridStatePersistence;
   /** Syncs shareable query fields with a router query parameter (default: `grid`). */
   syncRoute?: boolean | GridRouteSyncConfig;
+  /** Named view presets stored in localStorage. */
+  views?: GridViewsConfig;
   getExtraState?: () => Record<string, unknown> | undefined;
   applyExtraState?: (state: Record<string, unknown>) => void;
   /** Component/environment injector — pass `inject(EnvironmentInjector)` from a field initializer. */
@@ -106,7 +113,24 @@ export function createGridResource<T>(config: GridResourceConfig<T>): GridResour
         config.applyExtraState(persisted.extra);
       }
 
-      return persisted?.query ? { ...base, ...persisted.query } : base;
+      if (persisted?.query) {
+        return { ...base, ...persisted.query };
+      }
+
+      if (config.views) {
+        const activePreset = readActiveGridViewPreset(
+          config.views.storageKey,
+          config.views.builtins,
+        );
+        if (activePreset) {
+          if (activePreset.extra && config.applyExtraState) {
+            config.applyExtraState(activePreset.extra);
+          }
+          return { ...base, ...activePreset.query };
+        }
+      }
+
+      return base;
     };
 
     const clampQuery = (value: GridQuery): GridQuery => ({
@@ -155,6 +179,23 @@ export function createGridResource<T>(config: GridResourceConfig<T>): GridResour
       query.set(next);
       persistState(next);
     };
+
+    const applyQueryState = (next: GridQuery) => {
+      query.set(clampQuery(next));
+      persistState(query());
+    };
+
+    const viewsControls = config.views
+      ? createGridViewsControls({
+          config: config.views,
+          query,
+          clampQuery,
+          defaultQuery: createDefaultQuery,
+          applyQuery: applyQueryState,
+          getExtraState: config.getExtraState,
+          applyExtraState: config.applyExtraState,
+        })
+      : null;
 
     toObservable(computed(() => ({ q: query(), token: reloadToken() })))
       .pipe(
@@ -234,6 +275,7 @@ export function createGridResource<T>(config: GridResourceConfig<T>): GridResour
         if (config.applyExtraState) {
           config.applyExtraState({});
         }
+        viewsControls?.clearActivePreset();
         query.set(next);
         clearPersistedGridState(config.persistState);
         if (config.persistState) {
@@ -243,6 +285,18 @@ export function createGridResource<T>(config: GridResourceConfig<T>): GridResour
       reload() {
         reloadToken.update((value) => value + 1);
       },
+      ...(viewsControls
+        ? {
+            presets: viewsControls.presets,
+            activePresetId: viewsControls.activePresetId,
+            isPresetDirty: viewsControls.isPresetDirty,
+            applyPreset: viewsControls.applyPreset,
+            saveCurrentAsPreset: viewsControls.saveCurrentAsPreset,
+            updateActivePreset: viewsControls.updateActivePreset,
+            deletePreset: viewsControls.deletePreset,
+            clearActivePreset: viewsControls.clearActivePreset,
+          }
+        : {}),
     };
   });
 }
