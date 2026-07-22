@@ -37,6 +37,25 @@
       </div>
     </div>
 
+    @if (selectedCount() > 0 && bulkToolbarTemplate(); as bulkToolbar) {
+      <div class="qg-ui-grid__bulk-toolbar">
+        <span class="qg-ui-grid__bulk-toolbar-count">{{ selectedCount() }} selected</span>
+        <div class="qg-ui-grid__bulk-toolbar-actions">
+          <ng-container [ngTemplateOutlet]="bulkToolbar" />
+        </div>
+        <ui-button
+          appearance="outline"
+          [size]="size()"
+          icon="dismiss"
+          variant="secondary"
+          uiTooltip="Clear selection"
+          uiTooltipPosition="top"
+          aria-label="Clear selection"
+          (click)="clearRowSelection()"
+        />
+      </div>
+    }
+
     @if (filtersExpanded() && toolbarTemplate(); as toolbar) {
       <div class="qg-ui-grid__toolbar-filters">
         <ng-container [ngTemplateOutlet]="toolbar" />
@@ -75,6 +94,26 @@
             [class.qg-ui-grid__header-row--dragging]="columnDragActive()"
             (cdkDropListDropped)="onColumnDropped($event)"
           >
+            @if (rowSelectionEnabled()) {
+              <th
+                scope="col"
+                class="qg-ui-grid__header-cell qg-ui-grid__header-cell--selection"
+                [class.qg-ui-grid__header-cell--selection-edge]="isSelectionColumnFrozenEdge()"
+                [class.qg-ui-grid__header-cell--selection-separator]="isSelectionColumnSeparator()"
+                [attr.aria-label]="isMultipleSelection() ? 'Select page' : 'Select row'"
+              >
+                @if (isMultipleSelection()) {
+                  <div class="qg-ui-grid__selection-cell">
+                    <ui-checkbox
+                      [size]="size()"
+                      [ngModel]="isPageSelectionChecked()"
+                      [indeterminate]="isPageSelectionIndeterminate()"
+                      (ngModelChange)="onPageSelectionChange($event)"
+                    />
+                  </div>
+                }
+              </th>
+            }
             @for (column of displayedColumns(); track column.field) {
               <th
                 scope="col"
@@ -103,7 +142,7 @@
                 [attr.aria-sort]="ariaSort(column)"
                 [style.minWidth]="columnWidth(column)"
                 [style.width]="columnWidth(column)"
-                [style.left.px]="pinnedOffset(column.field)?.left"
+                [style.left.px]="pinnedLeftPx(column.field)"
                 [style.right.px]="pinnedOffset(column.field)?.right"
                 [style.z-index]="
                   pinnedZIndex(column.field, 'header') ?? scrollableZIndex(column.field)
@@ -198,7 +237,22 @@
         <tbody class="qg-ui-grid__body">
           @if (hasRows()) {
             @for (row of grid().items() ?? []; track trackRow(row, $index)) {
-              <tr class="qg-ui-grid__row">
+              <tr class="qg-ui-grid__row" [class.qg-ui-grid__row--selected]="isRowSelected(row)">
+                @if (rowSelectionEnabled()) {
+                  <td
+                    class="qg-ui-grid__cell qg-ui-grid__cell--selection"
+                    [class.qg-ui-grid__cell--selection-edge]="isSelectionColumnFrozenEdge()"
+                    [class.qg-ui-grid__cell--selection-separator]="isSelectionColumnSeparator()"
+                  >
+                    <div class="qg-ui-grid__selection-cell">
+                      <ui-checkbox
+                        [size]="size()"
+                        [ngModel]="isRowSelected(row)"
+                        (ngModelChange)="onRowSelectionChange(row, $event)"
+                      />
+                    </div>
+                  </td>
+                }
                 @for (column of displayedColumns(); track column.field) {
                   <td
                     class="qg-ui-grid__cell"
@@ -218,7 +272,7 @@
                     [class.qg-ui-grid__cell--pinned-right-edge]="isRightPinnedEdge(column.field)"
                     [style.minWidth]="columnWidth(column)"
                     [style.width]="columnWidth(column)"
-                    [style.left.px]="pinnedOffset(column.field)?.left"
+                    [style.left.px]="pinnedLeftPx(column.field)"
                     [style.right.px]="pinnedOffset(column.field)?.right"
                     [style.z-index]="
                       pinnedZIndex(column.field, 'body') ?? scrollableZIndex(column.field)
@@ -239,13 +293,13 @@
             }
           } @else if (grid().loading()) {
             <tr class="qg-ui-grid__loading-row">
-              <td class="qg-ui-grid__loading-cell" [attr.colspan]="displayedColumns().length">
+              <td class="qg-ui-grid__loading-cell" [attr.colspan]="tableColumnCount()">
                 <ui-spinner [size]="size()" ariaLabel="Loading data" />
               </td>
             </tr>
           } @else {
             <tr class="qg-ui-grid__empty-row">
-              <td class="qg-ui-grid__empty-cell" [attr.colspan]="displayedColumns().length">
+              <td class="qg-ui-grid__empty-cell" [attr.colspan]="tableColumnCount()">
                 @if (emptyTemplate(); as template) {
                   <ng-container [ngTemplateOutlet]="template" />
                 } @else {

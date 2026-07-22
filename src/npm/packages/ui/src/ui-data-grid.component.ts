@@ -19,6 +19,7 @@ import {
 import { FormsModule } from "@angular/forms";
 import {
   ButtonComponent,
+  CheckboxComponent,
   IconComponent,
   type IconName,
   PaginationComponent,
@@ -26,6 +27,7 @@ import {
   SearchComponent,
   SpinnerComponent,
   TagComponent,
+  TooltipDirective,
 } from "@laczynski/ui";
 import type { FilterCondition, FilterLogic } from "@query-grid/core";
 import {
@@ -41,13 +43,17 @@ import {
   reorderDisplayedColumnFields,
   resolveColumnPin,
   resolveColumnWidthPx,
+  resolveRowKey,
 } from "@query-grid/core";
+import { QgBulkToolbarDirective } from "./bulk-toolbar.directive";
 import type { GridResource } from "./create-grid-resource";
 import { buildGridFilterChips, type GridFilterChip, removeFilterCondition } from "./filter-chips";
 import { getFieldFilterConditions, getFieldFilterLogic, upsertFieldFilter } from "./filter-mapper";
 import { QgGridColumnChooserComponent } from "./grid-column-chooser.component";
 import { hasColumnLayout } from "./grid-column-layout-controls";
 import { hasColumnChooser } from "./grid-column-visibility-controls";
+import { hasRowSelection } from "./grid-row-selection-controls";
+import { bindHorizontalScrollPersistence, hasScrollPersistence } from "./grid-scroll-controls";
 import { QgGridViewsComponent } from "./grid-views.component";
 import { getSortDirection, toggleSortField } from "./sort-mapper";
 import type { QgColumnContext } from "./table/column-context";
@@ -70,6 +76,8 @@ export type GridExtraChip = {
 
 const EMPTY_CONDITIONS: FilterCondition[] = [];
 
+const SELECTION_COLUMN_WIDTH_PX = 44;
+
 const GRID_IMPORTS = [
   CommonModule,
   FormsModule,
@@ -78,15 +86,18 @@ const GRID_IMPORTS = [
   CdkDrag,
   CdkDragPreview,
   ButtonComponent,
+  CheckboxComponent,
   IconComponent,
   SearchComponent,
   TagComponent,
+  TooltipDirective,
   PaginationComponent,
   SpinnerComponent,
   QgColumnFilterComponent,
   QgColumnResizeDirective,
   QgGridColumnChooserComponent,
   QgGridViewsComponent,
+  QgBulkToolbarDirective,
 ];
 
 @Component({
@@ -130,6 +141,7 @@ export class UiDataGridComponent<T = unknown> {
   private readonly columnDirectives = contentChildren(QgColumnDirective);
   private readonly emptyDirective = contentChildren(QgEmptyDirective);
   private readonly toolbar = contentChildren(QgToolbarDirective);
+  private readonly bulkToolbar = contentChildren(QgBulkToolbarDirective);
   private readonly tableWrap = viewChild<ElementRef<HTMLElement>>("tableWrap");
 
   protected readonly searchText = signal("");
@@ -192,6 +204,27 @@ export class UiDataGridComponent<T = unknown> {
       grid.columnPins();
       this.measuredColumnWidths.set({});
       this.scheduleColumnWidthMeasure();
+    });
+
+    bindHorizontalScrollPersistence({
+      injector: this.injector,
+      grid: () => this.grid(),
+      resolveContainer: () => this.tableWrap()?.nativeElement ?? null,
+      restoreDeps: () => {
+        this.tableWrap();
+        const grid = this.grid();
+        grid.items();
+        grid.loading();
+        this.displayedColumns();
+        if (hasColumnLayout(grid)) {
+          grid.columnOrder();
+          grid.columnWidths();
+          grid.columnPins();
+        }
+        if (hasScrollPersistence(grid)) {
+          grid.scrollLeft();
+        }
+      },
     });
   }
 
@@ -295,6 +328,29 @@ export class UiDataGridComponent<T = unknown> {
 
   protected readonly columnLayoutEnabled = computed(() => hasColumnLayout(this.grid()));
 
+  protected readonly rowSelectionEnabled = computed(() => hasRowSelection(this.grid()));
+
+  protected readonly selectedCount = computed(() => {
+    const grid = this.grid();
+    return hasRowSelection(grid) ? grid.selectedCount() : 0;
+  });
+
+  protected readonly pageRowKeys = computed(() => {
+    const key = this.dataKey();
+    if (!key) {
+      return [] as string[];
+    }
+
+    return (this.grid().items() ?? [])
+      .map((row) => resolveRowKey(row, key))
+      .filter((value): value is string => value != null);
+  });
+
+  protected readonly isMultipleSelection = computed(() => {
+    const grid = this.grid();
+    return !hasRowSelection(grid) || grid.selectionMode() === "multiple";
+  });
+
   private readonly cellMap = computed(() => {
     const map = new Map<string, TemplateRef<QgColumnContext<T>>>();
     for (const column of this.columnDirectiveQueries()) {
@@ -351,6 +407,80 @@ export class UiDataGridComponent<T = unknown> {
     return value ?? index;
   }
 
+  protected rowKey(row: T): string | null {
+    const key = this.dataKey();
+    return key ? resolveRowKey(row, key) : null;
+  }
+
+  protected isRowSelected(row: T): boolean {
+    const grid = this.grid();
+    const key = this.rowKey(row);
+    return hasRowSelection(grid) && key != null && grid.isRowKeySelected(key);
+  }
+
+  protected onRowSelectionChange(row: T, selected: boolean): void {
+    const grid = this.grid();
+    const key = this.rowKey(row);
+    if (!hasRowSelection(grid) || !key) {
+      return;
+    }
+
+    const isSelected = grid.isRowKeySelected(key);
+    if (selected !== isSelected) {
+      grid.toggleRowKey(key);
+    }
+  }
+
+  protected onPageSelectionChange(selected: boolean): void {
+    const grid = this.grid();
+    if (!hasRowSelection(grid) || !this.isMultipleSelection()) {
+      return;
+    }
+
+    const pageKeys = this.pageRowKeys();
+    const allSelected = grid.areAllPageKeysSelected(pageKeys);
+    if (selected !== allSelected) {
+      grid.togglePageRowKeys(pageKeys);
+    }
+  }
+
+  protected isPageSelectionChecked(): boolean {
+    const grid = this.grid();
+    if (!hasRowSelection(grid)) {
+      return false;
+    }
+
+    return grid.areAllPageKeysSelected(this.pageRowKeys());
+  }
+
+  protected isPageSelectionIndeterminate(): boolean {
+    const grid = this.grid();
+    if (!hasRowSelection(grid) || !this.isMultipleSelection()) {
+      return false;
+    }
+
+    return grid.isSomePageKeysSelected(this.pageRowKeys());
+  }
+
+  protected tableColumnCount(): number {
+    return this.displayedColumns().length + (this.rowSelectionEnabled() ? 1 : 0);
+  }
+
+  protected bulkToolbarTemplate(): TemplateRef<unknown> | undefined {
+    return this.bulkToolbarDirectiveQueries()[0]?.template;
+  }
+
+  protected bulkToolbarDirectiveQueries(): readonly QgBulkToolbarDirective[] {
+    return this.bulkToolbar();
+  }
+
+  protected clearRowSelection(): void {
+    const grid = this.grid();
+    if (hasRowSelection(grid)) {
+      grid.clearRowSelection();
+    }
+  }
+
   protected toolbarTemplate(): TemplateRef<unknown> | undefined {
     return this.toolbarDirectiveQueries()[0]?.template;
   }
@@ -405,6 +535,15 @@ export class UiDataGridComponent<T = unknown> {
     return this.pinnedOffsets().get(field);
   }
 
+  protected pinnedLeftPx(field: string): number | undefined {
+    const offset = this.pinnedOffset(field);
+    if (!offset || offset.pin !== "left" || offset.left === undefined) {
+      return undefined;
+    }
+
+    return offset.left + (this.rowSelectionEnabled() ? SELECTION_COLUMN_WIDTH_PX : 0);
+  }
+
   protected isLeftPinnedSeparator(field: string): boolean {
     const fields = this.leftPinnedFields();
     return fields.length > 1 && fields.indexOf(field) > 0;
@@ -413,6 +552,14 @@ export class UiDataGridComponent<T = unknown> {
   protected isLeftPinnedEdge(field: string): boolean {
     const fields = this.leftPinnedFields();
     return fields.length > 0 && fields[fields.length - 1] === field;
+  }
+
+  protected isSelectionColumnFrozenEdge(): boolean {
+    return this.rowSelectionEnabled() && this.leftPinnedFields().length === 0;
+  }
+
+  protected isSelectionColumnSeparator(): boolean {
+    return this.rowSelectionEnabled() && this.leftPinnedFields().length > 0;
   }
 
   protected isRightPinnedSeparator(field: string): boolean {
@@ -683,6 +830,10 @@ export class UiDataGridComponent<T = unknown> {
   }
 
   protected clear(): void {
+    if (!this.hasActiveFilters()) {
+      return;
+    }
+
     this.searchText.set("");
     this.filtersExpanded.set(false);
     this.grid().resetQuery();
