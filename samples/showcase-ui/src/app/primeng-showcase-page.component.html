@@ -1,8 +1,20 @@
 <p-card
   class="showcase-panel showcase-panel--primeng"
   header="PrimeNG table"
-  subheader="qg-prime-data-grid — default PrimeNG styling; multi-sort with Ctrl/Cmd + header click."
+  subheader="qg-prime-data-grid — default PrimeNG styling; multi-sort with Ctrl/Cmd + header click. Grid state syncs to ?grid=."
 >
+  <div class="showcase-actions">
+    <p-button
+      type="button"
+      [label]="linkCopied() ? 'Link copied' : 'Copy link'"
+      icon="pi pi-link"
+      severity="secondary"
+      [outlined]="true"
+      size="small"
+      (onClick)="copyGridLink()"
+    />
+  </div>
+
   @if (errorMessage()) {
     <p-message severity="error" class="error-banner">{{ errorMessage() }}</p-message>
   }

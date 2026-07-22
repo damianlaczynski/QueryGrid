@@ -7,6 +7,7 @@ import {
   signal,
 } from "@angular/core";
 import { takeUntilDestroyed, toObservable } from "@angular/core/rxjs-interop";
+import { ActivatedRoute, Router } from "@angular/router";
 import {
   clampSortDescriptors,
   clampTake,
@@ -21,13 +22,19 @@ import {
 } from "@query-grid/core";
 import { catchError, finalize, Observable, of, switchMap, tap } from "rxjs";
 import {
+  readGridQueryFromRoute,
+  resolveGridRouteSyncConfig,
+  setupGridRouteSync,
+  type GridRouteSyncConfig,
+} from "./grid-route-sync";
+import {
   clearPersistedGridState,
   loadPersistedGridState,
   savePersistedGridState,
   type GridStatePersistence,
 } from "./grid-state-storage";
 
-export type { GridStatePersistence };
+export type { GridRouteSyncConfig, GridStatePersistence };
 
 export interface GridResourceConfig<T> {
   load: (query: GridQuery) => Observable<GridResult<T>>;
@@ -37,6 +44,8 @@ export interface GridResourceConfig<T> {
   maxSortDescriptors?: number;
   /** Persists query (and optional extra state) to session/local storage. */
   persistState?: boolean | GridStatePersistence;
+  /** Syncs shareable query fields with a router query parameter (default: `grid`). */
+  syncRoute?: boolean | GridRouteSyncConfig;
   getExtraState?: () => Record<string, unknown> | undefined;
   applyExtraState?: (state: Record<string, unknown>) => void;
   /** Component/environment injector — pass `inject(EnvironmentInjector)` from a field initializer. */
@@ -63,18 +72,18 @@ export interface GridResource<T> {
 }
 
 /** Creates a reactive grid store. Pass `injector: inject(EnvironmentInjector)` or use {@link GridResourceFactory}. */
-export function createGridResource<T>(
-  config: GridResourceConfig<T>,
-): GridResource<T> {
+export function createGridResource<T>(config: GridResourceConfig<T>): GridResource<T> {
   return runInInjectionContext(config.injector, () => {
     const destroyRef = config.destroyRef ?? inject(DestroyRef);
 
     const options = {
       defaultPageSize: config.defaultTake ?? 20,
       maxTake: config.maxTake ?? 100,
-      maxSortDescriptors:
-        config.maxSortDescriptors ?? DEFAULT_GRID_OPTIONS.maxSortDescriptors,
+      maxSortDescriptors: config.maxSortDescriptors ?? DEFAULT_GRID_OPTIONS.maxSortDescriptors,
     };
+
+    const routeSync = resolveGridRouteSyncConfig(config.syncRoute);
+    const route = routeSync ? inject(ActivatedRoute) : null;
 
     const createDefaultQuery = (): GridQuery => ({
       ...createEmptyGridQuery(options),
@@ -83,6 +92,14 @@ export function createGridResource<T>(
 
     const readInitialQuery = (): GridQuery => {
       const base = createDefaultQuery();
+
+      if (routeSync && route) {
+        const routeQuery = readGridQueryFromRoute(route, routeSync);
+        if (routeQuery) {
+          return { ...base, ...routeQuery };
+        }
+      }
+
       const persisted = loadPersistedGridState(config.persistState);
 
       if (persisted?.extra && config.applyExtraState) {
@@ -105,21 +122,32 @@ export function createGridResource<T>(
     const error = signal<unknown>(null);
     const reloadToken = signal(0);
 
-    const resolvedTake = computed(() => clampTake(query().take, options));
-    const page = computed(() => skipToPage(query().skip ?? 0, resolvedTake()));
-    const pageCount = computed(() => totalPages(totalCount(), resolvedTake()));
-
     const persistState = (next: GridQuery) => {
       if (!config.persistState) {
         return;
       }
 
-      savePersistedGridState(
-        config.persistState,
-        next,
-        config.getExtraState?.(),
-      );
+      savePersistedGridState(config.persistState, next, config.getExtraState?.());
     };
+
+    persistState(query());
+
+    if (routeSync && route) {
+      setupGridRouteSync({
+        route,
+        router: inject(Router),
+        query,
+        config: routeSync,
+        defaultQuery: createDefaultQuery(),
+        clampQuery,
+        onQueryApplied: persistState,
+        destroyRef,
+      });
+    }
+
+    const resolvedTake = computed(() => clampTake(query().take, options));
+    const page = computed(() => skipToPage(query().skip ?? 0, resolvedTake()));
+    const pageCount = computed(() => totalPages(totalCount(), resolvedTake()));
 
     const updateQuery = (updater: (current: GridQuery) => GridQuery) => {
       const next = updater(query());
@@ -190,21 +218,12 @@ export function createGridResource<T>(
         updateQuery((q) => {
           const next = { ...q, ...patch };
           if (patch.sort !== undefined) {
-            next.sort = clampSortDescriptors(
-              patch.sort,
-              options.maxSortDescriptors,
-            );
+            next.sort = clampSortDescriptors(patch.sort, options.maxSortDescriptors);
           }
-          if (
-            patch.filter !== undefined &&
-            !sameFilterNode(q.filter, patch.filter)
-          ) {
+          if (patch.filter !== undefined && !sameFilterNode(q.filter, patch.filter)) {
             next.skip = 0;
           }
-          if (
-            patch.search !== undefined &&
-            (q.search ?? "") !== (patch.search ?? "")
-          ) {
+          if (patch.search !== undefined && (q.search ?? "") !== (patch.search ?? "")) {
             next.skip = 0;
           }
           return next;

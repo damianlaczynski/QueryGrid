@@ -47,19 +47,20 @@ The seed model includes at least one column per category the engine discovers:
 
 ## Scenario coverage (API + UI)
 
-| Scenario               | What to verify                                                    |
-| ---------------------- | ----------------------------------------------------------------- |
-| Default load           | `take` default, first page, total count                           |
-| Single-column sort     | asc/desc per type                                                 |
-| Multi-sort             | up to `GridOptions` sort limit, order preserved                   |
-| Column filter per type | correct PrimeNG control → operator → API round-trip               |
-| Combined filters       | `and` / `or` groups (when UI exposes them)                        |
-| Global search          | `search` across string fields                                     |
-| Paging                 | skip/take, last page, empty page after filter                     |
-| Session persist        | `persistState` — refresh restores grid state from session storage |
-| Validation errors      | invalid operator for type → ProblemDetails / grid error state     |
-| Clear / reset          | toolbar clears filters and reloads                                |
-| Large `in` list        | boundary below `GridOptions` limit                                |
+| Scenario               | What to verify                                                               |
+| ---------------------- | ---------------------------------------------------------------------------- |
+| Default load           | `take` default, first page, total count                                      |
+| Single-column sort     | asc/desc per type                                                            |
+| Multi-sort             | up to `GridOptions` sort limit, order preserved                              |
+| Column filter per type | correct PrimeNG control → operator → API round-trip                          |
+| Combined filters       | `and` / `or` groups (when UI exposes them)                                   |
+| Global search          | `search` across string fields                                                |
+| Paging                 | skip/take, last page, empty page after filter                                |
+| Session persist        | `persistState` — refresh restores grid state from session storage            |
+| URL sync               | `syncRoute` — filter/sort/search reflected in `?grid=`; copy-link round-trip |
+| Validation errors      | invalid operator for type → ProblemDetails / grid error state                |
+| Clear / reset          | toolbar clears filters and reloads                                           |
+| Large `in` list        | boundary below `GridOptions` limit                                           |
 
 Unit tests in `src/dotnet` prove expression correctness; samples prove **wiring** end-to-end.
 

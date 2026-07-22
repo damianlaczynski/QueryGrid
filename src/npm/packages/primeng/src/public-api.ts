@@ -2,6 +2,7 @@ export {
   createGridResource,
   type GridResource,
   type GridResourceConfig,
+  type GridRouteSyncConfig,
   type GridStatePersistence,
 } from "./create-grid-resource";
 export { buildGridFilterChips, removeFilterCondition, type GridFilterChip } from "./filter-chips";

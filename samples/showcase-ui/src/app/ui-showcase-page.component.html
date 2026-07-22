@@ -3,7 +3,13 @@
     <h2 class="showcase-panel__title">laczynski/ui table</h2>
     <p class="showcase-panel__subtitle">
       qg-ui-data-grid — Fluent 2 table via @laczynski/ui; multi-sort with Ctrl/Cmd + header click.
+      Grid state syncs to ?grid=.
     </p>
+    <div class="showcase-actions">
+      <ui-button type="button" variant="secondary" size="small" (click)="copyGridLink()">
+        {{ linkCopied() ? 'Link copied' : 'Copy link' }}
+      </ui-button>
+    </div>
   </div>
 
   <div uiCardBody class="showcase-panel showcase-panel--ui">

@@ -93,11 +93,33 @@ export class IssuesComponent {
     load: (q) => this.api.getAllIssues(q),
     defaultSort: [{ field: "LastActivityAt", desc: true }],
     persistState: { key: "my-app.issues-list", storage: "session" },
+    syncRoute: true,
   });
 }
 ```
 
 Serialize `GridQuery` in your HTTP service with `JSON.stringify` and the same query parameter name as on the server.
+
+### URL state
+
+Enable `syncRoute` to mirror shareable grid fields (`sort`, `filter`, `search`, `take`) in the router query string under `?grid=` — the same JSON shape as the backend transport. Page offset (`skip`) is omitted by default so links open on page 1.
+
+```typescript
+readonly grid = this.gridFactory.create<IssueDto>({
+  // …
+  syncRoute: { param: "grid", debounceMs: 300 },
+});
+```
+
+Priority on load: **URL → `persistState` → defaults**. When the grid returns to its default sort/filter/search, the `grid` param is removed from the URL.
+
+Build a shareable link manually with `@query-grid/core`:
+
+```typescript
+import { buildGridQueryUrl } from "@query-grid/core";
+
+const url = buildGridQueryUrl(location.href, grid.query());
+```
 
 Declare columns with `qgColumn` — each template defines header, filters, and cell content:
 

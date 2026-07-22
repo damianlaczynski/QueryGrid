@@ -15,6 +15,7 @@ function showcaseGridOptions(injector: Injector, api: ShowcaseApiService, persis
     defaultSort: [{ field: 'Id', desc: false }],
     defaultTake: 20,
     persistState: { key: persistKey, storage: 'session' as const },
+    syncRoute: true,
   };
 }
 
