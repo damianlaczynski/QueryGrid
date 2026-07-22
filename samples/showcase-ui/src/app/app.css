@@ -2,8 +2,11 @@
   margin: 0 auto;
   max-width: 1600px;
   padding: 1.5rem;
-  min-height: 100vh;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-height: 100vh;
 }
 
 .shell__header {
@@ -13,6 +16,7 @@
   gap: 1rem;
   flex-wrap: wrap;
   margin-bottom: 1.5rem;
+  flex-shrink: 0;
 }
 
 .shell__brand {
@@ -60,5 +64,16 @@
 }
 
 .shell__main {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.shell__main > app-ui-showcase-page,
+.shell__main > app-primeng-showcase-page {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
   min-height: 0;
 }

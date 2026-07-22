@@ -1,4 +1,22 @@
 export const GRID_TABLE_STYLES = `
+  :host {
+    display: block;
+  }
+
+  :host.qg-scrollable {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  :host.qg-scrollable .p-datatable {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+  }
+
   :host .qg-caption {
     display: flex;
     flex-direction: column;
