@@ -40,6 +40,7 @@
         }
 
         <div class="qg-caption-actions">
+          <qg-grid-column-chooser [grid]="grid()" [columns]="resolvedColumns()" />
           <qg-grid-views [grid]="grid()" />
 
           @if (toolbarTemplate(); as toolbar) {
@@ -87,7 +88,7 @@
 
   <ng-template #header>
     <tr>
-      @for (column of resolvedColumns(); track column.field) {
+      @for (column of displayedColumns(); track column.field) {
         <th
           scope="col"
           [style.minWidth]="column.width"
@@ -112,7 +113,7 @@
 
   <ng-template #body let-row>
     <tr>
-      @for (column of resolvedColumns(); track column.field) {
+      @for (column of displayedColumns(); track column.field) {
         <td [style.textAlign]="column.align">
           @if (cellTemplate(column.field); as template) {
             <ng-container
@@ -130,13 +131,13 @@
   <ng-template #emptymessage>
     @if (emptyTemplate(); as template) {
       <tr>
-        <td [attr.colspan]="resolvedColumns().length">
+        <td [attr.colspan]="displayedColumns().length">
           <ng-container [ngTemplateOutlet]="template" />
         </td>
       </tr>
     } @else {
       <tr>
-        <td [attr.colspan]="resolvedColumns().length">No data</td>
+        <td [attr.colspan]="displayedColumns().length">No data</td>
       </tr>
     }
   </ng-template>

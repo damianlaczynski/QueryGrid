@@ -22,10 +22,17 @@ import {
   TagComponent,
 } from "@laczynski/ui";
 import type { FilterCondition, FilterLogic } from "@query-grid/core";
-import { DEFAULT_GRID_OPTIONS } from "@query-grid/core";
+import {
+  DEFAULT_GRID_OPTIONS,
+  filterColumnsByVisibility,
+  isColumnHideable,
+} from "@query-grid/core";
 import type { GridResource } from "./create-grid-resource";
 import { buildGridFilterChips, type GridFilterChip, removeFilterCondition } from "./filter-chips";
 import { getFieldFilterConditions, getFieldFilterLogic, upsertFieldFilter } from "./filter-mapper";
+import { QgGridColumnChooserComponent } from "./grid-column-chooser.component";
+import { hasColumnChooser } from "./grid-column-visibility-controls";
+import { QgGridViewsComponent } from "./grid-views.component";
 import { getSortDirection, toggleSortField } from "./sort-mapper";
 import type { QgColumnContext } from "./table/column-context";
 import { QgColumnDirective } from "./table/column.directive";
@@ -36,7 +43,6 @@ import {
   QgColumnFilterComponent,
 } from "./table/qg-column-filter.component";
 import { resolveGridColumns } from "./table/resolve-grid-columns";
-import { QgGridViewsComponent } from "./grid-views.component";
 import { QgToolbarDirective } from "./toolbar.directive";
 import type { GridSize } from "./types";
 
@@ -58,6 +64,7 @@ const GRID_IMPORTS = [
   PaginationComponent,
   SpinnerComponent,
   QgColumnFilterComponent,
+  QgGridColumnChooserComponent,
   QgGridViewsComponent,
 ];
 
@@ -109,6 +116,18 @@ export class UiDataGridComponent<T = unknown> {
 
   constructor() {
     effect(() => {
+      const grid = this.grid();
+      if (!hasColumnChooser(grid)) {
+        return;
+      }
+
+      const fields = this.resolvedColumns()
+        .filter((column) => isColumnHideable(column))
+        .map((column) => column.field);
+      grid.setAvailableColumnFields(fields);
+    });
+
+    effect(() => {
       const search = this.grid().query().search ?? "";
       if (search !== this.searchText()) {
         this.searchText.set(search);
@@ -147,6 +166,16 @@ export class UiDataGridComponent<T = unknown> {
   protected readonly resolvedColumns = computed(() =>
     resolveGridColumns(this.columns(), this.columnDirectiveQueries()),
   );
+
+  protected readonly displayedColumns = computed(() => {
+    const columns = this.resolvedColumns();
+    const grid = this.grid();
+    if (!hasColumnChooser(grid)) {
+      return columns;
+    }
+
+    return filterColumnsByVisibility(columns, grid.hiddenColumnFields());
+  });
 
   private readonly cellMap = computed(() => {
     const map = new Map<string, TemplateRef<QgColumnContext<T>>>();

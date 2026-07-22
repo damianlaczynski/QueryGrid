@@ -12,6 +12,7 @@
       }
 
       <div class="qg-ui-grid__toolbar-actions">
+        <qg-grid-column-chooser [grid]="grid()" [columns]="resolvedColumns()" [size]="size()" />
         <qg-grid-views [grid]="grid()" [size]="size()" />
 
         @if (toolbarTemplate()) {
@@ -67,7 +68,7 @@
       <table class="qg-ui-grid__table">
         <thead class="qg-ui-grid__head">
           <tr class="qg-ui-grid__header-row">
-            @for (column of resolvedColumns(); track column.field) {
+            @for (column of displayedColumns(); track column.field) {
               <th
                 scope="col"
                 class="qg-ui-grid__header-cell"
@@ -125,7 +126,7 @@
           @if (hasRows()) {
             @for (row of grid().items() ?? []; track trackRow(row, $index)) {
               <tr class="qg-ui-grid__row">
-                @for (column of resolvedColumns(); track column.field) {
+                @for (column of displayedColumns(); track column.field) {
                   <td class="qg-ui-grid__cell" [style.textAlign]="column.align ?? 'left'">
                     @if (cellTemplate(column.field); as template) {
                       <ng-container
@@ -141,13 +142,13 @@
             }
           } @else if (grid().loading()) {
             <tr class="qg-ui-grid__loading-row">
-              <td class="qg-ui-grid__loading-cell" [attr.colspan]="resolvedColumns().length">
+              <td class="qg-ui-grid__loading-cell" [attr.colspan]="displayedColumns().length">
                 <ui-spinner [size]="size()" ariaLabel="Loading data" />
               </td>
             </tr>
           } @else {
             <tr class="qg-ui-grid__empty-row">
-              <td class="qg-ui-grid__empty-cell" [attr.colspan]="resolvedColumns().length">
+              <td class="qg-ui-grid__empty-cell" [attr.colspan]="displayedColumns().length">
                 @if (emptyTemplate(); as template) {
                   <ng-container [ngTemplateOutlet]="template" />
                 } @else {

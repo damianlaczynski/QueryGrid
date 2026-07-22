@@ -1,0 +1,46 @@
+@if (chooserEnabled()) {
+  <p-button
+    type="button"
+    icon="pi pi-table"
+    severity="secondary"
+    [outlined]="true"
+    size="small"
+    aria-label="Columns"
+    pTooltip="Columns"
+    tooltipPosition="top"
+    (onClick)="columnPopover.toggle($event)"
+  />
+
+  <p-popover #columnPopover>
+    <ng-template #content>
+      <div class="qg-grid-column-chooser__panel">
+        <div class="qg-grid-column-chooser__list">
+          @for (column of hideableColumns(); track column.field) {
+            <label class="qg-grid-column-chooser__item">
+              <p-checkbox
+                [binary]="true"
+                [ngModel]="isColumnVisible(column.field)"
+                [disabled]="!canUncheck(column.field)"
+                (ngModelChange)="onVisibilityChange(column.field, $event)"
+              />
+              <span>{{ column.header }}</span>
+            </label>
+          }
+        </div>
+
+        @if (hasHiddenColumns()) {
+          <div class="qg-grid-column-chooser__footer">
+            <p-button
+              type="button"
+              label="Show all"
+              severity="secondary"
+              [text]="true"
+              size="small"
+              (onClick)="showAllColumns()"
+            />
+          </div>
+        }
+      </div>
+    </ng-template>
+  </p-popover>
+}

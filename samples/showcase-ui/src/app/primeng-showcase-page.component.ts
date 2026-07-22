@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, inject, Injector, signal } from '@angular/core';
 import { buildGridQueryUrl, formatGridError } from '@query-grid/core';
 import { PrimeDataGridComponent, QgColumnDirective, QgEmptyDirective } from '@query-grid/primeng';
-import { Button } from 'primeng/button';
 import { Card } from 'primeng/card';
 import { Message } from 'primeng/message';
 import { Tag } from 'primeng/tag';
@@ -15,7 +14,6 @@ import { getShowcaseCategoryLabel, showcaseCategories } from './utils/showcase.u
   selector: 'app-primeng-showcase-page',
   imports: [
     CommonModule,
-    Button,
     Card,
     Message,
     Tag,

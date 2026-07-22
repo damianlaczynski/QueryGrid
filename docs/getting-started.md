@@ -147,6 +147,35 @@ readonly grid = this.gridFactory.create<IssueDto>({
 
 Use `<qg-grid-views [grid]="grid" />` for a preset picker with **Save as**, **Update view** (when modified), and **Delete** actions. When `views` is configured, the picker is also rendered automatically in `<qg-prime-data-grid>` / `<qg-ui-data-grid>` toolbars.
 
+### Column chooser
+
+Enable `columnChooser` to let users show or hide columns client-side. Visibility is stored in `persistState` **extra** (not in `GridQuery`) and is included automatically when saving views:
+
+```typescript
+readonly grid = this.gridFactory.create<IssueDto>({
+  // …
+  columnChooser: true,
+  persistState: { key: "my-app.issues", storage: "session" },
+  views: { storageKey: "my-app.issues" },
+});
+```
+
+The column picker appears in the grid toolbar when `columnChooser` is enabled. Use `[hideable]="false"` on a `qgColumn` (or `hideable: false` in `[columns]`) to keep fixed columns such as actions out of the picker.
+
+```html
+<ng-template
+  qgColumn="actions"
+  header=""
+  [hideable]="false"
+  [sortable]="false"
+  let-row
+>
+  …
+</ng-template>
+```
+
+Use `<qg-grid-column-chooser [grid]="grid" [columns]="columns" />` if you build a custom toolbar.
+
 Declare columns with `qgColumn` — each template defines header, filters, and cell content:
 
 ```html

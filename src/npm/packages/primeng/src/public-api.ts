@@ -4,10 +4,15 @@ export {
   type GridResourceConfig,
   type GridRouteSyncConfig,
   type GridStatePersistence,
-  type GridViewsConfig,
   type GridViewPreset,
+  type GridViewsConfig,
 } from "./create-grid-resource";
 export { buildGridFilterChips, removeFilterCondition, type GridFilterChip } from "./filter-chips";
+export { QgGridColumnChooserComponent } from "./grid-column-chooser.component";
+export {
+  hasColumnChooser,
+  type GridResourceWithColumnChooser,
+} from "./grid-column-visibility-controls";
 export { GridResourceFactory } from "./grid-resource-factory";
 export { hasGridViews, type GridResourceWithViews } from "./grid-views-controls";
 export { QgGridViewsComponent } from "./grid-views.component";

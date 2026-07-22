@@ -15,7 +15,12 @@ import {
   type TemplateRef,
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
-import { DEFAULT_GRID_OPTIONS, type SortDescriptor } from "@query-grid/core";
+import {
+  DEFAULT_GRID_OPTIONS,
+  filterColumnsByVisibility,
+  isColumnHideable,
+  type SortDescriptor,
+} from "@query-grid/core";
 import type { SortMeta } from "primeng/api";
 import { Button } from "primeng/button";
 import { Chip } from "primeng/chip";
@@ -25,6 +30,8 @@ import { InputText } from "primeng/inputtext";
 import { Table, TableModule, type TableLazyLoadEvent } from "primeng/table";
 import type { GridResource } from "./create-grid-resource";
 import { buildGridFilterChips, removeFilterCondition, type GridFilterChip } from "./filter-chips";
+import { QgGridColumnChooserComponent } from "./grid-column-chooser.component";
+import { hasColumnChooser } from "./grid-column-visibility-controls";
 import { QgGridViewsComponent } from "./grid-views.component";
 import {
   applyGridQueryToPrimeTable,
@@ -61,6 +68,7 @@ const GRID_TABLE_IMPORTS = [
   IconField,
   InputIcon,
   QgColumnFilterComponent,
+  QgGridColumnChooserComponent,
   QgGridViewsComponent,
 ];
 
@@ -129,6 +137,16 @@ export class PrimeDataGridComponent<T = unknown> {
     resolveGridColumns(this.columns(), this.columnDirectiveQueries()),
   );
 
+  protected readonly displayedColumns = computed(() => {
+    const columns = this.resolvedColumns();
+    const grid = this.grid();
+    if (!hasColumnChooser(grid)) {
+      return columns;
+    }
+
+    return filterColumnsByVisibility(columns, grid.hiddenColumnFields());
+  });
+
   protected readonly searchText = signal("");
   protected readonly filtersExpanded = signal(false);
   private readonly tableRef = viewChild<Table>("table");
@@ -136,6 +154,18 @@ export class PrimeDataGridComponent<T = unknown> {
   private suppressLazyLoad = false;
 
   constructor() {
+    effect(() => {
+      const grid = this.grid();
+      if (!hasColumnChooser(grid)) {
+        return;
+      }
+
+      const fields = this.resolvedColumns()
+        .filter((column) => isColumnHideable(column))
+        .map((column) => column.field);
+      grid.setAvailableColumnFields(fields);
+    });
+
     effect(() => {
       const search = this.grid().query().search ?? "";
       if (search !== this.searchText()) {
