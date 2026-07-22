@@ -24,6 +24,7 @@ import {
   type SortDescriptor,
 } from "@query-grid/core";
 import { catchError, finalize, Observable, of, switchMap, tap } from "rxjs";
+import { createGridColumnLayoutControls } from "./grid-column-layout-controls";
 import { createGridColumnVisibilityControls } from "./grid-column-visibility-controls";
 import {
   readGridQueryFromRoute,
@@ -37,9 +38,10 @@ import {
   savePersistedGridState,
   type GridStatePersistence,
 } from "./grid-state-storage";
-import { createGridViewsControls } from "./grid-views-controls";
+import { createGridViewsControls, type GridViewsControls } from "./grid-views-controls";
 
 export type { GridViewPreset, GridViewsConfig } from "@query-grid/core";
+export type { GridResourceWithColumnLayout } from "./grid-column-layout-controls";
 export type { GridResourceWithColumnChooser } from "./grid-column-visibility-controls";
 export type { GridResourceWithViews } from "./grid-views-controls";
 export type { GridRouteSyncConfig, GridStatePersistence };
@@ -58,6 +60,8 @@ export interface GridResourceConfig<T> {
   views?: GridViewsConfig;
   /** Client-side column visibility stored in persist extra state. */
   columnChooser?: boolean;
+  /** Client-side column resize, reorder, and pin stored in persist extra state. */
+  columnLayout?: boolean;
   getExtraState?: () => Record<string, unknown> | undefined;
   applyExtraState?: (state: Record<string, unknown>) => void;
   /** Component/environment injector — pass `inject(EnvironmentInjector)` from a field initializer. */
@@ -110,45 +114,59 @@ export function createGridResource<T>(config: GridResourceConfig<T>): GridResour
         })
       : null;
 
+    const columnLayout = config.columnLayout
+      ? createGridColumnLayoutControls({
+          onStateChange: () => persistCurrentState(),
+        })
+      : null;
+
     const getExtraState = (): Record<string, unknown> | undefined =>
-      mergeExtraState(config.getExtraState?.(), columnVisibility?.getExtraState());
+      mergeExtraState(
+        config.getExtraState?.(),
+        columnVisibility?.getExtraState(),
+        columnLayout?.getExtraState(),
+      );
 
     const applyExtraState = (extra: Record<string, unknown>): void => {
       config.applyExtraState?.(extra);
       columnVisibility?.applyExtraState(extra);
+      columnLayout?.applyExtraState(extra);
     };
 
     const readInitialQuery = (): GridQuery => {
       const base = createDefaultQuery();
+      const persisted = loadPersistedGridState(config.persistState);
+      const activePreset = config.views
+        ? readActiveGridViewPreset(config.views.storageKey, config.views.builtins)
+        : null;
+
+      const applyInitialExtra = (): void => {
+        if (activePreset) {
+          applyExtraState(activePreset.extra ?? {});
+          return;
+        }
+
+        if (persisted?.extra) {
+          applyExtraState(persisted.extra);
+        }
+      };
 
       if (routeSync && route) {
         const routeQuery = readGridQueryFromRoute(route, routeSync);
         if (routeQuery) {
+          applyInitialExtra();
           return { ...base, ...routeQuery };
         }
       }
 
-      const persisted = loadPersistedGridState(config.persistState);
-
-      if (persisted?.extra) {
-        applyExtraState(persisted.extra);
-      }
+      applyInitialExtra();
 
       if (persisted?.query) {
         return { ...base, ...persisted.query };
       }
 
-      if (config.views) {
-        const activePreset = readActiveGridViewPreset(
-          config.views.storageKey,
-          config.views.builtins,
-        );
-        if (activePreset) {
-          if (activePreset.extra) {
-            applyExtraState(activePreset.extra);
-          }
-          return { ...base, ...activePreset.query };
-        }
+      if (activePreset) {
+        return { ...base, ...activePreset.query };
       }
 
       return base;
@@ -166,18 +184,19 @@ export function createGridResource<T>(config: GridResourceConfig<T>): GridResour
     const loading = signal(false);
     const error = signal<unknown>(null);
     const reloadToken = signal(0);
+    let viewsControls: GridViewsControls | null = null;
 
-    const persistState = (next: GridQuery) => {
+    const persistState = (next: GridQuery, options?: { includeExtra?: boolean }) => {
       if (!config.persistState) {
         return;
       }
 
-      savePersistedGridState(config.persistState, next, getExtraState());
+      const includeExtra = options?.includeExtra ?? viewsControls?.activePresetId() == null;
+
+      savePersistedGridState(config.persistState, next, includeExtra ? getExtraState() : undefined);
     };
 
     persistCurrentState = () => persistState(query());
-
-    persistState(query());
 
     if (routeSync && route) {
       setupGridRouteSync({
@@ -208,7 +227,7 @@ export function createGridResource<T>(config: GridResourceConfig<T>): GridResour
       persistState(query());
     };
 
-    const viewsControls = config.views
+    viewsControls = config.views
       ? createGridViewsControls({
           config: config.views,
           query,
@@ -217,6 +236,7 @@ export function createGridResource<T>(config: GridResourceConfig<T>): GridResour
           applyQuery: applyQueryState,
           getExtraState,
           applyExtraState,
+          persistSession: () => persistState(query(), { includeExtra: true }),
         })
       : null;
 
@@ -324,6 +344,18 @@ export function createGridResource<T>(config: GridResourceConfig<T>): GridResour
             setColumnVisible: columnVisibility.setColumnVisible,
             showAllColumns: columnVisibility.showAllColumns,
             setAvailableColumnFields: columnVisibility.setAvailableColumnFields,
+          }
+        : {}),
+      ...(columnLayout
+        ? {
+            columnOrder: columnLayout.columnOrder,
+            columnWidths: columnLayout.columnWidths,
+            columnPins: columnLayout.columnPins,
+            setColumnOrder: columnLayout.setColumnOrder,
+            setColumnWidth: columnLayout.setColumnWidth,
+            setColumnPin: columnLayout.setColumnPin,
+            resetColumnLayout: columnLayout.resetColumnLayout,
+            setAvailableLayoutFields: columnLayout.setAvailableColumnFields,
           }
         : {}),
     };

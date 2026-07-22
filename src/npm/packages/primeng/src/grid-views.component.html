@@ -13,7 +13,7 @@
         size="small"
       />
 
-      @if (isPresetDirty()) {
+      @if (canUpdateSelected()) {
         <p-button
           type="button"
           icon="pi pi-save"

@@ -14,14 +14,24 @@
         }
       </div>
 
-      @if (hasHiddenColumns()) {
+      @if (hasHiddenColumns() || hasLayoutChanges()) {
         <div class="popover-panel__footer qg-grid-column-chooser__footer">
-          <ui-button
-            appearance="outline"
-            [size]="size()"
-            text="Show all"
-            (click)="showAllColumns()"
-          />
+          @if (hasHiddenColumns()) {
+            <ui-button
+              appearance="outline"
+              [size]="size()"
+              text="Show all"
+              (click)="showAllColumns()"
+            />
+          }
+          @if (hasLayoutChanges()) {
+            <ui-button
+              appearance="outline"
+              [size]="size()"
+              text="Reset layout"
+              (click)="resetColumnLayout()"
+            />
+          }
         </div>
       }
     </div>

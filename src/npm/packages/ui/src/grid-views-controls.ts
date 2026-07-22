@@ -31,6 +31,7 @@ export function createGridViewsControls(options: {
   applyQuery: (query: GridQuery) => void;
   getExtraState?: () => Record<string, unknown> | undefined;
   applyExtraState?: (state: Record<string, unknown>) => void;
+  persistSession?: () => void;
 }): GridViewsControls {
   const maxUserPresets = options.config.maxUserPresets ?? 20;
   const builtins = options.config.builtins ?? [];
@@ -70,11 +71,11 @@ export function createGridViewsControls(options: {
       return;
     }
 
-    options.applyQuery(options.clampQuery({ ...options.defaultQuery(), ...preset.query }));
-
     if (options.applyExtraState) {
       options.applyExtraState(preset.extra ?? {});
     }
+
+    options.applyQuery(options.clampQuery({ ...options.defaultQuery(), ...preset.query }));
 
     activePresetId.set(id);
     persistViewsState();
@@ -92,12 +93,18 @@ export function createGridViewsControls(options: {
     });
     activePresetId.set(preset.id);
     persistViewsState();
+    options.persistSession?.();
     return preset;
   };
 
   const updateActivePreset = () => {
     const id = activePresetId();
     if (!id) {
+      return;
+    }
+
+    const preset = presets().find((item) => item.id === id);
+    if (!preset || preset.builtin) {
       return;
     }
 
@@ -117,6 +124,7 @@ export function createGridViewsControls(options: {
       ),
     );
     persistViewsState();
+    options.persistSession?.();
   };
 
   const deletePreset = (id: string) => {

@@ -61,21 +61,53 @@
 
   <div class="qg-ui-grid__table-frame">
     <div
+      #tableWrap
       class="qg-ui-grid__table-wrap"
       [class.qg-ui-grid__table-wrap--refreshing]="isRefreshing()"
       [attr.aria-busy]="grid().loading() || null"
     >
-      <table class="qg-ui-grid__table">
+      <table class="qg-ui-grid__table" [class.qg-ui-grid__table--layout]="columnLayoutEnabled()">
         <thead class="qg-ui-grid__head">
-          <tr class="qg-ui-grid__header-row">
+          <tr
+            class="qg-ui-grid__header-row"
+            cdkDropList
+            cdkDropListOrientation="horizontal"
+            [class.qg-ui-grid__header-row--dragging]="columnDragActive()"
+            (cdkDropListDropped)="onColumnDropped($event)"
+          >
             @for (column of displayedColumns(); track column.field) {
               <th
                 scope="col"
+                cdkDrag
+                cdkDragLockAxis="x"
+                [cdkDragDisabled]="!isReorderable(column)"
                 class="qg-ui-grid__header-cell"
+                [class.qg-ui-grid__header-cell--reorderable]="isReorderable(column)"
+                [attr.data-field]="column.field"
                 [class.qg-ui-grid__header-cell--sortable]="isSortable(column)"
                 [class.qg-ui-grid__header-cell--sorted]="sortDirection(column.field) !== null"
+                [class.qg-ui-grid__header-cell--pinned-left]="
+                  pinnedOffset(column.field)?.pin === 'left'
+                "
+                [class.qg-ui-grid__header-cell--pinned-right]="
+                  pinnedOffset(column.field)?.pin === 'right'
+                "
+                [class.qg-ui-grid__header-cell--pinned-left-separator]="
+                  isLeftPinnedSeparator(column.field)
+                "
+                [class.qg-ui-grid__header-cell--pinned-left-edge]="isLeftPinnedEdge(column.field)"
+                [class.qg-ui-grid__header-cell--pinned-right-separator]="
+                  isRightPinnedSeparator(column.field)
+                "
+                [class.qg-ui-grid__header-cell--pinned-right-edge]="isRightPinnedEdge(column.field)"
                 [attr.aria-sort]="ariaSort(column)"
-                [style.minWidth]="column.width"
+                [style.minWidth]="columnWidth(column)"
+                [style.width]="columnWidth(column)"
+                [style.left.px]="pinnedOffset(column.field)?.left"
+                [style.right.px]="pinnedOffset(column.field)?.right"
+                [style.z-index]="
+                  pinnedZIndex(column.field, 'header') ?? scrollableZIndex(column.field)
+                "
                 [style.textAlign]="column.align ?? 'left'"
               >
                 <div
@@ -83,6 +115,17 @@
                   [class.qg-ui-grid__header--sortable]="isSortable(column)"
                   (click)="onSortClick(column, $event)"
                 >
+                  @if (isReorderable(column)) {
+                    <span
+                      class="qg-ui-grid__drag-handle"
+                      cdkDragHandle
+                      [attr.aria-label]="reorderHandleLabel(column)"
+                      (mousedown)="onColumnDragStarted()"
+                      (touchstart)="onColumnDragStarted()"
+                    >
+                      <ui-icon icon="re_order_dots_vertical" [size]="size()" />
+                    </span>
+                  }
                   <div class="qg-ui-grid__header-label">{{ column.header }}</div>
                   <div class="qg-ui-grid__header-actions">
                     @if (isSortable(column)) {
@@ -107,6 +150,21 @@
                         }
                       </span>
                     }
+                    @if (isPinnable(column)) {
+                      <button
+                        type="button"
+                        class="qg-ui-grid__pin-button"
+                        [class.qg-ui-grid__pin-button--active]="!!currentPin(column)"
+                        [attr.aria-label]="pinAriaLabel(column)"
+                        (click)="cycleColumnPin(column, $event)"
+                      >
+                        <ui-icon
+                          [icon]="pinIcon(column)"
+                          [size]="size()"
+                          [variant]="currentPin(column) ? 'filled' : 'regular'"
+                        />
+                      </button>
+                    }
                     @if (column.filter) {
                       <qg-column-filter
                         [column]="column"
@@ -118,6 +176,21 @@
                     }
                   </div>
                 </div>
+                @if (isResizable(column)) {
+                  <span
+                    qgColumnResize
+                    [minWidth]="column.minWidth ?? 48"
+                    (resized)="onColumnResized(column, $event)"
+                  ></span>
+                }
+                <ng-template cdkDragPreview>
+                  <div
+                    class="qg-ui-grid__column-drag-preview"
+                    [style.minWidth]="columnWidth(column)"
+                  >
+                    {{ column.header }}
+                  </div>
+                </ng-template>
               </th>
             }
           </tr>
@@ -127,7 +200,31 @@
             @for (row of grid().items() ?? []; track trackRow(row, $index)) {
               <tr class="qg-ui-grid__row">
                 @for (column of displayedColumns(); track column.field) {
-                  <td class="qg-ui-grid__cell" [style.textAlign]="column.align ?? 'left'">
+                  <td
+                    class="qg-ui-grid__cell"
+                    [class.qg-ui-grid__cell--pinned-left]="
+                      pinnedOffset(column.field)?.pin === 'left'
+                    "
+                    [class.qg-ui-grid__cell--pinned-right]="
+                      pinnedOffset(column.field)?.pin === 'right'
+                    "
+                    [class.qg-ui-grid__cell--pinned-left-separator]="
+                      isLeftPinnedSeparator(column.field)
+                    "
+                    [class.qg-ui-grid__cell--pinned-left-edge]="isLeftPinnedEdge(column.field)"
+                    [class.qg-ui-grid__cell--pinned-right-separator]="
+                      isRightPinnedSeparator(column.field)
+                    "
+                    [class.qg-ui-grid__cell--pinned-right-edge]="isRightPinnedEdge(column.field)"
+                    [style.minWidth]="columnWidth(column)"
+                    [style.width]="columnWidth(column)"
+                    [style.left.px]="pinnedOffset(column.field)?.left"
+                    [style.right.px]="pinnedOffset(column.field)?.right"
+                    [style.z-index]="
+                      pinnedZIndex(column.field, 'body') ?? scrollableZIndex(column.field)
+                    "
+                    [style.textAlign]="column.align ?? 'left'"
+                  >
                     @if (cellTemplate(column.field); as template) {
                       <ng-container
                         [ngTemplateOutlet]="template"

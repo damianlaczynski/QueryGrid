@@ -176,6 +176,25 @@ The column picker appears in the grid toolbar when `columnChooser` is enabled. U
 
 Use `<qg-grid-column-chooser [grid]="grid" [columns]="columns" />` if you build a custom toolbar.
 
+### Column layout (resize, reorder, pin)
+
+Enable `columnLayout` for client-side column width, order, and pin state in persist **extra** (composes with `columnChooser` and saved views):
+
+```typescript
+readonly grid = this.gridFactory.create<IssueDto>({
+  // …
+  columnChooser: true,
+  columnLayout: true,
+  persistState: { key: "my-app.issues", storage: "session" },
+});
+```
+
+- **Resize** — drag the handle on the column border
+- **Reorder** — drag the grip icon in the header
+- **Pin** — click the pin icon in the header (cycles left → right → none)
+
+Use `[reorderable]="false"`, `[resizable]="false"`, or `[pinnable]="false"` on fixed columns. The column chooser footer offers **Reset layout** when widths or pins differ from defaults.
+
 Declare columns with `qgColumn` — each template defines header, filters, and cell content:
 
 ```html

@@ -94,6 +94,21 @@ export class QgGridViewsComponent<T = unknown> {
     () => asGridWithViews(this.grid())?.isPresetDirty() ?? false,
   );
 
+  protected readonly canUpdateSelected = computed(() => {
+    const grid = asGridWithViews(this.grid());
+    if (!grid?.isPresetDirty()) {
+      return false;
+    }
+
+    const id = grid.activePresetId();
+    if (!id) {
+      return false;
+    }
+
+    const preset = grid.presets().find((item) => item.id === id);
+    return Boolean(preset && !preset.builtin);
+  });
+
   protected readonly canDeleteSelected = computed(() => {
     const grid = asGridWithViews(this.grid());
     if (!grid) {
