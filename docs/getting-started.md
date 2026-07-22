@@ -121,6 +121,32 @@ import { buildGridQueryUrl } from "@query-grid/core";
 const url = buildGridQueryUrl(location.href, grid.query());
 ```
 
+### Saved views
+
+Enable `views` to store named presets in `localStorage` (built-in presets from code plus user-saved views):
+
+```typescript
+readonly grid = this.gridFactory.create<IssueDto>({
+  // …
+  views: {
+    storageKey: "my-app.issues",
+    builtins: [
+      {
+        id: "open",
+        name: "Open",
+        builtin: true,
+        createdAt: "2026-01-01T00:00:00.000Z",
+        query: {
+          filter: { field: "Status", operator: "eq", value: "Open" },
+        },
+      },
+    ],
+  },
+});
+```
+
+Use `<qg-grid-views [grid]="grid" />` for a preset picker with **Save as**, **Update view** (when modified), and **Delete** actions. When `views` is configured, the picker is also rendered automatically in `<qg-prime-data-grid>` / `<qg-ui-data-grid>` toolbars.
+
 Declare columns with `qgColumn` — each template defines header, filters, and cell content:
 
 ```html

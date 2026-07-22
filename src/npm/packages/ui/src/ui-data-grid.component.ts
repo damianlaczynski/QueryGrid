@@ -36,6 +36,7 @@ import {
   QgColumnFilterComponent,
 } from "./table/qg-column-filter.component";
 import { resolveGridColumns } from "./table/resolve-grid-columns";
+import { QgGridViewsComponent } from "./grid-views.component";
 import { QgToolbarDirective } from "./toolbar.directive";
 import type { GridSize } from "./types";
 
@@ -57,6 +58,7 @@ const GRID_IMPORTS = [
   PaginationComponent,
   SpinnerComponent,
   QgColumnFilterComponent,
+  QgGridViewsComponent,
 ];
 
 @Component({
@@ -358,13 +360,9 @@ export class UiDataGridComponent<T = unknown> {
   }
 
   protected clear(): void {
-    if (!this.hasActiveFilters()) {
-      return;
-    }
-
     this.searchText.set("");
     this.filtersExpanded.set(false);
-    this.grid().patchQuery({ filter: undefined, search: undefined, skip: 0 });
+    this.grid().resetQuery();
     this.cleared.emit();
   }
 }

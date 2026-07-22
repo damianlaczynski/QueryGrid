@@ -58,6 +58,7 @@ The seed model includes at least one column per category the engine discovers:
 | Paging                 | skip/take, last page, empty page after filter                                |
 | Session persist        | `persistState` — refresh restores grid state from session storage            |
 | URL sync               | `syncRoute` — filter/sort/search reflected in `?grid=`; copy-link round-trip |
+| Saved views            | `views` + `<qg-grid-views>` — built-in and user presets in localStorage |
 | Validation errors      | invalid operator for type → ProblemDetails / grid error state                |
 | Clear / reset          | toolbar clears filters and reloads                                           |
 | Large `in` list        | boundary below `GridOptions` limit                                           |

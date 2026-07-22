@@ -5,11 +5,17 @@ import type {
   FilterOperator,
   GridQuery,
 } from "@query-grid/core";
-import { coerceOperatorForColumnType, isFilterCondition, isFilterGroup } from "@query-grid/core";
+import {
+  areSortDescriptorsEqual,
+  coerceOperatorForColumnType,
+  isFilterCondition,
+  isFilterGroup,
+  sameFilterNode,
+} from "@query-grid/core";
 import type { FilterMetadata } from "primeng/api";
 import { FilterOperator as PrimeFilterOperator } from "primeng/api";
 import type { Table } from "primeng/table";
-import { mapSortToPrimeMeta } from "./sort-mapper";
+import { mapLazyLoadSort, syncPrimeTableSort } from "./sort-mapper";
 import type { GridColumn } from "./table/grid-column";
 
 function mapMatchMode(matchMode?: string): FilterOperator | null {
@@ -376,18 +382,60 @@ export function applyGridQueryToPrimeTable(
   columns: GridColumn[],
 ): void {
   const search = query.search?.trim();
-  if (search) {
-    table.filterGlobal(search, "contains");
-  }
+  table.filterGlobal(search ?? "", "contains");
 
   const columnFilters = buildPrimeTableFilters(query.filter, columns);
+  const managedFields = new Set(
+    columns.filter((column) => column.filter).map((column) => column.field),
+  );
+  const existingFilters = (table.filters ?? {}) as Record<
+    string,
+    FilterMetadata | FilterMetadata[]
+  >;
+  const nextFilters: Record<string, FilterMetadata | FilterMetadata[]> = {};
+
+  for (const [field, metadata] of Object.entries(existingFilters)) {
+    if (!managedFields.has(field)) {
+      nextFilters[field] = metadata;
+    }
+  }
+
   table.filters = {
-    ...((table.filters ?? {}) as Record<string, FilterMetadata | FilterMetadata[]>),
+    ...nextFilters,
     ...columnFilters,
   };
 
-  const sortMeta = mapSortToPrimeMeta(query.sort);
-  if (sortMeta.length > 0) {
-    table.multiSortMeta = sortMeta;
+  syncPrimeTableSort(table, query.sort);
+}
+
+function readPrimeTableSearch(table: Table): string {
+  const global = (table.filters as Record<string, FilterMetadata | FilterMetadata[] | undefined>)?.[
+    "global"
+  ];
+  const metadata = Array.isArray(global) ? global[0] : global;
+  const value = metadata?.value;
+  return typeof value === "string" ? value.trim() : "";
+}
+
+/** Returns true when PrimeNG table chrome is out of sync with a grid query snapshot. */
+export function needsPrimeTableQuerySync(
+  table: Table,
+  query: GridQuery,
+  columns: GridColumn[],
+): boolean {
+  const tableSort = mapLazyLoadSort({ multiSortMeta: table.multiSortMeta }, table);
+  const tableFilter = mapPrimeFiltersToGridFilter(
+    table.filters as Record<string, FilterMetadata | FilterMetadata[]> | undefined,
+    columns,
+  );
+
+  if (!areSortDescriptorsEqual(tableSort, query.sort)) {
+    return true;
   }
+
+  if (!sameFilterNode(tableFilter, query.filter)) {
+    return true;
+  }
+
+  return readPrimeTableSearch(table) !== (query.search ?? "");
 }
