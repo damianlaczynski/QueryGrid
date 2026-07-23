@@ -262,13 +262,13 @@ Requires horizontal overflow (wide columns, many visible columns, or pinned layo
 
 ### Persist extra state summary
 
-| State            | Storage        | In `GridQuery` | In saved views |
-| ---------------- | -------------- | -------------- | -------------- |
-| Sort/filter/page | session + URL  | yes            | yes (`query`)  |
-| Column visibility| session extra  | no             | yes (`extra`)  |
-| Column layout    | session extra  | no             | yes (`extra`)  |
-| Horizontal scroll| session extra  | no             | no             |
-| Row selection    | memory only    | no             | no             |
+| State             | Storage       | In `GridQuery` | In saved views |
+| ----------------- | ------------- | -------------- | -------------- |
+| Sort/filter/page  | session + URL | yes            | yes (`query`)  |
+| Column visibility | session extra | no             | yes (`extra`)  |
+| Column layout     | session extra | no             | yes (`extra`)  |
+| Horizontal scroll | session extra | no             | no             |
+| Row selection     | memory only   | no             | no             |
 
 Declare columns with `qgColumn` — each template defines header, filters, and cell content:
 
