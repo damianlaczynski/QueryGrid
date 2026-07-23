@@ -10,10 +10,7 @@ export class ShowcaseApiService {
   private readonly http = inject(HttpClient);
 
   getRows(query: GridQuery): Observable<GridResult<ShowcaseRow>> {
-    const params = new HttpParams().set(
-      SHOWCASE_GRID_QUERY_PARAM,
-      JSON.stringify(query),
-    );
+    const params = new HttpParams().set(SHOWCASE_GRID_QUERY_PARAM, JSON.stringify(query));
     return this.http.get<GridResult<ShowcaseRow>>('/rows', { params });
   }
 }

@@ -240,6 +240,47 @@ deleteSelected(): void {
 }
 ```
 
+### Server export (CSV and Excel)
+
+Export uses the **same filter, search, and sort** as the grid list, applied on the server. Configure `export` on `createGridResource` and add a matching API endpoint (see [grid-export-plan.md](guides/grid-export-plan.md)).
+
+```typescript
+readonly grid = this.gridFactory.create<IssueDto>({
+  load: (query) => this.api.getIssues(query),
+  rowSelection: true,
+  columnChooser: true,
+  export: {
+    url: "/api/issues/export",
+    dataKeyField: "id",
+    defaultFilename: "issues",
+    columns: [
+      { field: "Id", header: "ID" },
+      { field: "Title", header: "Title" },
+    ],
+  },
+});
+```
+
+When `export` is set, the grid toolbar shows **Export CSV** and **Export Excel**. With `rowSelection`, the bulk toolbar adds selected-row export for both formats.
+
+```typescript
+import { hasExport } from "@query-grid/primeng";
+
+if (hasExport(this.grid)) {
+  await this.grid.exportAllMatching({ format: "xlsx" });
+  await this.grid.exportSelected({ format: "csv" });
+}
+```
+
+**.NET** — CSV via `QueryGrid.EntityFrameworkCore`; Excel via optional `QueryGrid.Export.Excel` (ClosedXML):
+
+```csharp
+// NuGet: QueryGrid.Export.Excel
+await db.Issues.ProjectToDto().ExportToXlsxAsync(request, stream, cancellationToken: ct);
+```
+
+Set `GridExportRequest.Format` to `GridExportFormat.Xlsx` or `Csv`. Showcase: `POST /rows/export` with `"format": "xlsx"` in the JSON body.
+
 ### Horizontal scroll (session)
 
 When `persistState` is enabled, horizontal scroll position is stored automatically in session **extra** under `scroll.left` (not in `GridQuery` or saved views):

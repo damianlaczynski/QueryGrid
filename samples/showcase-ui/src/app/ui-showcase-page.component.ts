@@ -1,14 +1,8 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, Injector, signal } from '@angular/core';
-import { ButtonComponent, CardComponent, MessageBarComponent, TagComponent } from '@laczynski/ui';
+import { CardComponent, MessageBarComponent, TagComponent } from '@laczynski/ui';
 import { buildGridQueryUrl, formatGridError } from '@query-grid/core';
-import {
-  hasRowSelection,
-  QgBulkToolbarDirective,
-  QgColumnDirective,
-  QgEmptyDirective,
-  UiDataGridComponent,
-} from '@query-grid/ui';
+import { QgColumnDirective, QgEmptyDirective, UiDataGridComponent } from '@query-grid/ui';
 import { ShowcaseRow } from './models/showcase-row.model';
 import { ShowcaseApiService } from './services/showcase-api.service';
 import { createUiShowcaseGrid } from './showcase-grid.factory';
@@ -21,11 +15,9 @@ import { getShowcaseCategoryLabel, showcaseCategories } from './utils/showcase.u
     CardComponent,
     MessageBarComponent,
     TagComponent,
-    ButtonComponent,
     UiDataGridComponent,
     QgColumnDirective,
     QgEmptyDirective,
-    QgBulkToolbarDirective,
   ],
   templateUrl: './ui-showcase-page.component.html',
   styleUrl: './showcase-page.shared.css',
@@ -43,6 +35,8 @@ export class UiShowcasePageComponent {
 
   readonly errorMessage = computed(() => formatGridError(this.grid.error()));
 
+  readonly exportError = signal<string | null>(null);
+
   readonly linkCopied = signal(false);
 
   copyGridLink(): void {
@@ -53,12 +47,7 @@ export class UiShowcasePageComponent {
     });
   }
 
-  exportSelected(): void {
-    if (!hasRowSelection(this.grid)) {
-      return;
-    }
-
-    const keys = [...this.grid.selectedKeys()];
-    globalThis.alert(`Export ${keys.length} row(s): ${keys.join(', ')}`);
+  onExportError(message: string): void {
+    this.exportError.set(message);
   }
 }

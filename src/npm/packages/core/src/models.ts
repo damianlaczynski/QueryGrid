@@ -79,13 +79,9 @@ export function createEmptyGridQuery(options?: GridOptions): GridQuery {
   };
 }
 
-export function clampTake(
-  take: number | null | undefined,
-  options?: GridOptions,
-): number {
+export function clampTake(take: number | null | undefined, options?: GridOptions): number {
   const maxTake = options?.maxTake ?? DEFAULT_GRID_OPTIONS.maxTake;
-  const defaultPageSize =
-    options?.defaultPageSize ?? DEFAULT_GRID_OPTIONS.defaultPageSize;
+  const defaultPageSize = options?.defaultPageSize ?? DEFAULT_GRID_OPTIONS.defaultPageSize;
   const resolved = take ?? defaultPageSize;
   return Math.min(Math.max(0, resolved), maxTake);
 }
@@ -172,11 +168,7 @@ export function sameFilterNode(
   }
 
   if (isFilterCondition(a) && isFilterCondition(b)) {
-    return (
-      a.field === b.field &&
-      a.operator === b.operator &&
-      sameFilterValue(a.value, b.value)
-    );
+    return a.field === b.field && a.operator === b.operator && sameFilterValue(a.value, b.value);
   }
 
   if (isFilterGroup(a) && isFilterGroup(b)) {
@@ -184,9 +176,7 @@ export function sameFilterNode(
       return false;
     }
 
-    return a.conditions.every((child, index) =>
-      sameFilterNode(child, b.conditions[index]),
-    );
+    return a.conditions.every((child, index) => sameFilterNode(child, b.conditions[index]));
   }
 
   return false;
@@ -205,7 +195,6 @@ export function areSortDescriptorsEqual(
 
   return left.every(
     (item, index) =>
-      item.field === right[index].field &&
-      Boolean(item.desc) === Boolean(right[index].desc),
+      item.field === right[index].field && Boolean(item.desc) === Boolean(right[index].desc),
   );
 }

@@ -1,7 +1,9 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using QueryGrid.Abstractions;
+using QueryGrid.Core;
 using QueryGrid.EntityFrameworkCore;
+using System.Text;
 using static QueryGrid.UnitTests.TestFilters;
 
 namespace QueryGrid.UnitTests;
@@ -105,5 +107,39 @@ public class EntityFrameworkTests
 
       Assert.Equal([2], result.Items.Select(p => p.Id).ToArray());
     }
+  }
+
+  [Fact]
+  public async Task ExportToCsvAsync_exports_filtered_rows()
+  {
+    await using var context = NewInMemoryContext();
+
+    var request = new GridExportRequest
+    {
+      Query = new GridQuery
+      {
+        Filter = Cond("Age", FilterOperator.Gte, 30),
+        Sort = [new SortDescriptor("Age", desc: true)]
+      },
+      Columns =
+      [
+        new GridExportColumn { Field = "Id", Header = "ID" },
+        new GridExportColumn { Field = "Name", Header = "Name" }
+      ]
+    };
+
+    await using var stream = new MemoryStream();
+    var result = await context.People.ExportToCsvAsync(
+      request,
+      stream,
+      exportOptions: new GridExportOptions { IncludeUtf8Bom = false },
+      cancellationToken: TestContext.Current.CancellationToken);
+
+    var csv = Encoding.UTF8.GetString(stream.ToArray());
+    Assert.Equal(3, result.TotalMatchingCount);
+    Assert.Equal(3, result.ExportedRowCount);
+    Assert.StartsWith("ID,Name", csv, StringComparison.Ordinal);
+    Assert.Contains("2,Bob", csv, StringComparison.Ordinal);
+    Assert.DoesNotContain("Charlie", csv, StringComparison.Ordinal);
   }
 }

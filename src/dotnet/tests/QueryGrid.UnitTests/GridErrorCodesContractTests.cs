@@ -64,6 +64,10 @@ public class GridErrorCodesContractTests
 
     string[] expected =
     [
+      GridValidationCodes.ExportColumnsRequired,
+      GridValidationCodes.ExportFormatNotSupported,
+      GridValidationCodes.ExportSelectionRequired,
+      GridValidationCodes.ExportSelectionTooLarge,
       GridValidationCodes.FieldNotFilterable,
       GridValidationCodes.FieldNotSortable,
       GridValidationCodes.FilterTooDeep,

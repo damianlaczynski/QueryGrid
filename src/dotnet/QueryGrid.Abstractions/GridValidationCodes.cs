@@ -41,6 +41,18 @@ public static class GridValidationCodes
 
   /// <summary>The requested page size exceeds the configured maximum.</summary>
   public const string PageTooLarge = "page_too_large";
+
+  /// <summary>The export request did not specify any columns.</summary>
+  public const string ExportColumnsRequired = "export_columns_required";
+
+  /// <summary>Export scope is selected keys but no keys were provided.</summary>
+  public const string ExportSelectionRequired = "export_selection_required";
+
+  /// <summary>The number of selected keys exceeds the configured export limit.</summary>
+  public const string ExportSelectionTooLarge = "export_selection_too_large";
+
+  /// <summary>The requested export format is not supported.</summary>
+  public const string ExportFormatNotSupported = "export_format_not_supported";
 }
 
 /// <summary>

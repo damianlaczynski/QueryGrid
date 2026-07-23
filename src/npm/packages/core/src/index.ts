@@ -4,6 +4,7 @@ export * from "./format-local-datetime.js";
 export * from "./grid-column-layout.js";
 export * from "./grid-column-visibility.js";
 export * from "./grid-error-codes.js";
+export * from "./grid-export.js";
 export * from "./grid-query-param.js";
 export * from "./grid-row-selection.js";
 export * from "./grid-scroll-position.js";

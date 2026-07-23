@@ -27,6 +27,7 @@ import {
 import { catchError, finalize, Observable, of, switchMap, tap } from "rxjs";
 import { createGridColumnLayoutControls } from "./grid-column-layout-controls";
 import { createGridColumnVisibilityControls } from "./grid-column-visibility-controls";
+import { createGridExportControls, type GridExportConfig } from "./grid-export-controls";
 import {
   readGridQueryFromRoute,
   resolveGridRouteSyncConfig,
@@ -49,6 +50,7 @@ import { createGridViewsControls, type GridViewsControls } from "./grid-views-co
 export type { GridViewPreset, GridViewsConfig } from "@query-grid/core";
 export type { GridResourceWithColumnLayout } from "./grid-column-layout-controls";
 export type { GridResourceWithColumnChooser } from "./grid-column-visibility-controls";
+export type { GridResourceWithExport } from "./grid-export-controls";
 export type { GridResourceWithScrollPersistence } from "./grid-scroll-controls";
 export type { GridResourceWithViews } from "./grid-views-controls";
 export type { GridRouteSyncConfig, GridStatePersistence };
@@ -70,6 +72,8 @@ export interface GridResourceConfig<T> {
   /** Client-side column resize, reorder, and pin stored in persist extra state. */
   columnLayout?: boolean;
   rowSelection?: boolean | GridRowSelectionConfig;
+  /** Server-side CSV export via POST to the configured URL. */
+  export?: GridExportConfig;
   getExtraState?: () => Record<string, unknown> | undefined;
   applyExtraState?: (state: Record<string, unknown>) => void;
   /** Component/environment injector — pass `inject(EnvironmentInjector)` from a field initializer. */
@@ -148,6 +152,13 @@ export function createGridResource<T>(config: GridResourceConfig<T>): GridResour
     const rowSelectionControls = config.rowSelection
       ? createGridRowSelectionControls({
           mode: typeof config.rowSelection === "object" ? config.rowSelection.mode : undefined,
+        })
+      : null;
+
+    const exportControls = config.export
+      ? createGridExportControls({
+          export: config.export,
+          resolveHiddenFields: () => columnVisibility?.hiddenColumnFields() ?? [],
         })
       : null;
 
@@ -456,6 +467,25 @@ export function createGridResource<T>(config: GridResourceConfig<T>): GridResour
             areAllPageKeysSelected: rowSelectionControls.areAllPageKeysSelected,
             isSomePageKeysSelected: rowSelectionControls.isSomePageKeysSelected,
             clearRowSelection: rowSelectionControls.clearSelection,
+          }
+        : {}),
+      ...(exportControls
+        ? {
+            exporting: exportControls.exporting,
+            exportAllMatching(options?: { filename?: string }) {
+              return exportControls.exportAllMatching(query(), options);
+            },
+            exportSelected(options?: { filename?: string }) {
+              if (!rowSelectionControls) {
+                return Promise.resolve();
+              }
+
+              return exportControls.exportSelected(
+                query(),
+                rowSelectionControls.selectedKeys(),
+                options,
+              );
+            },
           }
         : {}),
     };

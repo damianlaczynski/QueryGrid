@@ -1,14 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, Injector, signal } from '@angular/core';
 import { buildGridQueryUrl, formatGridError } from '@query-grid/core';
-import {
-  hasRowSelection,
-  PrimeDataGridComponent,
-  QgBulkToolbarDirective,
-  QgColumnDirective,
-  QgEmptyDirective,
-} from '@query-grid/primeng';
-import { Button } from 'primeng/button';
+import { PrimeDataGridComponent, QgColumnDirective, QgEmptyDirective } from '@query-grid/primeng';
 import { Card } from 'primeng/card';
 import { Message } from 'primeng/message';
 import { Tag } from 'primeng/tag';
@@ -24,11 +17,9 @@ import { getShowcaseCategoryLabel, showcaseCategories } from './utils/showcase.u
     Card,
     Message,
     Tag,
-    Button,
     PrimeDataGridComponent,
     QgColumnDirective,
     QgEmptyDirective,
-    QgBulkToolbarDirective,
   ],
   templateUrl: './primeng-showcase-page.component.html',
   styleUrl: './showcase-page.shared.css',
@@ -42,10 +33,11 @@ export class PrimengShowcasePageComponent {
 
   readonly grid = createPrimengShowcaseGrid(this.injector, this.api);
 
-  /** Type anchor for `qgColumn` cell templates (`[qgColumnOf]="rowType"`). */
   protected readonly rowType!: ShowcaseRow;
 
   readonly errorMessage = computed(() => formatGridError(this.grid.error()));
+
+  readonly exportError = signal<string | null>(null);
 
   readonly linkCopied = signal(false);
 
@@ -57,12 +49,7 @@ export class PrimengShowcasePageComponent {
     });
   }
 
-  exportSelected(): void {
-    if (!hasRowSelection(this.grid)) {
-      return;
-    }
-
-    const keys = [...this.grid.selectedKeys()];
-    globalThis.alert(`Export ${keys.length} row(s): ${keys.join(', ')}`);
+  onExportError(message: string): void {
+    this.exportError.set(message);
   }
 }

@@ -55,6 +55,19 @@
             />
           }
 
+          @if (exportEnabled()) {
+            <p-button
+              type="button"
+              label="Export"
+              icon="pi pi-file-export"
+              [outlined]="true"
+              severity="secondary"
+              [disabled]="grid().loading() || exporting()"
+              (onClick)="exportAllMenu.toggle($event)"
+            />
+            <p-menu #exportAllMenu [model]="exportAllMenuItems" [popup]="true" />
+          }
+
           <p-button
             type="button"
             label="Clear"
@@ -66,11 +79,25 @@
         </div>
       </div>
 
-      @if (selectedCount() > 0 && bulkToolbarTemplate(); as bulkToolbar) {
+      @if (showBulkToolbar()) {
         <div class="qg-caption-bulk-toolbar">
           <span class="qg-caption-bulk-toolbar-count">{{ selectedCount() }} selected</span>
           <div class="qg-caption-bulk-toolbar-actions">
-            <ng-container [ngTemplateOutlet]="bulkToolbar" />
+            @if (exportSelectedEnabled()) {
+              <p-button
+                type="button"
+                label="Export selected"
+                icon="pi pi-file-export"
+                [outlined]="true"
+                severity="secondary"
+                [disabled]="exporting()"
+                (onClick)="exportSelectedMenu.toggle($event)"
+              />
+              <p-menu #exportSelectedMenu [model]="exportSelectedMenuItems" [popup]="true" />
+            }
+            @if (bulkToolbarTemplate(); as bulkToolbar) {
+              <ng-container [ngTemplateOutlet]="bulkToolbar" />
+            }
           </div>
           <p-button
             type="button"
