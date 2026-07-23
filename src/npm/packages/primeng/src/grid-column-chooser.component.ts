@@ -7,6 +7,7 @@ import { Checkbox } from "primeng/checkbox";
 import { Popover } from "primeng/popover";
 import { Tooltip } from "primeng/tooltip";
 import type { GridResource } from "./create-grid-resource";
+import { hasColumnLayout } from "./grid-column-layout-controls";
 import {
   hasColumnChooser,
   type GridResourceWithColumnChooser,
@@ -56,6 +57,7 @@ function asGridWithColumnChooser<T>(
     .qg-grid-column-chooser__footer {
       display: flex;
       justify-content: flex-end;
+      gap: 0.5rem;
       padding-top: 0.25rem;
       border-top: 1px solid var(--p-content-border-color, #e2e8f0);
     }
@@ -65,7 +67,20 @@ export class QgGridColumnChooserComponent<T = unknown> {
   readonly grid = input.required<GridResource<T>>();
   readonly columns = input.required<GridColumn<T>[]>();
 
-  protected readonly chooserEnabled = computed(() => asGridWithColumnChooser(this.grid()) != null);
+  protected readonly chooserEnabled = computed(
+    () => asGridWithColumnChooser(this.grid()) != null || this.layoutEnabled(),
+  );
+
+  protected readonly layoutEnabled = computed(() => hasColumnLayout(this.grid()));
+
+  protected readonly hasLayoutChanges = computed(() => {
+    const grid = this.grid();
+    if (!hasColumnLayout(grid)) {
+      return false;
+    }
+
+    return Object.keys(grid.columnWidths()).length > 0 || Object.keys(grid.columnPins()).length > 0;
+  });
 
   protected readonly hideableColumns = computed(() =>
     this.columns().filter((column) => isColumnHideable(column)),
@@ -96,5 +111,12 @@ export class QgGridColumnChooserComponent<T = unknown> {
 
   protected showAllColumns(): void {
     asGridWithColumnChooser(this.grid())?.showAllColumns();
+  }
+
+  protected resetColumnLayout(): void {
+    const grid = this.grid();
+    if (hasColumnLayout(grid)) {
+      grid.resetColumnLayout();
+    }
   }
 }

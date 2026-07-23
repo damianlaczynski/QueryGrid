@@ -10,7 +10,7 @@
         placeholder="Views"
       />
 
-      @if (isPresetDirty()) {
+      @if (canUpdateSelected()) {
         <ui-button
           appearance="outline"
           [size]="size()"

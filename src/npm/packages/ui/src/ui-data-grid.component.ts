@@ -1,14 +1,20 @@
+import { CdkDrag, type CdkDragDrop, CdkDragPreview, CdkDropList } from "@angular/cdk/drag-drop";
 import { CommonModule, NgTemplateOutlet } from "@angular/common";
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
   contentChildren,
   effect,
+  ElementRef,
+  inject,
+  Injector,
   input,
   output,
   signal,
   type TemplateRef,
+  viewChild,
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import {
@@ -23,18 +29,29 @@ import {
 } from "@laczynski/ui";
 import type { FilterCondition, FilterLogic } from "@query-grid/core";
 import {
+  computePinnedColumnOffsets,
   DEFAULT_GRID_OPTIONS,
   filterColumnsByVisibility,
   isColumnHideable,
+  isColumnPinnable,
+  isColumnReorderable,
+  isColumnResizable,
+  orderColumns,
+  partitionColumnsByPin,
+  reorderDisplayedColumnFields,
+  resolveColumnPin,
+  resolveColumnWidthPx,
 } from "@query-grid/core";
 import type { GridResource } from "./create-grid-resource";
 import { buildGridFilterChips, type GridFilterChip, removeFilterCondition } from "./filter-chips";
 import { getFieldFilterConditions, getFieldFilterLogic, upsertFieldFilter } from "./filter-mapper";
 import { QgGridColumnChooserComponent } from "./grid-column-chooser.component";
+import { hasColumnLayout } from "./grid-column-layout-controls";
 import { hasColumnChooser } from "./grid-column-visibility-controls";
 import { QgGridViewsComponent } from "./grid-views.component";
 import { getSortDirection, toggleSortField } from "./sort-mapper";
 import type { QgColumnContext } from "./table/column-context";
+import { QgColumnResizeDirective } from "./table/column-resize.directive";
 import { QgColumnDirective } from "./table/column.directive";
 import { QgEmptyDirective } from "./table/empty.directive";
 import type { GridColumn } from "./table/grid-column";
@@ -57,6 +74,9 @@ const GRID_IMPORTS = [
   CommonModule,
   FormsModule,
   NgTemplateOutlet,
+  CdkDropList,
+  CdkDrag,
+  CdkDragPreview,
   ButtonComponent,
   IconComponent,
   SearchComponent,
@@ -64,6 +84,7 @@ const GRID_IMPORTS = [
   PaginationComponent,
   SpinnerComponent,
   QgColumnFilterComponent,
+  QgColumnResizeDirective,
   QgGridColumnChooserComponent,
   QgGridViewsComponent,
 ];
@@ -86,6 +107,8 @@ const GRID_IMPORTS = [
   },
 })
 export class UiDataGridComponent<T = unknown> {
+  private readonly injector = inject(Injector);
+
   readonly grid = input.required<GridResource<T>>();
   readonly columns = input<GridColumn<T>[]>();
   readonly pageSizeOptions = input<number[]>([10, 20, 50]);
@@ -107,24 +130,31 @@ export class UiDataGridComponent<T = unknown> {
   private readonly columnDirectives = contentChildren(QgColumnDirective);
   private readonly emptyDirective = contentChildren(QgEmptyDirective);
   private readonly toolbar = contentChildren(QgToolbarDirective);
+  private readonly tableWrap = viewChild<ElementRef<HTMLElement>>("tableWrap");
 
   protected readonly searchText = signal("");
   protected readonly filtersExpanded = signal(false);
   protected readonly showRefreshOverlay = signal(false);
+  protected readonly measuredColumnWidths = signal<Readonly<Record<string, number>>>({});
+  protected readonly columnDragActive = signal(false);
 
   protected readonly DEFAULT_GRID_OPTIONS = DEFAULT_GRID_OPTIONS;
 
   constructor() {
     effect(() => {
       const grid = this.grid();
-      if (!hasColumnChooser(grid)) {
-        return;
+      const fields = this.resolvedColumns().map((column) => column.field);
+
+      if (hasColumnLayout(grid)) {
+        grid.setAvailableLayoutFields(fields);
       }
 
-      const fields = this.resolvedColumns()
-        .filter((column) => isColumnHideable(column))
-        .map((column) => column.field);
-      grid.setAvailableColumnFields(fields);
+      if (hasColumnChooser(grid)) {
+        const hideableFields = this.resolvedColumns()
+          .filter((column) => isColumnHideable(column))
+          .map((column) => column.field);
+        grid.setAvailableColumnFields(hideableFields);
+      }
     });
 
     effect(() => {
@@ -149,6 +179,51 @@ export class UiDataGridComponent<T = unknown> {
         this.showRefreshOverlay.set(false);
       });
     });
+
+    effect(() => {
+      const grid = this.grid();
+      if (!hasColumnLayout(grid)) {
+        return;
+      }
+
+      this.displayedColumns();
+      grid.columnOrder();
+      grid.columnWidths();
+      grid.columnPins();
+      this.measuredColumnWidths.set({});
+      this.scheduleColumnWidthMeasure();
+    });
+  }
+
+  private scheduleColumnWidthMeasure(): void {
+    afterNextRender(
+      () => {
+        const wrap = this.tableWrap()?.nativeElement;
+        if (!wrap) {
+          return;
+        }
+
+        const measured: Record<string, number> = {};
+        for (const header of Array.from(
+          wrap.querySelectorAll<HTMLElement>(".qg-ui-grid__header-cell[data-field]"),
+        )) {
+          const field = header.dataset["field"];
+          if (field && header.offsetWidth > 0) {
+            measured[field] = header.offsetWidth;
+          }
+        }
+
+        const current = this.measuredColumnWidths();
+        const changed =
+          Object.keys(measured).length !== Object.keys(current).length ||
+          Object.entries(measured).some(([field, width]) => current[field] !== width);
+
+        if (changed) {
+          this.measuredColumnWidths.set(measured);
+        }
+      },
+      { injector: this.injector },
+    );
   }
 
   protected columnDirectiveQueries(): readonly QgColumnDirective<T>[] {
@@ -167,15 +242,58 @@ export class UiDataGridComponent<T = unknown> {
     resolveGridColumns(this.columns(), this.columnDirectiveQueries()),
   );
 
-  protected readonly displayedColumns = computed(() => {
+  protected readonly layoutColumns = computed(() => {
     const columns = this.resolvedColumns();
     const grid = this.grid();
-    if (!hasColumnChooser(grid)) {
+    if (!hasColumnLayout(grid)) {
       return columns;
     }
 
-    return filterColumnsByVisibility(columns, grid.hiddenColumnFields());
+    return orderColumns(columns, grid.columnOrder());
   });
+
+  protected readonly displayedColumns = computed(() => {
+    const grid = this.grid();
+    let columns = this.layoutColumns();
+
+    if (hasColumnChooser(grid)) {
+      columns = filterColumnsByVisibility(columns, grid.hiddenColumnFields());
+    }
+
+    if (hasColumnLayout(grid) && Object.keys(grid.columnPins()).length > 0) {
+      columns = partitionColumnsByPin(columns, grid.columnPins());
+    }
+
+    return columns;
+  });
+
+  protected readonly pinnedOffsets = computed(() => {
+    const grid = this.grid();
+    if (!hasColumnLayout(grid)) {
+      return new Map<string, never>();
+    }
+
+    return computePinnedColumnOffsets(
+      this.displayedColumns(),
+      grid.columnWidths(),
+      grid.columnPins(),
+      this.measuredColumnWidths(),
+    );
+  });
+
+  protected readonly leftPinnedFields = computed(() =>
+    this.displayedColumns()
+      .filter((column) => this.pinnedOffset(column.field)?.pin === "left")
+      .map((column) => column.field),
+  );
+
+  protected readonly rightPinnedFields = computed(() =>
+    this.displayedColumns()
+      .filter((column) => this.pinnedOffset(column.field)?.pin === "right")
+      .map((column) => column.field),
+  );
+
+  protected readonly columnLayoutEnabled = computed(() => hasColumnLayout(this.grid()));
 
   private readonly cellMap = computed(() => {
     const map = new Map<string, TemplateRef<QgColumnContext<T>>>();
@@ -259,6 +377,182 @@ export class UiDataGridComponent<T = unknown> {
 
   protected isSortable(column: GridColumn<T>): boolean {
     return column.sortable !== false;
+  }
+
+  protected isResizable(column: GridColumn<T>): boolean {
+    return this.columnLayoutEnabled() && isColumnResizable(column);
+  }
+
+  protected isReorderable(column: GridColumn<T>): boolean {
+    return this.columnLayoutEnabled() && isColumnReorderable(column);
+  }
+
+  protected isPinnable(column: GridColumn<T>): boolean {
+    return this.columnLayoutEnabled() && isColumnPinnable(column);
+  }
+
+  protected columnWidth(column: GridColumn<T>): string | undefined {
+    const grid = this.grid();
+    if (!hasColumnLayout(grid)) {
+      return column.width;
+    }
+
+    const widthPx = resolveColumnWidthPx(column, grid.columnWidths());
+    return widthPx != null ? `${widthPx}px` : column.width;
+  }
+
+  protected pinnedOffset(field: string) {
+    return this.pinnedOffsets().get(field);
+  }
+
+  protected isLeftPinnedSeparator(field: string): boolean {
+    const fields = this.leftPinnedFields();
+    return fields.length > 1 && fields.indexOf(field) > 0;
+  }
+
+  protected isLeftPinnedEdge(field: string): boolean {
+    const fields = this.leftPinnedFields();
+    return fields.length > 0 && fields[fields.length - 1] === field;
+  }
+
+  protected isRightPinnedSeparator(field: string): boolean {
+    const fields = this.rightPinnedFields();
+    const index = fields.indexOf(field);
+    return fields.length > 1 && index >= 0 && index < fields.length - 1;
+  }
+
+  protected isRightPinnedEdge(field: string): boolean {
+    const fields = this.rightPinnedFields();
+    return fields.length > 0 && fields[0] === field;
+  }
+
+  protected pinnedZIndex(field: string, section: "header" | "body"): number | undefined {
+    if (!this.pinnedOffset(field)) {
+      return undefined;
+    }
+
+    const base = section === "header" ? 20 : 1;
+    let pinIndex = 0;
+
+    for (const column of this.displayedColumns()) {
+      if (!this.pinnedOffset(column.field)) {
+        continue;
+      }
+
+      if (column.field === field) {
+        return base + pinIndex;
+      }
+
+      pinIndex++;
+    }
+
+    return undefined;
+  }
+
+  protected scrollableZIndex(field: string): number | undefined {
+    return this.pinnedOffset(field) ? undefined : 0;
+  }
+
+  protected currentPin(column: GridColumn<T>) {
+    const grid = this.grid();
+    if (!hasColumnLayout(grid)) {
+      return column.pin;
+    }
+
+    return resolveColumnPin(column, grid.columnPins());
+  }
+
+  protected onColumnResized(column: GridColumn<T>, width: number): void {
+    const grid = this.grid();
+    if (hasColumnLayout(grid)) {
+      grid.setColumnWidth(column.field, width);
+    }
+  }
+
+  protected onColumnDropped(event: CdkDragDrop<GridColumn<T>[]>): void {
+    this.columnDragActive.set(false);
+    const grid = this.grid();
+    if (!hasColumnLayout(grid) || event.previousIndex === event.currentIndex) {
+      return;
+    }
+
+    const displayed = this.displayedColumns();
+    const fromColumn = displayed[event.previousIndex];
+    const toColumn = displayed[event.currentIndex];
+    if (!fromColumn || !toColumn || !this.canReorderWithColumn(toColumn, fromColumn)) {
+      return;
+    }
+
+    const hidden = new Set(hasColumnChooser(grid) ? grid.hiddenColumnFields() : []);
+    grid.setColumnOrder(
+      reorderDisplayedColumnFields(
+        this.persistedColumnOrderFields(),
+        hidden,
+        displayed.map((column) => column.field),
+        event.previousIndex,
+        event.currentIndex,
+      ),
+    );
+  }
+
+  protected onColumnDragStarted(): void {
+    this.columnDragActive.set(true);
+  }
+
+  protected canReorderWithColumn(target: GridColumn<T>, source: GridColumn<T> = target): boolean {
+    return this.columnPinGroup(source) === this.columnPinGroup(target);
+  }
+
+  protected columnPinGroup(column: GridColumn<T>): string {
+    return this.currentPin(column) ?? "center";
+  }
+
+  protected reorderHandleLabel(column: GridColumn<T>): string {
+    return `Reorder ${column.header}`;
+  }
+
+  private persistedColumnOrderFields(): string[] {
+    const grid = this.grid();
+    const order = hasColumnLayout(grid) ? grid.columnOrder() : [];
+    if (order.length > 0) {
+      return [...order];
+    }
+
+    return this.layoutColumns().map((column) => column.field);
+  }
+
+  protected cycleColumnPin(column: GridColumn<T>, event: Event): void {
+    event.stopPropagation();
+    const grid = this.grid();
+    if (!hasColumnLayout(grid) || !this.isPinnable(column)) {
+      return;
+    }
+
+    const current = this.currentPin(column);
+    const next = current === "left" ? "right" : current === "right" ? null : "left";
+    grid.setColumnPin(column.field, next);
+  }
+
+  protected pinIcon(column: GridColumn<T>): IconName {
+    const pin = this.currentPin(column);
+    if (pin === "left") {
+      return "arrow_left";
+    }
+    if (pin === "right") {
+      return "arrow_right";
+    }
+    return "pin";
+  }
+
+  protected pinAriaLabel(column: GridColumn<T>): string {
+    const pin = this.currentPin(column);
+    if (pin === "left") {
+      return `Unpin ${column.header}`;
+    }
+    if (pin === "right") {
+      return `Pin ${column.header} left`;
+    }
+    return `Pin ${column.header} right`;
   }
 
   protected sortDirection(field: string): "asc" | "desc" | null {

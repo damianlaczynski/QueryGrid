@@ -35,6 +35,16 @@ export interface GridColumn<T = unknown> {
   sortable?: boolean;
   /** Defaults to `true`. Set `false` to exclude the column from the column chooser. */
   hideable?: boolean;
+  /** Defaults to `true`. Set `false` to disable drag-reorder for the column. */
+  reorderable?: boolean;
+  /** Defaults to `true`. Set `false` to disable resize for the column. */
+  resizable?: boolean;
+  /** Defaults to `true`. Set `false` to disable pin controls for the column. */
+  pinnable?: boolean;
+  /** Default pin position from column metadata. */
+  pin?: "left" | "right";
+  /** Minimum width in pixels when resizing. */
+  minWidth?: number;
   /** Column header filter editor. Omit to disable filtering for the column. */
   filter?: GridColumnFilter;
   /** Cell horizontal alignment. */

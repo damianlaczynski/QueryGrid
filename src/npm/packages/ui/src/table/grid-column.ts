@@ -35,6 +35,11 @@ export interface GridColumn<T = unknown> {
   sortable?: boolean;
   /** Defaults to `true`. Set `false` to exclude the column from the column chooser. */
   hideable?: boolean;
+  reorderable?: boolean;
+  resizable?: boolean;
+  pinnable?: boolean;
+  pin?: "left" | "right";
+  minWidth?: number;
   /** Column header filter editor. Omit to disable filtering for the column. */
   filter?: GridColumnFilter;
   /** Cell horizontal alignment. */

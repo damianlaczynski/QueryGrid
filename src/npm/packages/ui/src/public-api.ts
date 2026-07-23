@@ -9,6 +9,7 @@ export {
 } from "./create-grid-resource";
 export { buildGridFilterChips, removeFilterCondition, type GridFilterChip } from "./filter-chips";
 export { QgGridColumnChooserComponent } from "./grid-column-chooser.component";
+export { hasColumnLayout, type GridResourceWithColumnLayout } from "./grid-column-layout-controls";
 export {
   hasColumnChooser,
   type GridResourceWithColumnChooser,

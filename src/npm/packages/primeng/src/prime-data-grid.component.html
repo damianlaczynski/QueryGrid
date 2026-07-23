@@ -17,9 +17,10 @@
   [showGridlines]="appearance() === 'plain' ? true : showGridlines()"
   [stripedRows]="appearance() === 'plain' ? false : stripedRows()"
   [dataKey]="dataKey()"
-  [scrollable]="!!scrollHeight()"
+  [scrollable]="!!scrollHeight() || hasPinnedColumns()"
   [scrollHeight]="scrollHeight() ?? undefined"
   [styleClass]="appearance() === 'plain' ? 'qg-plain-table' : undefined"
+  [tableStyle]="hasPinnedColumns() ? { 'min-width': 'max-content' } : undefined"
 >
   <ng-template #caption>
     <div class="qg-caption" [class.qg-plain-caption]="appearance() === 'plain'">
@@ -87,25 +88,83 @@
   </ng-template>
 
   <ng-template #header>
-    <tr>
+    <tr
+      cdkDropList
+      cdkDropListOrientation="horizontal"
+      [class.qg-header-row--dragging]="columnDragActive()"
+      (cdkDropListDropped)="onColumnDropped($event)"
+    >
       @for (column of displayedColumns(); track column.field) {
         <th
           scope="col"
-          [style.minWidth]="column.width"
+          cdkDrag
+          cdkDragLockAxis="x"
+          cdkDragPreviewClass="qg-column-drag-preview"
+          [cdkDragDisabled]="!isReorderable(column)"
+          class="qg-header-cell"
+          [class.qg-header-cell--reorderable]="isReorderable(column)"
+          [attr.data-field]="column.field"
+          [class.qg-pinned-left]="pinnedOffset(column.field)?.pin === 'left'"
+          [class.qg-pinned-right]="pinnedOffset(column.field)?.pin === 'right'"
+          [class.qg-pinned-left-separator]="isLeftPinnedSeparator(column.field)"
+          [class.qg-pinned-left-edge]="isLeftPinnedEdge(column.field)"
+          [class.qg-pinned-right-separator]="isRightPinnedSeparator(column.field)"
+          [class.qg-pinned-right-edge]="isRightPinnedEdge(column.field)"
+          [style.minWidth]="columnWidth(column)"
+          [style.width]="columnWidth(column)"
+          [style.left.px]="pinnedOffset(column.field)?.left"
+          [style.right.px]="pinnedOffset(column.field)?.right"
+          [style.z-index]="pinnedZIndex(column.field, 'header') ?? scrollableZIndex(column.field)"
           [style.textAlign]="column.align"
           [pSortableColumn]="isSortable(column) ? column.field : undefined"
         >
           <div class="qg-column-header">
+            @if (isReorderable(column)) {
+              <span
+                class="qg-column-drag-handle"
+                cdkDragHandle
+                [attr.aria-label]="reorderHandleLabel(column)"
+                (mousedown)="onColumnDragStarted()"
+                (touchstart)="onColumnDragStarted()"
+              >
+                <i class="pi pi-bars" aria-hidden="true"></i>
+              </span>
+            }
             <div class="qg-column-title">
               <span>{{ column.header }}</span>
               @if (isSortable(column)) {
                 <p-sortIcon [field]="column.field" />
               }
             </div>
-            @if (column.filter) {
-              <qg-column-filter [column]="column" [filterLocale]="resolvedFilterLocale()" />
-            }
+            <div class="qg-column-header-actions">
+              @if (isPinnable(column)) {
+                <button
+                  type="button"
+                  class="qg-column-pin-button"
+                  [class.qg-column-pin-button--active]="!!currentPin(column)"
+                  [attr.aria-label]="pinAriaLabel(column)"
+                  (click)="cycleColumnPin(column, $event)"
+                >
+                  <i [class]="pinIcon(column)" aria-hidden="true"></i>
+                </button>
+              }
+              @if (column.filter) {
+                <qg-column-filter [column]="column" [filterLocale]="resolvedFilterLocale()" />
+              }
+            </div>
           </div>
+          @if (isResizable(column)) {
+            <span
+              qgColumnResize
+              [minWidth]="column.minWidth ?? 48"
+              (resized)="onColumnResized(column, $event)"
+            ></span>
+          }
+          <ng-template cdkDragPreview>
+            <div class="qg-column-drag-preview" [style.minWidth]="columnWidth(column)">
+              {{ column.header }}
+            </div>
+          </ng-template>
         </th>
       }
     </tr>
@@ -114,7 +173,21 @@
   <ng-template #body let-row>
     <tr>
       @for (column of displayedColumns(); track column.field) {
-        <td [style.textAlign]="column.align">
+        <td
+          class="qg-body-cell"
+          [class.qg-pinned-left]="pinnedOffset(column.field)?.pin === 'left'"
+          [class.qg-pinned-right]="pinnedOffset(column.field)?.pin === 'right'"
+          [class.qg-pinned-left-separator]="isLeftPinnedSeparator(column.field)"
+          [class.qg-pinned-left-edge]="isLeftPinnedEdge(column.field)"
+          [class.qg-pinned-right-separator]="isRightPinnedSeparator(column.field)"
+          [class.qg-pinned-right-edge]="isRightPinnedEdge(column.field)"
+          [style.minWidth]="columnWidth(column)"
+          [style.width]="columnWidth(column)"
+          [style.left.px]="pinnedOffset(column.field)?.left"
+          [style.right.px]="pinnedOffset(column.field)?.right"
+          [style.z-index]="pinnedZIndex(column.field, 'body') ?? scrollableZIndex(column.field)"
+          [style.textAlign]="column.align"
+        >
           @if (cellTemplate(column.field); as template) {
             <ng-container
               [ngTemplateOutlet]="template"

@@ -27,6 +27,7 @@ function showcaseGridOptions(injector: Injector, api: ShowcaseApiService, persis
     persistState: { key: persistKey, storage: 'session' as const },
     syncRoute: true,
     columnChooser: true,
+    columnLayout: true,
     views: {
       storageKey: persistKey,
       builtins: [showcaseActiveView],

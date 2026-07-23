@@ -9,6 +9,7 @@ import {
 } from "@laczynski/ui";
 import { isColumnHideable } from "@query-grid/core";
 import type { GridResource } from "./create-grid-resource";
+import { hasColumnLayout } from "./grid-column-layout-controls";
 import {
   hasColumnChooser,
   type GridResourceWithColumnChooser,
@@ -44,7 +45,20 @@ export class QgGridColumnChooserComponent<T = unknown> {
 
   protected readonly popoverOpen = signal(false);
 
-  protected readonly chooserEnabled = computed(() => asGridWithColumnChooser(this.grid()) != null);
+  protected readonly layoutEnabled = computed(() => hasColumnLayout(this.grid()));
+
+  protected readonly chooserEnabled = computed(
+    () => asGridWithColumnChooser(this.grid()) != null || this.layoutEnabled(),
+  );
+
+  protected readonly hasLayoutChanges = computed(() => {
+    const grid = this.grid();
+    if (!hasColumnLayout(grid)) {
+      return false;
+    }
+
+    return Object.keys(grid.columnWidths()).length > 0 || Object.keys(grid.columnPins()).length > 0;
+  });
 
   protected readonly hideableColumns = computed(() =>
     this.columns().filter((column) => isColumnHideable(column)),
@@ -75,5 +89,12 @@ export class QgGridColumnChooserComponent<T = unknown> {
 
   protected showAllColumns(): void {
     asGridWithColumnChooser(this.grid())?.showAllColumns();
+  }
+
+  protected resetColumnLayout(): void {
+    const grid = this.grid();
+    if (hasColumnLayout(grid)) {
+      grid.resetColumnLayout();
+    }
   }
 }

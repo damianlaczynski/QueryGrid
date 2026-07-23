@@ -37,6 +37,11 @@ export class QgColumnDirective<T = unknown> {
   readonly sortable = input<boolean | undefined>(undefined);
   /** Defaults to `true`. Set `false` to exclude the column from the column chooser. */
   readonly hideable = input<boolean | undefined>(undefined);
+  readonly reorderable = input<boolean | undefined>(undefined);
+  readonly resizable = input<boolean | undefined>(undefined);
+  readonly pinnable = input<boolean | undefined>(undefined);
+  readonly pin = input<"left" | "right" | undefined>(undefined);
+  readonly minWidth = input<number | undefined>(undefined);
   /** Column header filter editor. Omit to disable filtering. */
   readonly filter = input<GridColumnFilter | undefined>(undefined);
   readonly align = input<GridCellAlign | undefined>(undefined);
@@ -57,6 +62,31 @@ export class QgColumnDirective<T = unknown> {
     const hideable = this.hideable();
     if (hideable !== undefined) {
       column.hideable = hideable;
+    }
+
+    const reorderable = this.reorderable();
+    if (reorderable !== undefined) {
+      column.reorderable = reorderable;
+    }
+
+    const resizable = this.resizable();
+    if (resizable !== undefined) {
+      column.resizable = resizable;
+    }
+
+    const pinnable = this.pinnable();
+    if (pinnable !== undefined) {
+      column.pinnable = pinnable;
+    }
+
+    const pin = this.pin();
+    if (pin) {
+      column.pin = pin;
+    }
+
+    const minWidth = this.minWidth();
+    if (minWidth !== undefined) {
+      column.minWidth = minWidth;
     }
 
     const filter = this.filter();

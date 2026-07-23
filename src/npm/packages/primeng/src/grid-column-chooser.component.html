@@ -28,16 +28,28 @@
           }
         </div>
 
-        @if (hasHiddenColumns()) {
+        @if (hasHiddenColumns() || hasLayoutChanges()) {
           <div class="qg-grid-column-chooser__footer">
-            <p-button
-              type="button"
-              label="Show all"
-              severity="secondary"
-              [text]="true"
-              size="small"
-              (onClick)="showAllColumns()"
-            />
+            @if (hasHiddenColumns()) {
+              <p-button
+                type="button"
+                label="Show all"
+                severity="secondary"
+                [text]="true"
+                size="small"
+                (onClick)="showAllColumns()"
+              />
+            }
+            @if (hasLayoutChanges()) {
+              <p-button
+                type="button"
+                label="Reset layout"
+                severity="secondary"
+                [text]="true"
+                size="small"
+                (onClick)="resetColumnLayout()"
+              />
+            }
           </div>
         }
       </div>
