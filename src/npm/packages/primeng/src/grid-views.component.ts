@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { ChangeDetectionStrategy, Component, computed, input, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { Button } from "primeng/button";
 import { Dialog } from "primeng/dialog";
@@ -8,6 +8,7 @@ import { Select } from "primeng/select";
 import { Tooltip } from "primeng/tooltip";
 import type { GridResource } from "./create-grid-resource";
 import { hasGridViews, type GridResourceWithViews } from "./grid-views-controls";
+import { QgI18nService } from "./i18n";
 
 function asGridWithViews<T>(
   grid: GridResource<T>,
@@ -67,12 +68,23 @@ function asGridWithViews<T>(
   `,
 })
 export class QgGridViewsComponent<T = unknown> {
+  private readonly i18n = inject(QgI18nService);
+
   readonly grid = input.required<GridResource<T>>();
 
   protected readonly showSaveDialog = signal(false);
   protected readonly newPresetName = signal("");
 
   protected readonly viewsEnabled = computed(() => asGridWithViews(this.grid()) != null);
+
+  protected readonly viewsPlaceholder = this.i18n.tSignal("views.placeholder", "Views");
+  protected readonly updateViewLabel = this.i18n.tSignal("views.update", "Update view");
+  protected readonly saveAsViewLabel = this.i18n.tSignal("views.saveAs", "Save as view");
+  protected readonly deleteViewLabel = this.i18n.tSignal("views.delete", "Delete view");
+  protected readonly saveViewTitle = this.i18n.tSignal("views.saveTitle", "Save view");
+  protected readonly viewNamePlaceholder = this.i18n.tSignal("views.namePlaceholder", "View name");
+  protected readonly cancelLabel = this.i18n.tSignal("views.cancel", "Cancel");
+  protected readonly saveLabel = this.i18n.tSignal("views.save", "Save");
 
   protected readonly presetOptions = computed(() => {
     const grid = asGridWithViews(this.grid());

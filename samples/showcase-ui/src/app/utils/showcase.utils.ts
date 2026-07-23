@@ -1,13 +1,27 @@
+import { TranslateService } from '@ngx-translate/core';
 import { ShowcaseCategory } from '../models/showcase-row.model';
 
-export const showcaseCategories = () => [
-  { label: 'Alpha', value: ShowcaseCategory.Alpha },
-  { label: 'Beta', value: ShowcaseCategory.Beta },
-  { label: 'Gamma', value: ShowcaseCategory.Gamma },
-  { label: 'Delta', value: ShowcaseCategory.Delta },
-  { label: 'Epsilon', value: ShowcaseCategory.Epsilon },
-];
+export function showcaseCategories(translate: TranslateService) {
+  return [
+    { label: translate.instant('showcase.categories.alpha'), value: ShowcaseCategory.Alpha },
+    { label: translate.instant('showcase.categories.beta'), value: ShowcaseCategory.Beta },
+    { label: translate.instant('showcase.categories.gamma'), value: ShowcaseCategory.Gamma },
+    { label: translate.instant('showcase.categories.delta'), value: ShowcaseCategory.Delta },
+    { label: translate.instant('showcase.categories.epsilon'), value: ShowcaseCategory.Epsilon },
+  ];
+}
 
-export function getShowcaseCategoryLabel(category: ShowcaseCategory): string {
-  return showcaseCategories().find((entry) => entry.value === category)?.label ?? String(category);
+export function getShowcaseCategoryLabel(
+  category: ShowcaseCategory,
+  translate: TranslateService,
+): string {
+  const keys: Record<ShowcaseCategory, string> = {
+    [ShowcaseCategory.Alpha]: 'showcase.categories.alpha',
+    [ShowcaseCategory.Beta]: 'showcase.categories.beta',
+    [ShowcaseCategory.Gamma]: 'showcase.categories.gamma',
+    [ShowcaseCategory.Delta]: 'showcase.categories.delta',
+    [ShowcaseCategory.Epsilon]: 'showcase.categories.epsilon',
+  };
+
+  return translate.instant(keys[category]);
 }

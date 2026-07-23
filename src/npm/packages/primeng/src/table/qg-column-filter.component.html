@@ -87,7 +87,7 @@
             [options]="column.filter.options ?? []"
             optionLabel="label"
             optionValue="value"
-            placeholder="Any"
+            [placeholder]="anyPlaceholder()"
             (onChange)="filter($event.value)"
             style="min-width: 14rem"
           />

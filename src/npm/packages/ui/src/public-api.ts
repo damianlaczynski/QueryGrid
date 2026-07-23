@@ -8,7 +8,12 @@ export {
   type GridViewPreset,
   type GridViewsConfig,
 } from "./create-grid-resource";
-export { buildGridFilterChips, removeFilterCondition, type GridFilterChip } from "./filter-chips";
+export {
+  buildGridFilterChips,
+  removeFilterCondition,
+  type BuildGridFilterChipsOptions,
+  type GridFilterChip,
+} from "./filter-chips";
 export { QgGridColumnChooserComponent } from "./grid-column-chooser.component";
 export { hasColumnLayout, type GridResourceWithColumnLayout } from "./grid-column-layout-controls";
 export {
@@ -23,6 +28,14 @@ export {
 } from "./grid-row-selection-controls";
 export { hasGridViews, type GridResourceWithViews } from "./grid-views-controls";
 export { QgGridViewsComponent } from "./grid-views.component";
+export {
+  provideQgI18n,
+  QG_I18N_CONFIG,
+  QG_TRANSLATE_FN,
+  QgI18nService,
+  type QgI18nConfig,
+  type QgTranslateFn,
+} from "./i18n";
 export { buildEnumMatchModeOptions, buildMatchModeOptions } from "./match-mode-options";
 export type { QgColumnContext } from "./table/column-context";
 export { QgColumnDirective } from "./table/column.directive";

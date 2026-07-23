@@ -24,11 +24,11 @@
           @if (showLogicSelect()) {
             <ui-select
               class="qg-column-filter__control"
-              [items]="logicItems"
+              [items]="logicItems()"
               [size]="size()"
               [ngModel]="draftLogic()"
               (selectionChange)="onLogicChange($event)"
-              placeholder="Match All"
+              [placeholder]="matchAllPlaceholder()"
             />
           }
 
@@ -41,7 +41,7 @@
                   [size]="size()"
                   [ngModel]="rule.operator"
                   (selectionChange)="onOperatorChange(rule.id, $event)"
-                  placeholder="Operator"
+                  [placeholder]="operatorPlaceholder()"
                 />
               }
 
@@ -51,7 +51,7 @@
                     <ui-text
                       class="qg-column-filter__control"
                       [size]="size()"
-                      [placeholder]="column.filter.placeholder ?? 'Value'"
+                      [placeholder]="column.filter.placeholder ?? valuePlaceholder()"
                       [ngModel]="rule.value"
                       (ngModelChange)="onRuleValueChange(rule.id, $event)"
                     />
@@ -60,7 +60,7 @@
                     <ui-text
                       class="qg-column-filter__control"
                       [size]="size()"
-                      [placeholder]="column.filter.placeholder ?? 'Guid'"
+                      [placeholder]="column.filter.placeholder ?? guidPlaceholder()"
                       [ngModel]="rule.value"
                       (ngModelChange)="onRuleValueChange(rule.id, $event)"
                     />
@@ -71,8 +71,8 @@
                       [size]="size()"
                       [placeholder]="
                         isBetweenOperator(rule.operator)
-                          ? 'From'
-                          : (column.filter.placeholder ?? 'Value')
+                          ? fromPlaceholder()
+                          : (column.filter.placeholder ?? valuePlaceholder())
                       "
                       [ngModel]="rule.value"
                       (ngModelChange)="onRuleValueChange(rule.id, $event)"
@@ -81,7 +81,7 @@
                       <ui-number
                         class="qg-column-filter__control"
                         [size]="size()"
-                        placeholder="To"
+                        [placeholder]="toPlaceholder()"
                         [ngModel]="rule.valueEnd"
                         (ngModelChange)="onRuleValueEndChange(rule.id, $event)"
                       />
@@ -91,7 +91,7 @@
                     <ui-date
                       class="qg-column-filter__control"
                       [size]="size()"
-                      [placeholder]="column.filter.placeholder ?? 'Date'"
+                      [placeholder]="column.filter.placeholder ?? datePlaceholder()"
                       [ngModel]="rule.value"
                       (ngModelChange)="onRuleValueChange(rule.id, $event)"
                     />
@@ -102,7 +102,7 @@
                       mode="multi"
                       [items]="enumItems()"
                       [size]="size()"
-                      placeholder="Any"
+                      [placeholder]="anyPlaceholder()"
                       [ngModel]="rule.value"
                       (ngModelChange)="onRuleValueChange(rule.id, $event)"
                     />
@@ -118,7 +118,7 @@
                   [size]="size()"
                   [fullWidth]="true"
                   icon="delete"
-                  text="Remove Rule"
+                  [text]="removeRuleLabel()"
                   (click)="removeRule(rule.id)"
                 />
               }
@@ -133,7 +133,7 @@
               [size]="size()"
               [fullWidth]="true"
               icon="add"
-              text="Add Rule"
+              [text]="addRuleLabel()"
               (click)="addRule()"
             />
           }
@@ -141,8 +141,8 @@
       </div>
 
       <div class="popover-panel__footer qg-column-filter__footer">
-        <ui-button appearance="outline" [size]="size()" text="Clear" (click)="clear()" />
-        <ui-button variant="primary" [size]="size()" text="Apply" (click)="apply()" />
+        <ui-button appearance="outline" [size]="size()" [text]="clearLabel()" (click)="clear()" />
+        <ui-button variant="primary" [size]="size()" [text]="applyLabel()" (click)="apply()" />
       </div>
     </div>
   </ng-template>
@@ -155,7 +155,7 @@
     [size]="size()"
     [icon]="isActive() ? 'filter' : 'filter_add'"
     [selected]="isActive()"
-    [ariaLabel]="'Filter ' + column.header"
+    [ariaLabel]="filterAriaLabel()"
     [uiPopover]="filterPanel"
     [uiPopoverOpen]="popoverOpen()"
     (uiPopoverOpenChange)="onPopoverOpenChange($event)"

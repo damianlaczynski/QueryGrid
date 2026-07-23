@@ -1,0 +1,174 @@
+{
+  "qg": {
+    "grid": {
+      "filters": "Filtry",
+      "clear": "Wyczyść",
+      "clearSelection": "Wyczyść zaznaczenie",
+      "searchPlaceholder": "Szukaj…",
+      "selectedCount": "{{count}} zaznaczonych",
+      "loadingData": "Ładowanie danych",
+      "noData": "Brak danych",
+      "selectPage": "Zaznacz stronę",
+      "selectRow": "Zaznacz wiersz",
+      "reorderColumn": "Zmień kolejność {{header}}",
+      "unpinColumn": "Odepnij {{header}}",
+      "pinColumnLeft": "Przypnij {{header}} po lewej",
+      "pinColumnRight": "Przypnij {{header}} po prawej",
+      "sortAscending": "{{header}} — sortowanie rosnąco",
+      "sortDescending": "{{header}} — sortowanie malejąco",
+      "sortable": "{{header}} — możliwe sortowanie"
+    },
+    "columnChooser": {
+      "columns": "Kolumny",
+      "showAll": "Pokaż wszystkie",
+      "resetLayout": "Resetuj układ"
+    },
+    "views": {
+      "placeholder": "Widoki",
+      "update": "Aktualizuj widok",
+      "saveAs": "Zapisz jako widok",
+      "delete": "Usuń widok",
+      "saveTitle": "Zapisz widok",
+      "namePlaceholder": "Nazwa widoku",
+      "cancel": "Anuluj",
+      "save": "Zapisz"
+    },
+    "filter": {
+      "apply": "Zastosuj",
+      "addRule": "Dodaj regułę",
+      "removeRule": "Usuń regułę",
+      "aria": "Filtruj {{header}}",
+      "boolean": {
+        "yes": "Tak",
+        "no": "Nie"
+      },
+      "logic": {
+        "matchAll": "Spełnij wszystkie",
+        "matchAny": "Spełnij dowolną"
+      },
+      "operator": {
+        "placeholder": "Operator",
+        "in": "Zawiera się w",
+        "notIn": "Nie zawiera się w",
+        "equals": "Równa się",
+        "notEquals": "Nie równa się",
+        "contains": "Zawiera",
+        "notContains": "Nie zawiera",
+        "startsWith": "Zaczyna się od",
+        "endsWith": "Kończy się na",
+        "lessThan": "Mniejsze niż",
+        "lessOrEqual": "Mniejsze lub równe",
+        "greaterThan": "Większe niż",
+        "greaterOrEqual": "Większe lub równe",
+        "between": "Między",
+        "dateIs": "Data to",
+        "dateIsNot": "Data to nie",
+        "dateBefore": "Data przed",
+        "dateAfter": "Data po",
+        "isEmpty": "Jest puste",
+        "isNotEmpty": "Nie jest puste"
+      },
+      "value": {
+        "placeholder": "Wartość",
+        "guid": "Guid",
+        "from": "Od",
+        "to": "Do",
+        "date": "Data",
+        "any": "Dowolne"
+      },
+      "chip": {
+        "search": "Szukaj: {{value}}",
+        "contains": "{{header}}: {{value}}",
+        "notContains": "{{header}}: nie {{value}}",
+        "startsWith": "{{header}}: zaczyna się od {{value}}",
+        "endsWith": "{{header}}: kończy się na {{value}}",
+        "equals": "{{header}}: {{value}}",
+        "notEquals": "{{header}}: nie {{value}}",
+        "in": "{{header}}: {{value}}",
+        "notIn": "{{header}}: nie {{value}}",
+        "between": "{{header}}: {{start}} – {{end}}",
+        "gte": "{{header}}: ≥ {{value}}",
+        "lte": "{{header}}: ≤ {{value}}",
+        "gt": "{{header}}: > {{value}}",
+        "lt": "{{header}}: < {{value}}",
+        "isEmpty": "{{header}}: jest puste",
+        "isNotEmpty": "{{header}}: nie jest puste",
+        "default": "{{header}}: {{value}}"
+      }
+    }
+  },
+  "showcase": {
+    "shell": {
+      "title": "QueryGrid Showcase",
+      "subtitle": "Macierz kompatybilności adapterów siatki",
+      "navAria": "Adaptery showcase",
+      "uiAdapter": "laczynski/ui",
+      "primengAdapter": "PrimeNG",
+      "languageAria": "Język",
+      "languagePl": "PL",
+      "languageEn": "EN"
+    },
+    "searchPlaceholder": "Szukaj etykiet…",
+    "exportSelected": "Eksportuj zaznaczone",
+    "emptyState": "Brak wierszy pasujących do bieżącego stanu siatki.",
+    "views": {
+      "activeOnly": "Tylko aktywne"
+    },
+    "columns": {
+      "id": "Id",
+      "label": "Etykieta",
+      "optionalNote": "Notatka opcjonalna",
+      "quantity": "Ilość",
+      "bigNumber": "Duża liczba",
+      "price": "Cena",
+      "score": "Wynik",
+      "isActive": "Aktywny",
+      "occurredAt": "Data wystąpienia",
+      "occurredAtOffset": "Data wystąpienia (offset)",
+      "occurredOn": "Dzień wystąpienia",
+      "category": "Kategoria",
+      "referenceId": "Referencja",
+      "sortDisabledField": "Sortowanie wyłączone",
+      "filterDisabledField": "Filtrowanie wyłączone",
+      "nullableDate": "Data opcjonalna"
+    },
+    "filters": {
+      "id": "Id…",
+      "contains": "Zawiera…",
+      "noteContains": "Notatka zawiera…",
+      "quantity": "Ilość…",
+      "value": "Wartość…",
+      "price": "Cena…",
+      "score": "Wynik…",
+      "guid": "Guid…",
+      "filterOnly": "Tylko filtr…"
+    },
+    "categories": {
+      "alpha": "Alfa",
+      "beta": "Beta",
+      "gamma": "Gamma",
+      "delta": "Delta",
+      "epsilon": "Epsilon"
+    }
+  },
+  "ui": {
+    "pagination": {
+      "perPagePlaceholder": "Na stronę",
+      "label": {
+        "first": "Pierwsza",
+        "last": "Ostatnia"
+      },
+      "aria": {
+        "firstPage": "Pierwsza strona",
+        "previousPage": "Poprzednia strona",
+        "nextPage": "Następna strona",
+        "lastPage": "Ostatnia strona",
+        "page": "Strona {{page}}"
+      },
+      "info": {
+        "noItems": "Brak elementów",
+        "range": "Wyświetlanie {{start}}–{{end}} z {{total}}"
+      }
+    }
+  }
+}

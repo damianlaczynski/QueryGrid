@@ -19,6 +19,45 @@
   flex-shrink: 0;
 }
 
+.shell__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.shell__lang {
+  display: inline-flex;
+  border: 1px solid var(--p-content-border-color, #e5e7eb);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.shell__lang-button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--p-text-color, #111827);
+  cursor: pointer;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1;
+  padding: 0.5rem 0.75rem;
+}
+
+.shell__lang-button + .shell__lang-button {
+  border-left: 1px solid var(--p-content-border-color, #e5e7eb);
+}
+
+.shell__lang-button:hover {
+  background: var(--p-content-hover-background, #f3f4f6);
+}
+
+.shell__lang-button.is-active {
+  background: var(--p-primary-50, #eff6ff);
+  color: var(--p-primary-700, #1d4ed8);
+}
+
 .shell__brand {
   display: flex;
   flex-direction: column;

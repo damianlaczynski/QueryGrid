@@ -8,7 +8,7 @@
         optionValue="value"
         [ngModel]="selectedPresetId()"
         (ngModelChange)="onPresetSelected($event)"
-        placeholder="Views"
+        [placeholder]="viewsPlaceholder()"
         [showClear]="true"
         size="small"
       />
@@ -20,8 +20,8 @@
           severity="secondary"
           [outlined]="true"
           size="small"
-          aria-label="Update view"
-          pTooltip="Update view"
+          [ariaLabel]="updateViewLabel()"
+          [pTooltip]="updateViewLabel()"
           tooltipPosition="top"
           (onClick)="updatePreset()"
         />
@@ -33,8 +33,8 @@
         severity="secondary"
         [outlined]="true"
         size="small"
-        aria-label="Save as view"
-        pTooltip="Save as view"
+        [ariaLabel]="saveAsViewLabel()"
+        [pTooltip]="saveAsViewLabel()"
         tooltipPosition="top"
         (onClick)="openSaveDialog()"
       />
@@ -46,8 +46,8 @@
           severity="danger"
           [outlined]="true"
           size="small"
-          aria-label="Delete view"
-          pTooltip="Delete view"
+          [ariaLabel]="deleteViewLabel()"
+          [pTooltip]="deleteViewLabel()"
           tooltipPosition="top"
           (onClick)="deleteSelected()"
         />
@@ -58,7 +58,7 @@
   </div>
 
   <p-dialog
-    header="Save view"
+    [header]="saveViewTitle()"
     [modal]="true"
     [draggable]="false"
     [style]="{ width: '24rem' }"
@@ -71,7 +71,7 @@
         type="text"
         [ngModel]="newPresetName()"
         (ngModelChange)="newPresetName.set($event)"
-        placeholder="View name"
+        [placeholder]="viewNamePlaceholder()"
         (keydown.enter)="saveAs()"
       />
     </div>
@@ -79,12 +79,12 @@
       <div class="qg-grid-views__dialog-footer">
         <p-button
           type="button"
-          label="Cancel"
+          [label]="cancelLabel()"
           severity="secondary"
           [text]="true"
           (onClick)="closeSaveDialog()"
         />
-        <p-button type="button" label="Save" (onClick)="saveAs()" />
+        <p-button type="button" [label]="saveLabel()" (onClick)="saveAs()" />
       </div>
     </ng-template>
   </p-dialog>

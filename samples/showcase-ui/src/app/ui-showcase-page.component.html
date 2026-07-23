@@ -15,7 +15,7 @@
       [bordered]="true"
       [striped]="true"
       [hoverable]="true"
-      searchPlaceholder="Search labels…"
+      [searchPlaceholder]="'showcase.searchPlaceholder' | translate"
       [pageSizeOptions]="[10, 20, 50, 100]"
     >
       <ng-template qgBulkToolbar>
@@ -23,15 +23,15 @@
           appearance="outline"
           size="medium"
           icon="arrow_export"
-          text="Export selected"
+          [text]="'showcase.exportSelected' | translate"
           (click)="exportSelected()"
         />
       </ng-template>
 
       <ng-template
         qgColumn="Id"
-        header="Id"
-        [filter]="{ type: 'number', placeholder: 'Id…' }"
+        [header]="'showcase.columns.id' | translate"
+        [filter]="{ type: 'number', placeholder: ('showcase.filters.id' | translate) }"
         [qgColumnOf]="rowType"
         let-row
       >
@@ -40,8 +40,8 @@
 
       <ng-template
         qgColumn="Label"
-        header="Label"
-        [filter]="{ type: 'text', placeholder: 'Contains…' }"
+        [header]="'showcase.columns.label' | translate"
+        [filter]="{ type: 'text', placeholder: ('showcase.filters.contains' | translate) }"
         [qgColumnOf]="rowType"
         let-row
       >
@@ -50,8 +50,12 @@
 
       <ng-template
         qgColumn="OptionalNote"
-        header="Optional note"
-        [filter]="{ type: 'text', placeholder: 'Note contains…', nullable: true }"
+        [header]="'showcase.columns.optionalNote' | translate"
+        [filter]="{
+          type: 'text',
+          placeholder: ('showcase.filters.noteContains' | translate),
+          nullable: true,
+        }"
         [qgColumnOf]="rowType"
         let-row
       >
@@ -60,8 +64,8 @@
 
       <ng-template
         qgColumn="Quantity"
-        header="Quantity"
-        [filter]="{ type: 'number', placeholder: 'Quantity…' }"
+        [header]="'showcase.columns.quantity' | translate"
+        [filter]="{ type: 'number', placeholder: ('showcase.filters.quantity' | translate) }"
         [qgColumnOf]="rowType"
         let-row
       >
@@ -70,70 +74,74 @@
 
       <ng-template
         qgColumn="BigNumber"
-        header="Big number"
-        [filter]="{ type: 'number', placeholder: 'Value…' }"
+        [header]="'showcase.columns.bigNumber' | translate"
+        [filter]="{ type: 'number', placeholder: ('showcase.filters.value' | translate) }"
         [qgColumnOf]="rowType"
         let-row
       >
-        {{ row.bigNumber | number }}
+        {{ row.bigNumber | number: '' : locale.angularLocale() }}
       </ng-template>
 
       <ng-template
         qgColumn="Price"
-        header="Price"
-        [filter]="{ type: 'number', placeholder: 'Price…' }"
+        [header]="'showcase.columns.price' | translate"
+        [filter]="{ type: 'number', placeholder: ('showcase.filters.price' | translate) }"
         [qgColumnOf]="rowType"
         let-row
       >
-        {{ row.price | number: '1.2-4' }}
+        {{ row.price | number: '1.2-4' : locale.angularLocale() }}
       </ng-template>
 
       <ng-template
         qgColumn="Score"
-        header="Score"
-        [filter]="{ type: 'number', placeholder: 'Score…' }"
+        [header]="'showcase.columns.score' | translate"
+        [filter]="{ type: 'number', placeholder: ('showcase.filters.score' | translate) }"
         [qgColumnOf]="rowType"
         let-row
       >
-        {{ row.score | number: '1.3-3' }}
+        {{ row.score | number: '1.3-3' : locale.angularLocale() }}
       </ng-template>
 
       <ng-template
         qgColumn="IsActive"
-        header="Active"
+        [header]="'showcase.columns.isActive' | translate"
         [filter]="{ type: 'boolean' }"
         [qgColumnOf]="rowType"
         let-row
       >
         <ui-tag
-          [text]="row.isActive ? 'Yes' : 'No'"
+          [text]="
+            row.isActive
+              ? ('qg.filter.boolean.yes' | translate)
+              : ('qg.filter.boolean.no' | translate)
+          "
           [variant]="row.isActive ? 'success' : 'secondary'"
         />
       </ng-template>
 
       <ng-template
         qgColumn="OccurredAt"
-        header="Occurred at"
+        [header]="'showcase.columns.occurredAt' | translate"
         [filter]="{ type: 'date' }"
         [qgColumnOf]="rowType"
         let-row
       >
-        {{ row.occurredAt | date: 'yyyy-MM-dd HH:mm' }}
+        {{ row.occurredAt | date: 'yyyy-MM-dd HH:mm' : undefined : locale.angularLocale() }}
       </ng-template>
 
       <ng-template
         qgColumn="OccurredAtOffset"
-        header="Occurred (offset)"
+        [header]="'showcase.columns.occurredAtOffset' | translate"
         [filter]="{ type: 'date' }"
         [qgColumnOf]="rowType"
         let-row
       >
-        {{ row.occurredAtOffset | date: 'yyyy-MM-dd HH:mm Z' }}
+        {{ row.occurredAtOffset | date: 'yyyy-MM-dd HH:mm Z' : undefined : locale.angularLocale() }}
       </ng-template>
 
       <ng-template
         qgColumn="OccurredOn"
-        header="Occurred on"
+        [header]="'showcase.columns.occurredOn' | translate"
         [filter]="{ type: 'date' }"
         [qgColumnOf]="rowType"
         let-row
@@ -143,7 +151,7 @@
 
       <ng-template
         qgColumn="Category"
-        header="Category"
+        [header]="'showcase.columns.category' | translate"
         [filter]="{ type: 'enum', options: showcaseCategories() }"
         [qgColumnOf]="rowType"
         let-row
@@ -153,8 +161,8 @@
 
       <ng-template
         qgColumn="ReferenceId"
-        header="Reference"
-        [filter]="{ type: 'guid', placeholder: 'Guid…' }"
+        [header]="'showcase.columns.referenceId' | translate"
+        [filter]="{ type: 'guid', placeholder: ('showcase.filters.guid' | translate) }"
         [qgColumnOf]="rowType"
         let-row
       >
@@ -163,9 +171,9 @@
 
       <ng-template
         qgColumn="SortDisabledField"
-        header="Sort disabled"
+        [header]="'showcase.columns.sortDisabledField' | translate"
         [sortable]="false"
-        [filter]="{ type: 'text', placeholder: 'Filter only…' }"
+        [filter]="{ type: 'text', placeholder: ('showcase.filters.filterOnly' | translate) }"
         [qgColumnOf]="rowType"
         let-row
       >
@@ -174,7 +182,7 @@
 
       <ng-template
         qgColumn="FilterDisabledField"
-        header="Filter disabled"
+        [header]="'showcase.columns.filterDisabledField' | translate"
         [qgColumnOf]="rowType"
         let-row
       >
@@ -183,16 +191,20 @@
 
       <ng-template
         qgColumn="NullableDate"
-        header="Nullable date"
+        [header]="'showcase.columns.nullableDate' | translate"
         [filter]="{ type: 'date', nullable: true }"
         [qgColumnOf]="rowType"
         let-row
       >
-        {{ row.nullableDate ? (row.nullableDate | date: 'yyyy-MM-dd') : '—' }}
+        {{
+          row.nullableDate
+            ? (row.nullableDate | date: 'yyyy-MM-dd' : undefined : locale.angularLocale())
+            : '—'
+        }}
       </ng-template>
 
       <ng-template qgEmpty>
-        <p class="empty-state">No rows match the current grid state.</p>
+        <p class="empty-state">{{ 'showcase.emptyState' | translate }}</p>
       </ng-template>
     </qg-ui-data-grid>
   </div>

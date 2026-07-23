@@ -5,7 +5,7 @@
         <ui-search
           class="qg-ui-grid__search"
           [size]="size()"
-          [placeholder]="searchPlaceholder()"
+          [placeholder]="resolvedSearchPlaceholder()"
           [ngModel]="searchText()"
           (ngModelChange)="onSearchChange($event)"
         />
@@ -20,7 +20,7 @@
             appearance="outline"
             [size]="size()"
             icon="filter"
-            text="Filters"
+            [text]="filtersLabel()"
             [variant]="filtersExpanded() ? 'primary' : 'secondary'"
             (click)="toggleFiltersExpanded()"
           />
@@ -30,7 +30,7 @@
           appearance="outline"
           [size]="size()"
           icon="filter_dismiss"
-          text="Clear"
+          [text]="clearLabel()"
           [disabled]="!hasActiveFilters()"
           (click)="clear()"
         />
@@ -39,7 +39,7 @@
 
     @if (selectedCount() > 0 && bulkToolbarTemplate(); as bulkToolbar) {
       <div class="qg-ui-grid__bulk-toolbar">
-        <span class="qg-ui-grid__bulk-toolbar-count">{{ selectedCount() }} selected</span>
+        <span class="qg-ui-grid__bulk-toolbar-count">{{ selectedCountText() }}</span>
         <div class="qg-ui-grid__bulk-toolbar-actions">
           <ng-container [ngTemplateOutlet]="bulkToolbar" />
         </div>
@@ -48,9 +48,9 @@
           [size]="size()"
           icon="dismiss"
           variant="secondary"
-          uiTooltip="Clear selection"
+          [uiTooltip]="clearSelectionLabel()"
           uiTooltipPosition="top"
-          aria-label="Clear selection"
+          [attr.aria-label]="clearSelectionLabel()"
           (click)="clearRowSelection()"
         />
       </div>
@@ -100,7 +100,7 @@
                 class="qg-ui-grid__header-cell qg-ui-grid__header-cell--selection"
                 [class.qg-ui-grid__header-cell--selection-edge]="isSelectionColumnFrozenEdge()"
                 [class.qg-ui-grid__header-cell--selection-separator]="isSelectionColumnSeparator()"
-                [attr.aria-label]="isMultipleSelection() ? 'Select page' : 'Select row'"
+                [attr.aria-label]="isMultipleSelection() ? selectPageLabel() : selectRowLabel()"
               >
                 @if (isMultipleSelection()) {
                   <div class="qg-ui-grid__selection-cell">
@@ -294,7 +294,7 @@
           } @else if (grid().loading()) {
             <tr class="qg-ui-grid__loading-row">
               <td class="qg-ui-grid__loading-cell" [attr.colspan]="tableColumnCount()">
-                <ui-spinner [size]="size()" ariaLabel="Loading data" />
+                <ui-spinner [size]="size()" [ariaLabel]="loadingDataLabel()" />
               </td>
             </tr>
           } @else {
@@ -303,7 +303,7 @@
                 @if (emptyTemplate(); as template) {
                   <ng-container [ngTemplateOutlet]="template" />
                 } @else {
-                  No data
+                  {{ noDataLabel() }}
                 }
               </td>
             </tr>
@@ -314,7 +314,7 @@
 
     @if (showRefreshOverlay()) {
       <div class="qg-ui-grid__table-overlay" aria-hidden="true">
-        <ui-spinner [size]="size()" ariaLabel="Loading data" />
+        <ui-spinner [size]="size()" [ariaLabel]="loadingDataLabel()" />
       </div>
     }
   </div>

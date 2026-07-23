@@ -4,6 +4,7 @@ import {
   Component,
   computed,
   ElementRef,
+  inject,
   input,
   signal,
   viewChild,
@@ -18,6 +19,7 @@ import {
 } from "@laczynski/ui";
 import type { GridResource } from "./create-grid-resource";
 import { hasGridViews, type GridResourceWithViews } from "./grid-views-controls";
+import { QgI18nService } from "./i18n";
 import type { GridSize } from "./types";
 
 function asGridWithViews<T>(
@@ -42,6 +44,8 @@ function asGridWithViews<T>(
   styleUrl: "./grid-views.component.scss",
 })
 export class QgGridViewsComponent<T = unknown> {
+  private readonly i18n = inject(QgI18nService);
+
   readonly grid = input.required<GridResource<T>>();
   readonly size = input<GridSize>("medium");
 
@@ -50,6 +54,15 @@ export class QgGridViewsComponent<T = unknown> {
   protected readonly newPresetName = signal("");
 
   protected readonly viewsEnabled = computed(() => asGridWithViews(this.grid()) != null);
+
+  protected readonly viewsPlaceholder = this.i18n.tSignal("views.placeholder", "Views");
+  protected readonly updateViewLabel = this.i18n.tSignal("views.update", "Update view");
+  protected readonly saveAsViewLabel = this.i18n.tSignal("views.saveAs", "Save as view");
+  protected readonly deleteViewLabel = this.i18n.tSignal("views.delete", "Delete view");
+  protected readonly saveViewTitle = this.i18n.tSignal("views.saveTitle", "Save view");
+  protected readonly viewNamePlaceholder = this.i18n.tSignal("views.namePlaceholder", "View name");
+  protected readonly cancelLabel = this.i18n.tSignal("views.cancel", "Cancel");
+  protected readonly saveLabel = this.i18n.tSignal("views.save", "Save");
 
   protected readonly presetItems = computed((): SelectItem[] => {
     const grid = asGridWithViews(this.grid());

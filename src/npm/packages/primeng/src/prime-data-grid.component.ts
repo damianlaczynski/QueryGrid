@@ -53,6 +53,7 @@ import { hasColumnChooser } from "./grid-column-visibility-controls";
 import { hasRowSelection } from "./grid-row-selection-controls";
 import { bindHorizontalScrollPersistence, hasScrollPersistence } from "./grid-scroll-controls";
 import { QgGridViewsComponent } from "./grid-views.component";
+import { QgI18nService } from "./i18n";
 import {
   applyGridQueryToPrimeTable,
   isSameGridPatch,
@@ -126,6 +127,7 @@ const GRID_TABLE_HOST = {
 export class PrimeDataGridComponent<T = unknown> {
   private readonly localeId = inject(LOCALE_ID);
   private readonly injector = inject(Injector);
+  private readonly i18n = inject(QgI18nService);
 
   readonly grid = input.required<GridResource<T>>();
   /** `plain` = minimal table chrome; `prime` = default PrimeNG styling. */
@@ -134,7 +136,7 @@ export class PrimeDataGridComponent<T = unknown> {
   readonly columns = input<GridColumn<T>[]>();
   readonly pageSizeOptions = input<number[]>([10, 20, 50]);
   readonly searchable = input(true);
-  readonly searchPlaceholder = input("Search…");
+  readonly searchPlaceholder = input<string | undefined>(undefined);
   readonly searchFields = input<string[]>([]);
   readonly showGridlines = input(false);
   readonly stripedRows = input(true);
@@ -391,9 +393,33 @@ export class PrimeDataGridComponent<T = unknown> {
 
   protected readonly DEFAULT_GRID_OPTIONS = DEFAULT_GRID_OPTIONS;
 
-  protected readonly queryChips = computed(() =>
-    buildGridFilterChips(this.grid().query(), this.resolvedColumns()),
+  protected readonly queryChips = computed(() => {
+    this.i18n.languageVersion()();
+    return buildGridFilterChips(this.grid().query(), this.resolvedColumns(), {
+      translate: (key, fallback, params) => this.i18n.t(key, fallback, params),
+    });
+  });
+
+  protected readonly filtersLabel = this.i18n.tSignal("grid.filters", "Filters");
+  protected readonly clearLabel = this.i18n.tSignal("grid.clear", "Clear");
+  protected readonly clearSelectionLabel = this.i18n.tSignal(
+    "grid.clearSelection",
+    "Clear selection",
   );
+  protected readonly noDataLabel = this.i18n.tSignal("grid.noData", "No data");
+  protected readonly selectPageLabel = this.i18n.tSignal("grid.selectPage", "Select page");
+  protected readonly selectRowLabel = this.i18n.tSignal("grid.selectRow", "Select row");
+
+  protected readonly resolvedSearchPlaceholder = computed(() => {
+    this.i18n.languageVersion()();
+    return this.searchPlaceholder() ?? this.i18n.t("grid.searchPlaceholder", "Search…");
+  });
+
+  protected readonly selectedCountText = computed(() => {
+    this.i18n.languageVersion()();
+    const count = this.selectedCount();
+    return this.i18n.t("grid.selectedCount", `${count} selected`, { count });
+  });
 
   protected readonly allChips = computed(() => {
     const extra = this.extraChips().map((chip) => ({
@@ -666,7 +692,10 @@ export class PrimeDataGridComponent<T = unknown> {
   }
 
   protected reorderHandleLabel(column: GridColumn<T>): string {
-    return `Reorder ${column.header}`;
+    this.i18n.languageVersion()();
+    return this.i18n.t("grid.reorderColumn", `Reorder ${column.header}`, {
+      header: column.header,
+    });
   }
 
   private persistedColumnOrderFields(): string[] {
@@ -703,14 +732,21 @@ export class PrimeDataGridComponent<T = unknown> {
   }
 
   protected pinAriaLabel(column: GridColumn<T>): string {
+    this.i18n.languageVersion()();
     const pin = this.currentPin(column);
     if (pin === "left") {
-      return `Unpin ${column.header}`;
+      return this.i18n.t("grid.unpinColumn", `Unpin ${column.header}`, {
+        header: column.header,
+      });
     }
     if (pin === "right") {
-      return `Pin ${column.header} left`;
+      return this.i18n.t("grid.pinColumnLeft", `Pin ${column.header} left`, {
+        header: column.header,
+      });
     }
-    return `Pin ${column.header} right`;
+    return this.i18n.t("grid.pinColumnRight", `Pin ${column.header} right`, {
+      header: column.header,
+    });
   }
 
   protected toggleFiltersExpanded(): void {

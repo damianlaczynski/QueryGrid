@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  inject,
   input,
   model,
   output,
@@ -12,15 +13,16 @@ import {
   ButtonComponent,
   CheckboxComponent,
   DateComponent,
-  SelectComponent,
-  type SelectItem,
   NumberComponent,
   PopoverDirective,
+  SelectComponent,
   TextComponent,
+  type SelectItem,
 } from "@laczynski/ui";
 import type { FilterCondition, FilterLogic, FilterOperator } from "@query-grid/core";
 import { coerceOperatorForColumnType } from "@query-grid/core";
 import { defaultOperatorForType, hasFilterValue } from "../filter-mapper";
+import { QgI18nService } from "../i18n";
 import { buildEnumMatchModeOptions, buildMatchModeOptions } from "../match-mode-options";
 import type { GridSize } from "../types";
 import type { GridColumn, GridColumnFilterType } from "./grid-column";
@@ -39,11 +41,6 @@ type DraftRule = {
 
 const MULTI_RULE_TYPES: GridColumnFilterType[] = ["text", "number", "date", "guid"];
 const MAX_RULES = 5;
-
-const LOGIC_ITEMS: SelectItem[] = [
-  { label: "Match All", value: "and" },
-  { label: "Match Any", value: "or" },
-];
 
 @Component({
   selector: "qg-column-filter",
@@ -66,6 +63,8 @@ const LOGIC_ITEMS: SelectItem[] = [
   },
 })
 export class QgColumnFilterComponent<T = unknown> {
+  private readonly i18n = inject(QgI18nService);
+
   readonly column = input.required<GridColumn<T>>();
   readonly size = input<GridSize>("medium");
   readonly conditions = input<FilterCondition[]>([]);
@@ -78,7 +77,30 @@ export class QgColumnFilterComponent<T = unknown> {
   protected readonly draftLogic = signal<FilterLogic>("and");
   protected readonly draftBooleanTrue = signal(false);
   protected readonly draftBooleanFalse = signal(false);
-  protected readonly logicItems = LOGIC_ITEMS;
+
+  protected readonly logicItems = computed<SelectItem[]>(() => {
+    this.i18n.languageVersion()();
+    return [
+      { label: this.i18n.t("filter.logic.matchAll", "Match All"), value: "and" },
+      { label: this.i18n.t("filter.logic.matchAny", "Match Any"), value: "or" },
+    ];
+  });
+
+  protected readonly matchAllPlaceholder = this.i18n.tSignal("filter.logic.matchAll", "Match All");
+  protected readonly operatorPlaceholder = this.i18n.tSignal(
+    "filter.operator.placeholder",
+    "Operator",
+  );
+  protected readonly valuePlaceholder = this.i18n.tSignal("filter.value.placeholder", "Value");
+  protected readonly guidPlaceholder = this.i18n.tSignal("filter.value.guid", "Guid");
+  protected readonly fromPlaceholder = this.i18n.tSignal("filter.value.from", "From");
+  protected readonly toPlaceholder = this.i18n.tSignal("filter.value.to", "To");
+  protected readonly datePlaceholder = this.i18n.tSignal("filter.value.date", "Date");
+  protected readonly anyPlaceholder = this.i18n.tSignal("filter.value.any", "Any");
+  protected readonly removeRuleLabel = this.i18n.tSignal("filter.removeRule", "Remove Rule");
+  protected readonly addRuleLabel = this.i18n.tSignal("filter.addRule", "Add Rule");
+  protected readonly clearLabel = this.i18n.tSignal("grid.clear", "Clear");
+  protected readonly applyLabel = this.i18n.tSignal("filter.apply", "Apply");
 
   private nextRuleId = 1;
 
@@ -90,21 +112,24 @@ export class QgColumnFilterComponent<T = unknown> {
   });
 
   protected readonly matchModeOptions = computed(() => {
+    this.i18n.languageVersion()();
     const column = this.column();
     const filter = column.filter;
     if (!filter) {
       return [];
     }
 
+    const translate = (key: string, fallback: string) => this.i18n.t(key, fallback);
+
     if (filter.type === "enum") {
-      return buildEnumMatchModeOptions();
+      return buildEnumMatchModeOptions(filter.nullable, translate);
     }
 
     if (filter.type === "boolean") {
       return [];
     }
 
-    return buildMatchModeOptions(filter.type, filter.nullable) ?? [];
+    return buildMatchModeOptions(filter.type, filter.nullable, translate) ?? [];
   });
 
   protected readonly operatorItems = computed<SelectItem[]>(() =>
@@ -282,11 +307,20 @@ export class QgColumnFilterComponent<T = unknown> {
   }
 
   protected booleanFilterTrueLabel(): string {
-    return this.column().filter?.trueLabel ?? "Yes";
+    this.i18n.languageVersion()();
+    return this.column().filter?.trueLabel ?? this.i18n.t("filter.boolean.yes", "Yes");
   }
 
   protected booleanFilterFalseLabel(): string {
-    return this.column().filter?.falseLabel ?? "No";
+    this.i18n.languageVersion()();
+    return this.column().filter?.falseLabel ?? this.i18n.t("filter.boolean.no", "No");
+  }
+
+  protected filterAriaLabel(): string {
+    this.i18n.languageVersion()();
+    return this.i18n.t("filter.aria", `Filter ${this.column().header}`, {
+      header: this.column().header,
+    });
   }
 
   protected onBooleanTrueChange(checked: boolean): void {

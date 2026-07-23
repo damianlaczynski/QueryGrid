@@ -1,5 +1,5 @@
 import { CommonModule } from "@angular/common";
-import { ChangeDetectionStrategy, Component, computed, input, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, computed, inject, input, signal } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import {
   ButtonComponent,
@@ -14,6 +14,7 @@ import {
   hasColumnChooser,
   type GridResourceWithColumnChooser,
 } from "./grid-column-visibility-controls";
+import { QgI18nService } from "./i18n";
 import type { GridColumn } from "./table/grid-column";
 import type { GridSize } from "./types";
 
@@ -39,6 +40,8 @@ function asGridWithColumnChooser<T>(
   styleUrl: "./grid-column-chooser.component.scss",
 })
 export class QgGridColumnChooserComponent<T = unknown> {
+  private readonly i18n = inject(QgI18nService);
+
   readonly grid = input.required<GridResource<T>>();
   readonly columns = input.required<GridColumn<T>[]>();
   readonly size = input<GridSize>("medium");
@@ -70,6 +73,13 @@ export class QgGridColumnChooserComponent<T = unknown> {
   });
 
   protected readonly hasHiddenColumns = computed(() => this.hiddenFields().size > 0);
+
+  protected readonly columnsLabel = this.i18n.tSignal("columnChooser.columns", "Columns");
+  protected readonly showAllLabel = this.i18n.tSignal("columnChooser.showAll", "Show all");
+  protected readonly resetLayoutLabel = this.i18n.tSignal(
+    "columnChooser.resetLayout",
+    "Reset layout",
+  );
 
   protected isColumnVisible(field: string): boolean {
     return !this.hiddenFields().has(field);

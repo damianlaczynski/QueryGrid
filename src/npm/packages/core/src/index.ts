@@ -9,3 +9,4 @@ export * from "./grid-row-selection.js";
 export * from "./grid-scroll-position.js";
 export * from "./grid-view-preset.js";
 export * from "./models.js";
+export * from "./qg-message-translate.js";

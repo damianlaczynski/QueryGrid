@@ -20,7 +20,7 @@
             <ui-button
               appearance="outline"
               [size]="size()"
-              text="Show all"
+              [text]="showAllLabel()"
               (click)="showAllColumns()"
             />
           }
@@ -28,7 +28,7 @@
             <ui-button
               appearance="outline"
               [size]="size()"
-              text="Reset layout"
+              [text]="resetLayoutLabel()"
               (click)="resetColumnLayout()"
             />
           }
@@ -41,8 +41,8 @@
     appearance="outline"
     [size]="size()"
     icon="column"
-    ariaLabel="Columns"
-    uiTooltip="Columns"
+    [ariaLabel]="columnsLabel()"
+    [uiTooltip]="columnsLabel()"
     [uiPopover]="columnChooserPanel"
     [uiPopoverOpen]="popoverOpen()"
     (uiPopoverOpenChange)="popoverOpen.set($event)"

@@ -6,6 +6,7 @@ import {
   type FilterNode,
   type FilterOperator,
   type GridQuery,
+  type QgMessageTranslateFn,
 } from "@query-grid/core";
 import type { GridColumn } from "./table/grid-column";
 
@@ -17,6 +18,10 @@ export type GridFilterChip = {
   label: string;
 };
 
+export type BuildGridFilterChipsOptions = {
+  translate?: QgMessageTranslateFn;
+};
+
 function formatValue(column: GridColumn | undefined, value: unknown): string {
   return formatFilterDisplayValue(column?.filter?.type, value);
 }
@@ -24,28 +29,35 @@ function formatValue(column: GridColumn | undefined, value: unknown): string {
 function describeCondition(
   column: GridColumn | undefined,
   condition: FilterCondition,
+  t: QgMessageTranslateFn,
 ): string {
   const header = column?.header ?? condition.field;
   const value = condition.value;
+  const formatted = formatValue(column, value);
+  const text = String(value ?? "");
 
   switch (condition.operator) {
     case "contains":
-      return `${header}: ${String(value ?? "")}`;
+      return t("filter.chip.contains", `${header}: ${text}`, { header, value: text });
     case "notContains":
-      return `${header}: not ${String(value ?? "")}`;
+      return t("filter.chip.notContains", `${header}: not ${text}`, { header, value: text });
     case "startsWith":
-      return `${header}: starts with ${String(value ?? "")}`;
+      return t("filter.chip.startsWith", `${header}: starts with ${text}`, { header, value: text });
     case "endsWith":
-      return `${header}: ends with ${String(value ?? "")}`;
+      return t("filter.chip.endsWith", `${header}: ends with ${text}`, { header, value: text });
     case "eq":
       if (column?.filter?.type === "boolean") {
-        const trueLabel = column.filter.trueLabel ?? "Yes";
-        const falseLabel = column.filter.falseLabel ?? "No";
-        return `${header}: ${value ? trueLabel : falseLabel}`;
+        const trueLabel = column.filter.trueLabel ?? t("filter.boolean.yes", "Yes");
+        const falseLabel = column.filter.falseLabel ?? t("filter.boolean.no", "No");
+        const boolLabel = value ? trueLabel : falseLabel;
+        return t("filter.chip.equals", `${header}: ${boolLabel}`, { header, value: boolLabel });
       }
-      return `${header}: ${formatValue(column, value)}`;
+      return t("filter.chip.equals", `${header}: ${formatted}`, { header, value: formatted });
     case "ne":
-      return `${header}: not ${formatValue(column, value)}`;
+      return t("filter.chip.notEquals", `${header}: not ${formatted}`, {
+        header,
+        value: formatted,
+      });
     case "in": {
       const options = column?.filter?.options ?? [];
       const values = Array.isArray(value) ? value : [value];
@@ -53,7 +65,8 @@ function describeCondition(
         const option = options.find((candidate) => candidate.value === entry);
         return option ? option.label : String(entry);
       });
-      return `${header}: ${labels.join(", ")}`;
+      const joined = labels.join(", ");
+      return t("filter.chip.in", `${header}: ${joined}`, { header, value: joined });
     }
     case "notIn": {
       const options = column?.filter?.options ?? [];
@@ -62,26 +75,33 @@ function describeCondition(
         const option = options.find((candidate) => candidate.value === entry);
         return option ? option.label : String(entry);
       });
-      return `${header}: not ${labels.join(", ")}`;
+      const joined = labels.join(", ");
+      return t("filter.chip.notIn", `${header}: not ${joined}`, { header, value: joined });
     }
     case "between": {
       const range = Array.isArray(value) ? value : [];
-      return `${header}: ${formatValue(column, range[0])} – ${formatValue(column, range[1])}`;
+      const start = formatValue(column, range[0]);
+      const end = formatValue(column, range[1]);
+      return t("filter.chip.between", `${header}: ${start} – ${end}`, {
+        header,
+        start,
+        end,
+      });
     }
     case "gte":
-      return `${header}: ≥ ${formatValue(column, value)}`;
+      return t("filter.chip.gte", `${header}: ≥ ${formatted}`, { header, value: formatted });
     case "lte":
-      return `${header}: ≤ ${formatValue(column, value)}`;
+      return t("filter.chip.lte", `${header}: ≤ ${formatted}`, { header, value: formatted });
     case "gt":
-      return `${header}: > ${formatValue(column, value)}`;
+      return t("filter.chip.gt", `${header}: > ${formatted}`, { header, value: formatted });
     case "lt":
-      return `${header}: < ${formatValue(column, value)}`;
+      return t("filter.chip.lt", `${header}: < ${formatted}`, { header, value: formatted });
     case "isNull":
-      return `${header}: is empty`;
+      return t("filter.chip.isEmpty", `${header}: is empty`, { header });
     case "isNotNull":
-      return `${header}: is not empty`;
+      return t("filter.chip.isNotEmpty", `${header}: is not empty`, { header });
     default:
-      return `${header}: ${formatValue(column, value)}`;
+      return t("filter.chip.default", `${header}: ${formatted}`, { header, value: formatted });
   }
 }
 
@@ -89,18 +109,19 @@ function describeCondition(
 export function buildGridFilterChips(
   query: GridQuery,
   columns: GridColumn[],
+  options?: BuildGridFilterChipsOptions,
 ): GridFilterChip[] {
+  const t: QgMessageTranslateFn = options?.translate ?? ((_key, fallback) => fallback);
+
   const chips: GridFilterChip[] = [];
-  const columnByField = new Map(
-    columns.map((column) => [column.field, column]),
-  );
+  const columnByField = new Map(columns.map((column) => [column.field, column]));
 
   const search = query.search?.trim();
   if (search) {
     chips.push({
       id: "search",
       kind: "search",
-      label: `Search: ${search}`,
+      label: t("filter.chip.search", `Search: ${search}`, { value: search }),
     });
   }
 
@@ -113,7 +134,7 @@ export function buildGridFilterChips(
       kind: "column",
       field: condition.field,
       operator: condition.operator,
-      label: describeCondition(column, condition),
+      label: describeCondition(column, condition, t),
     });
   }
 

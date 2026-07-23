@@ -8,9 +8,9 @@ import {
 } from "@angular/core";
 import { FormsModule } from "@angular/forms";
 import { Checkbox } from "primeng/checkbox";
-import { PrimeNG } from "primeng/config";
 import { MultiSelect } from "primeng/multiselect";
 import { TableModule } from "primeng/table";
+import { QgI18nService } from "../i18n";
 import { buildEnumMatchModeOptions, buildNullableMatchModeOptions } from "../match-mode-options";
 import type { GridColumn } from "./grid-column";
 
@@ -28,7 +28,7 @@ const MAX_COLUMN_FILTER_RULES = 5;
 })
 export class QgColumnFilterComponent<T = unknown> {
   private readonly localeId = inject(LOCALE_ID);
-  private readonly primeConfig = inject(PrimeNG);
+  private readonly i18n = inject(QgI18nService);
 
   readonly column = input.required<GridColumn<T>>();
   readonly filterLocale = input<string | undefined>(undefined);
@@ -58,25 +58,31 @@ export class QgColumnFilterComponent<T = unknown> {
       return undefined;
     }
 
-    return buildNullableMatchModeOptions(column.filter.type, (key) =>
-      this.primeConfig.getTranslation(key),
+    this.i18n.languageVersion()();
+    return buildNullableMatchModeOptions(column.filter.type, (key, fallback) =>
+      this.i18n.t(key, fallback),
     );
   }
 
   protected enumMatchModeOptions(column: GridColumn<T>) {
+    this.i18n.languageVersion()();
     return buildEnumMatchModeOptions(
-      (key) => this.primeConfig.getTranslation(key),
+      (key, fallback) => this.i18n.t(key, fallback),
       column.filter?.nullable,
     );
   }
 
   protected booleanFilterTrueLabel(column: GridColumn<T>): string {
-    return column.filter?.trueLabel ?? "Yes";
+    this.i18n.languageVersion()();
+    return column.filter?.trueLabel ?? this.i18n.t("filter.boolean.yes", "Yes");
   }
 
   protected booleanFilterFalseLabel(column: GridColumn<T>): string {
-    return column.filter?.falseLabel ?? "No";
+    this.i18n.languageVersion()();
+    return column.filter?.falseLabel ?? this.i18n.t("filter.boolean.no", "No");
   }
+
+  protected readonly anyPlaceholder = this.i18n.tSignal("filter.value.any", "Any");
 
   protected onBooleanFilterCheck(
     target: boolean,

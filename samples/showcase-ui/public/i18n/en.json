@@ -1,0 +1,174 @@
+{
+  "qg": {
+    "grid": {
+      "filters": "Filters",
+      "clear": "Clear",
+      "clearSelection": "Clear selection",
+      "searchPlaceholder": "Search…",
+      "selectedCount": "{{count}} selected",
+      "loadingData": "Loading data",
+      "noData": "No data",
+      "selectPage": "Select page",
+      "selectRow": "Select row",
+      "reorderColumn": "Reorder {{header}}",
+      "unpinColumn": "Unpin {{header}}",
+      "pinColumnLeft": "Pin {{header}} left",
+      "pinColumnRight": "Pin {{header}} right",
+      "sortAscending": "{{header}} sorted ascending",
+      "sortDescending": "{{header}} sorted descending",
+      "sortable": "{{header}} sortable"
+    },
+    "columnChooser": {
+      "columns": "Columns",
+      "showAll": "Show all",
+      "resetLayout": "Reset layout"
+    },
+    "views": {
+      "placeholder": "Views",
+      "update": "Update view",
+      "saveAs": "Save as view",
+      "delete": "Delete view",
+      "saveTitle": "Save view",
+      "namePlaceholder": "View name",
+      "cancel": "Cancel",
+      "save": "Save"
+    },
+    "filter": {
+      "apply": "Apply",
+      "addRule": "Add Rule",
+      "removeRule": "Remove Rule",
+      "aria": "Filter {{header}}",
+      "boolean": {
+        "yes": "Yes",
+        "no": "No"
+      },
+      "logic": {
+        "matchAll": "Match All",
+        "matchAny": "Match Any"
+      },
+      "operator": {
+        "placeholder": "Operator",
+        "in": "In",
+        "notIn": "Not in",
+        "equals": "Equals",
+        "notEquals": "Not equals",
+        "contains": "Contains",
+        "notContains": "Not contains",
+        "startsWith": "Starts with",
+        "endsWith": "Ends with",
+        "lessThan": "Less than",
+        "lessOrEqual": "Less or equal",
+        "greaterThan": "Greater than",
+        "greaterOrEqual": "Greater or equal",
+        "between": "Between",
+        "dateIs": "Date is",
+        "dateIsNot": "Date is not",
+        "dateBefore": "Date before",
+        "dateAfter": "Date after",
+        "isEmpty": "Is empty",
+        "isNotEmpty": "Is not empty"
+      },
+      "value": {
+        "placeholder": "Value",
+        "guid": "Guid",
+        "from": "From",
+        "to": "To",
+        "date": "Date",
+        "any": "Any"
+      },
+      "chip": {
+        "search": "Search: {{value}}",
+        "contains": "{{header}}: {{value}}",
+        "notContains": "{{header}}: not {{value}}",
+        "startsWith": "{{header}}: starts with {{value}}",
+        "endsWith": "{{header}}: ends with {{value}}",
+        "equals": "{{header}}: {{value}}",
+        "notEquals": "{{header}}: not {{value}}",
+        "in": "{{header}}: {{value}}",
+        "notIn": "{{header}}: not {{value}}",
+        "between": "{{header}}: {{start}} – {{end}}",
+        "gte": "{{header}}: ≥ {{value}}",
+        "lte": "{{header}}: ≤ {{value}}",
+        "gt": "{{header}}: > {{value}}",
+        "lt": "{{header}}: < {{value}}",
+        "isEmpty": "{{header}}: is empty",
+        "isNotEmpty": "{{header}}: is not empty",
+        "default": "{{header}}: {{value}}"
+      }
+    }
+  },
+  "showcase": {
+    "shell": {
+      "title": "QueryGrid Showcase",
+      "subtitle": "Compatibility matrix for grid adapters",
+      "navAria": "Showcase adapters",
+      "uiAdapter": "laczynski/ui",
+      "primengAdapter": "PrimeNG",
+      "languageAria": "Language",
+      "languagePl": "PL",
+      "languageEn": "EN"
+    },
+    "searchPlaceholder": "Search labels…",
+    "exportSelected": "Export selected",
+    "emptyState": "No rows match the current grid state.",
+    "views": {
+      "activeOnly": "Active only"
+    },
+    "columns": {
+      "id": "Id",
+      "label": "Label",
+      "optionalNote": "Optional note",
+      "quantity": "Quantity",
+      "bigNumber": "Big number",
+      "price": "Price",
+      "score": "Score",
+      "isActive": "Active",
+      "occurredAt": "Occurred at",
+      "occurredAtOffset": "Occurred (offset)",
+      "occurredOn": "Occurred on",
+      "category": "Category",
+      "referenceId": "Reference",
+      "sortDisabledField": "Sort disabled",
+      "filterDisabledField": "Filter disabled",
+      "nullableDate": "Nullable date"
+    },
+    "filters": {
+      "id": "Id…",
+      "contains": "Contains…",
+      "noteContains": "Note contains…",
+      "quantity": "Quantity…",
+      "value": "Value…",
+      "price": "Price…",
+      "score": "Score…",
+      "guid": "Guid…",
+      "filterOnly": "Filter only…"
+    },
+    "categories": {
+      "alpha": "Alpha",
+      "beta": "Beta",
+      "gamma": "Gamma",
+      "delta": "Delta",
+      "epsilon": "Epsilon"
+    }
+  },
+  "ui": {
+    "pagination": {
+      "perPagePlaceholder": "Per page",
+      "label": {
+        "first": "First",
+        "last": "Last"
+      },
+      "aria": {
+        "firstPage": "First page",
+        "previousPage": "Previous page",
+        "nextPage": "Next page",
+        "lastPage": "Last page",
+        "page": "Page {{page}}"
+      },
+      "info": {
+        "noItems": "No items",
+        "range": "Showing {{start}}-{{end}} of {{total}}"
+      }
+    }
+  }
+}

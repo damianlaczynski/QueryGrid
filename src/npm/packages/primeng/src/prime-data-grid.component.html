@@ -35,7 +35,7 @@
               type="text"
               [ngModel]="searchText()"
               (ngModelChange)="onSearchChange($event, table)"
-              [placeholder]="searchPlaceholder()"
+              [placeholder]="resolvedSearchPlaceholder()"
             />
           </p-iconfield>
         }
@@ -47,7 +47,7 @@
           @if (toolbarTemplate(); as toolbar) {
             <p-button
               type="button"
-              label="Filters"
+              [label]="filtersLabel()"
               icon="pi pi-filter"
               [outlined]="true"
               [severity]="filtersExpanded() ? 'primary' : 'secondary'"
@@ -57,7 +57,7 @@
 
           <p-button
             type="button"
-            label="Clear"
+            [label]="clearLabel()"
             [outlined]="true"
             icon="pi pi-filter-slash"
             [disabled]="!hasActiveFilters()"
@@ -68,7 +68,7 @@
 
       @if (selectedCount() > 0 && bulkToolbarTemplate(); as bulkToolbar) {
         <div class="qg-caption-bulk-toolbar">
-          <span class="qg-caption-bulk-toolbar-count">{{ selectedCount() }} selected</span>
+          <span class="qg-caption-bulk-toolbar-count">{{ selectedCountText() }}</span>
           <div class="qg-caption-bulk-toolbar-actions">
             <ng-container [ngTemplateOutlet]="bulkToolbar" />
           </div>
@@ -78,8 +78,8 @@
             severity="secondary"
             [outlined]="true"
             size="small"
-            aria-label="Clear selection"
-            pTooltip="Clear selection"
+            [ariaLabel]="clearSelectionLabel()"
+            [pTooltip]="clearSelectionLabel()"
             tooltipPosition="top"
             (onClick)="clearRowSelection()"
           />
@@ -120,7 +120,7 @@
           class="qg-header-cell qg-header-cell--selection"
           [class.qg-header-cell--selection-edge]="isSelectionColumnFrozenEdge()"
           [class.qg-header-cell--selection-separator]="isSelectionColumnSeparator()"
-          [attr.aria-label]="isMultipleSelection() ? 'Select page' : 'Select row'"
+          [attr.aria-label]="isMultipleSelection() ? selectPageLabel() : selectRowLabel()"
           [style.z-index]="selectionHeaderZIndex()"
         >
           @if (isMultipleSelection()) {
@@ -267,7 +267,7 @@
       </tr>
     } @else {
       <tr>
-        <td [attr.colspan]="tableColumnCount()">No data</td>
+        <td [attr.colspan]="tableColumnCount()">{{ noDataLabel() }}</td>
       </tr>
     }
   </ng-template>

@@ -5,8 +5,8 @@
     severity="secondary"
     [outlined]="true"
     size="small"
-    aria-label="Columns"
-    pTooltip="Columns"
+    [ariaLabel]="columnsLabel()"
+    [pTooltip]="columnsLabel()"
     tooltipPosition="top"
     (onClick)="columnPopover.toggle($event)"
   />
@@ -33,7 +33,7 @@
             @if (hasHiddenColumns()) {
               <p-button
                 type="button"
-                label="Show all"
+                [label]="showAllLabel()"
                 severity="secondary"
                 [text]="true"
                 size="small"
@@ -43,7 +43,7 @@
             @if (hasLayoutChanges()) {
               <p-button
                 type="button"
-                label="Reset layout"
+                [label]="resetLayoutLabel()"
                 severity="secondary"
                 [text]="true"
                 size="small"
