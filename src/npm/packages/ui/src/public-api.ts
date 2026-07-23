@@ -15,6 +15,12 @@ export {
   hasColumnChooser,
   type GridResourceWithColumnChooser,
 } from "./grid-column-visibility-controls";
+export {
+  hasExport,
+  type GridExportConfig,
+  type GridExportRunOptions,
+  type GridResourceWithExport,
+} from "./grid-export-controls";
 export { GridResourceFactory } from "./grid-resource-factory";
 export {
   hasRowSelection,

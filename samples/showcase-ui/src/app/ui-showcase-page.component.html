@@ -9,6 +9,15 @@
       />
     }
 
+    @if (exportError(); as exportMessage) {
+      <ui-message-bar
+        class="error-banner"
+        variant="danger"
+        [message]="exportMessage"
+        [dismissible]="false"
+      />
+    }
+
     <qg-ui-data-grid
       [grid]="grid"
       dataKey="id"
@@ -17,17 +26,8 @@
       [hoverable]="true"
       searchPlaceholder="Search labels…"
       [pageSizeOptions]="[10, 20, 50, 100]"
+      (exportError)="onExportError($event)"
     >
-      <ng-template qgBulkToolbar>
-        <ui-button
-          appearance="outline"
-          size="medium"
-          icon="arrow_export"
-          text="Export selected"
-          (click)="exportSelected()"
-        />
-      </ng-template>
-
       <ng-template
         qgColumn="Id"
         header="Id"

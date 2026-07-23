@@ -55,7 +55,12 @@ See [Change coupling checklist](../../AGENTS.md#change-coupling-checklist). Step
 
 ## Add grid export
 
-Follow [grid-export-plan.md](grid-export-plan.md). Start with `@query-grid/core` CSV helpers, then thin ui/primeng wrappers and showcase.
+Server-first CSV export is implemented. See [grid-export-plan.md](grid-export-plan.md).
+
+1. **.NET** — `GridExportRequest`, `ExportToCsvAsync` on `IQueryable` (Core + EF).
+2. **npm** — `downloadGridExport` in `@query-grid/core`; `export` on `createGridResource`.
+3. **UI** — built-in Export toolbar button; Export selected in bulk toolbar when `rowSelection` is enabled.
+4. Document endpoint and column whitelist in [getting-started.md](../getting-started.md#server-export-csv).
 
 ## Add a new NuGet integration package
 

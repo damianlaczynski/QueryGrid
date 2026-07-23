@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>QueryGrid.Export.Excel</RootNamespace>
+    <PackageId>QueryGrid.Export.Excel</PackageId>
+    <Description>Excel (.xlsx) export for QueryGrid: applies the same filter, search, and sort as grid queries and writes an Open XML workbook.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ClosedXML" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\QueryGrid.Core\QueryGrid.Core.csproj" />
+  </ItemGroup>
+
+</Project>

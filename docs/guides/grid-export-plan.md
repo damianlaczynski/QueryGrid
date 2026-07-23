@@ -1,179 +1,293 @@
-# Grid export — implementation plan
+# Grid export — implementation plan (server-first)
 
 > Status: **planned** (not implemented). Companion to row selection and bulk toolbar in `@query-grid/ui` / `@query-grid/primeng`.
 
+## Design stance
+
+**Server-first**, DevExtreme-style UX for remote data:
+
+- DevExtreme’s default grid export is **client-side** (ExcelJS). With a **remote** data source, exporting “everything” only works if the app cancels default export and calls the **server** with the same filter/sort as the grid.
+- QueryGrid already owns **`GridQuery`** end-to-end. Export should reuse the **same filter, search, and sort** as `GET /rows`, with different paging rules and a file response — not a second ad-hoc query DSL.
+
+Client-side CSV of the **current page** remains a small optional helper for quick dumps; it is not the primary path.
+
 ## Goals
 
-1. Let apps export grid data without reimplementing CSV/JSON plumbing.
-2. Support the three export scopes users expect from a data grid.
-3. Keep server authority for large datasets and permission checks.
-4. Compose with existing `GridQuery`, row selection, column visibility, and column layout.
+1. First-class **server export** API in .NET (streaming CSV, capped row count, same validation as list).
+2. Frontend helpers that trigger a download from the **current grid state** (`grid.query()`, `selectedKeys()`).
+3. DevExtreme-like UX: toolbar export, “all matching”, “selected rows”, disabled while loading.
+4. Compose with `GridQuery`, row selection, column visibility, and column layout.
 
 ## Non-goals (v1)
 
-- Excel `.xlsx` generation in the browser (defer; CSV covers most cases).
-- Client-side export of the full filtered dataset without a server round-trip.
-- Export column formatting rules beyond plain string/number/date serialization.
+- Excel `.xlsx` in the browser.
+- Client-side export of the full filtered dataset.
+- Rich cell formatting beyond plain serialization (currency symbols, custom templates).
 
 ## Export scopes
 
-| Scope | Source data | Typical use |
-| ----- | ----------- | ----------- |
-| **Current page** | `grid.items()` | Quick dump of visible rows |
-| **Selected rows** | Rows matching `grid.selectedKeys()` + `dataKey` | Bulk actions, partial export |
-| **All matching** | Server applies current `grid.query()` (no `skip`, capped `take`) | Full export of filtered result |
+| Scope             | Where it runs     | Data source                                                                                    |
+| ----------------- | ----------------- | ---------------------------------------------------------------------------------------------- |
+| **All matching**  | Server            | Current `GridQuery` — filter/search/sort applied; **no `skip`**; `take` replaced by export cap |
+| **Selected rows** | Server            | Same `GridQuery` + `WHERE dataKey IN (...)` from `selectedKeys` (POST body)                    |
+| **Current page**  | Client (optional) | `grid.items()` — convenience only; not authoritative                                           |
 
-### Selected rows — two sub-modes (later)
+### Selected rows — sub-modes
 
-| Mode | When |
-| ---- | ---- |
-| **Explicit keys** | User picked individual rows (`selectedKeys`) |
-| **All matching minus excluded** | Future “select all N results” (not in v1) |
+| Mode                            | v1    | Notes                                        |
+| ------------------------------- | ----- | -------------------------------------------- |
+| **Explicit keys**               | Yes   | `grid.selectedKeys()` sent in export request |
+| **All matching minus excluded** | Later | Needs “select all N results” selection mode  |
 
-## Package layout
+## DevExtreme comparison
+
+| Concern                  | DevExtreme (remote)                          | QueryGrid (proposed)                                              |
+| ------------------------ | -------------------------------------------- | ----------------------------------------------------------------- |
+| Export all filtered rows | Custom `onExporting` → your API              | Built-in `ToGridExportAsync` + `grid.exportAllMatching()`         |
+| Export selection         | `allowExportSelectedData` (client rows only) | Server resolves keys across pages                                 |
+| Query contract           | Custom                                       | Same `GridQuery` JSON as list endpoint                            |
+| Formats                  | xlsx/csv in browser                          | csv on server v1; optional `QueryGrid.Export.Excel` package later |
+| Large datasets           | App implements streaming                     | `IAsyncEnumerable` → response stream                              |
+
+## .NET package layout
+
+### `QueryGrid.Abstractions`
+
+```csharp
+public enum GridExportFormat { Csv }
+
+public enum GridExportScope { AllMatching, SelectedKeys }
+
+public sealed class GridExportRequest
+{
+  public required GridQuery Query { get; init; }
+  public GridExportScope Scope { get; init; } = GridExportScope.AllMatching;
+  public string[]? SelectedKeys { get; init; }
+  public string DataKeyField { get; init; } = "id";
+  public GridExportFormat Format { get; init; } = GridExportFormat.Csv;
+  public IReadOnlyList<GridExportColumn>? Columns { get; init; }
+}
+
+public sealed class GridExportColumn
+{
+  public required string Field { get; init; }
+  public required string Header { get; init; }
+}
+```
+
+- **POST body** for export (filters + selection keys can be large).
+- Optional **GET** `?grid={json}&format=csv` for simple “all matching” when query fits in URL (showcase / tooling).
+
+### `QueryGrid.Core`
+
+```csharp
+public sealed class GridExportOptions
+{
+  public int MaxExportRows { get; set; } = 50_000;
+  public bool IncludeUtf8Bom { get; set; } = true;  // Excel on Windows
+  public string CsvDelimiter { get; set; } = ",";
+}
+
+// Plan: filter + sort, no UI paging; take = min(totalCount, MaxExportRows)
+internal static GridExportPlan<T> PlanForExport<T>(...);
+
+public static IQueryable<T> ApplyGridExport<T>(
+  this IQueryable<T> source,
+  GridQuery query,
+  GridExportRequest request,
+  GridOptions gridOptions,
+  GridExportOptions exportOptions);
+
+public static Task WriteCsvAsync<T>(
+  IAsyncEnumerable<T> rows,
+  IReadOnlyList<GridExportColumn> columns,
+  Stream output,
+  GridExportOptions? options = null,
+  CancellationToken cancellationToken = default);
+```
+
+**Pipeline** (mirrors `GridResultExecutor.Plan`):
+
+```text
+source
+  → ApplyGridFilterAndSearch(query)
+  → [optional] filter by SelectedKeys on DataKeyField
+  → ApplyEffectiveSort
+  → Take(MaxExportRows)   // hard cap, separate from GridOptions.MaxTake (100)
+  → stream rows → CsvGridExporter
+```
+
+- `MaxExportRows` is **not** `GridOptions.MaxTake` — list paging stays at 100; export may allow 50k with app-specific override.
+- If `totalCount > MaxExportRows`, response includes header `X-Grid-Export-Truncated: true` (or JSON error if app prefers fail-fast).
+
+### `QueryGrid.EntityFrameworkCore`
+
+```csharp
+public static Task ExportToCsvAsync<T>(
+  this IQueryable<T> source,
+  GridExportRequest request,
+  Stream output,
+  GridOptions? gridOptions = null,
+  GridExportOptions? exportOptions = null,
+  CancellationToken cancellationToken = default);
+```
+
+Implementation: `AsAsyncEnumerable()` + `WriteCsvAsync` — **does not** load all rows into memory.
+
+### `QueryGrid.AspNetCore` (new small package, optional v1)
+
+```csharp
+public static RouteHandlerBuilder MapGridExport<T>(
+  this IEndpointRouteBuilder routes,
+  string pattern,
+  Func<HttpContext, IQueryable<T>> sourceFactory);
+```
+
+- Same exception mapping as list (`GridValidationException` → 400).
+- `Content-Type: text/csv; charset=utf-8`
+- `Content-Disposition: attachment; filename="..."`
+
+Showcase: `POST /rows/export` alongside existing `GET /rows`.
+
+### Security
+
+- Reuse **same authorization** as the list endpoint (no separate export permission in v1).
+- Enforce `MaxExportRows` server-side always.
+- **Column whitelist**: only fields declared in `GridExportColumn[]` or grid schema — never dump arbitrary DTO properties the UI hides.
+- Rate-limit / audit at app level (out of library scope).
+
+## npm package layout
 
 ### `@query-grid/core`
 
-Pure helpers (no DOM):
-
 ```typescript
-// grid-export.ts (proposed)
 export interface GridExportColumn {
   field: string;
   header: string;
 }
 
-export interface GridExportOptions {
+export interface GridExportRequest {
+  query: GridQuery;
+  scope: 'allMatching' | 'selectedKeys';
+  selectedKeys?: string[];
+  dataKeyField?: string;
+  format?: 'csv';
   columns: readonly GridExportColumn[];
   filename?: string;
-  delimiter?: string; // default ","
-  includeHeaders?: boolean; // default true
 }
 
-export function buildCsv(rows: readonly Record<string, unknown>[], options: GridExportOptions): string;
-export function downloadTextFile(content: string, filename: string, mimeType?: string): void;
-export function resolveExportRows<T>(
-  items: readonly T[],
-  selectedKeys: ReadonlySet<string> | undefined,
-  resolveKey: (row: T) => string | null,
-): readonly T[];
+export async function downloadGridExport(
+  url: string,
+  request: GridExportRequest,
+  init?: RequestInit,
+): Promise<void>;
+
+export function buildExportColumns(
+  columns: readonly { field: string; header: string; hidden?: boolean }[],
+): GridExportColumn[];
+
+// Optional client-only helper (not primary):
+export function exportCurrentPageToCsv<T>(...): void;
 ```
 
-- `buildCsv` — RFC-friendly escaping (quotes, newlines).
-- `downloadTextFile` — thin wrapper over `Blob` + object URL (guard `typeof document`).
-- `resolveExportRows` — filter `items` by `selectedKeys` when provided; otherwise return all items.
+`downloadGridExport`:
+
+1. `POST` JSON body to export URL.
+2. Read `Blob`, trigger download via object URL.
+3. Filename from `Content-Disposition` or `request.filename`.
 
 ### `@query-grid/ui` and `@query-grid/primeng`
 
-Optional convenience (thin wrappers):
+Grid resource extensions:
 
 ```typescript
-export function exportGridPageToCsv<T>(/* grid, columns, dataKey? */): void;
-export function exportGridSelectionToCsv<T>(/* grid, columns, dataKey */): void;
+export(): void;  // default: all matching, csv
+exportAllMatching(options?: Partial<GridExportRequest>): Promise<void>;
+exportSelected(options?: Partial<GridExportRequest>): Promise<void>;
 ```
 
-No new grid option flags in v1 — apps call helpers from `[qgBulkToolbar]` buttons or toolbar actions.
+Factory option:
 
-### Server (.NET) — optional sample / doc only in v1
-
-Document pattern; implement in showcase if useful:
-
-```csharp
-// GET /issues/export?grid={json}&format=csv
-// or POST with GridQuery body for large filters
+```typescript
+createGridResource({
+  // ...
+  export: {
+    url: "/api/issues/export",
+    filename: "issues",
+    formats: ["csv"],
+    allowExportSelected: true,
+    confirmAbove: 10_000, // optional confirm dialog threshold
+  },
+});
 ```
 
-- Reuse `ToGridResultAsync` with `skip: 0`, `take: exportMax` (e.g. 10_000).
-- Apply same authZ as list endpoint.
-- Stream CSV response (`text/csv`) or return file download.
+Optional toolbar control (DevExtreme-like):
 
-## API design (frontend)
+```html
+<qg-ui-data-grid [export]="exportConfig" ...></qg-ui-data-grid>
+```
 
-### Phase 1 — client-only (recommended first PR)
+- Export button in toolbar (not only bulk toolbar).
+- “Export all” always available; “Export selected” when `selectedCount() > 0` and `allowExportSelected`.
 
-| API | Description |
-| --- | ----------- |
-| `buildCsv` | Core serialization |
-| `downloadCsv` | `buildCsv` + `downloadTextFile` |
-| `exportCurrentPage` | Uses `grid.items()` + visible columns from caller |
-| `exportSelectedRows` | Uses `selectedKeys` + current page items (keys on other pages need server) |
-
-**Column list:** caller passes `GridExportColumn[]` derived from `qgColumn` metadata or a static list. Do not read Angular templates in v1.
-
-**Showcase:** replace `alert()` in `exportSelected()` with real CSV download.
-
-### Phase 2 — server export
-
-| API | Description |
-| --- | ----------- |
-| `buildExportQuery(query)` | `GridQuery` with `skip: 0`, `take: maxExportTake` |
-| Showcase endpoint | `GET /rows/export?grid=` returning CSV |
-| UI button | “Export all matching” in toolbar or bulk area |
-
-### Phase 3 — select all matching (ties to future selection work)
-
-- Selection state: `{ mode: "allMatching", excludedKeys: Set<string> }` or explicit keys.
-- Export POST: `{ grid: GridQuery, selection: { allMatching: true, excludedKeys: [] } }`.
-- Out of scope until row-selection “select all N” exists.
-
-## Column resolution
-
-Export respects **visible** columns when the app passes them:
-
-1. App maps `displayedColumns` / static config → `GridExportColumn[]`.
-2. Optional helper: `pickExportColumns(columns, hiddenFields)` using `columnChooser` state.
-3. Column order: layout `columnOrder` when `columnLayout` is enabled (read from grid resource).
-
-Cell values: `row[field]` with simple formatting:
-
-- `null` / `undefined` → empty string
-- `Date` → ISO or `formatLocalDateTime` from core
-- `boolean` → `true` / `false`
-- objects → `JSON.stringify` (edge case)
+Column list: map visible columns from column chooser / layout state → `buildExportColumns(...)`.
 
 ## UX guidelines
 
-- **Export selected** — in `[qgBulkToolbar]` when `selectedCount() > 0` (already shown).
-- **Export page** — toolbar action (optional).
-- **Export all** — toolbar; confirm dialog when `totalCount > threshold`.
-- Disable while `grid.loading()`.
-- Filename pattern: `{entity}-{yyyy-MM-dd}.csv`.
+| Action              | Placement                  | Behavior                                                        |
+| ------------------- | -------------------------- | --------------------------------------------------------------- |
+| Export all matching | Toolbar                    | POST current `grid.query()` without client-side paging concerns |
+| Export selected     | Bulk toolbar + export menu | POST query + `selectedKeys`                                     |
+| Export page         | Toolbar submenu (optional) | Client CSV from `grid.items()`                                  |
+| Loading             | All export actions         | Disabled while `grid.loading()`                                 |
+| Large export        | Confirm dialog             | When `totalCount() > confirmAbove`                              |
+
+Filename: `{entity}-{yyyy-MM-dd}.csv`.
 
 ## Testing
 
-| Layer | Tests |
-| ----- | ----- |
-| `@query-grid/core` | CSV escaping, empty rows, selected key filter, date/boolean formatting |
-| npm integration | Optional smoke: build CSV from fixture rows |
-| Showcase | Manual: export page, export selection, open in Excel / LibreOffice |
-| .NET (phase 2) | Export endpoint returns same rows as grid query; respects `maxTake` cap |
+| Layer                           | Tests                                                                                     |
+| ------------------------------- | ----------------------------------------------------------------------------------------- |
+| `QueryGrid.Core`                | Export plan: same filter/sort as list; cap; selected keys filter; CSV escaping; UTF-8 BOM |
+| `QueryGrid.EntityFrameworkCore` | Integration: export rows ⊆ list query; streaming does not OOM on large sets               |
+| `@query-grid/core`              | `downloadGridExport` mock fetch; `buildExportColumns`                                     |
+| Showcase                        | Manual: export all, export selection, open in Excel                                       |
 
 ## Implementation order
 
 ```text
-PR 1 (core + showcase)
-  grid-export.ts + unit tests
-  exportCurrentPage / exportSelectedRows in ui + primeng (re-export from core)
-  Showcase demo buttons
+PR 1 — .NET server foundation
+  GridExportRequest, GridExportOptions, ApplyGridExport, CsvGridExporter
+  ExportToCsvAsync (EF Core)
+  Unit + integration tests
+  showcase-api POST /rows/export
 
-PR 2 (docs + server sample)
-  getting-started.md “Export” section
-  showcase-api CSV endpoint
-  buildExportQuery helper
+PR 2 — npm transport + grid resource
+  downloadGridExport, buildExportColumns
+  createGridResource.exportAllMatching / exportSelected
+  Replace showcase alert() with real download
 
-PR 3 (future)
-  Select all matching + server-side bulk export contract
+PR 3 — UI/PrimeNG toolbar
+  export config on grid component
+  Toolbar export button + bulk “Export selected”
+  Docs: getting-started Export section
+
+PR 4 — future
+  Select-all-matching selection + excludedKeys export
+  QueryGrid.Export.Excel (ClosedXML) optional package
+  GET export for small queries
 ```
 
 ## Open decisions
 
-1. **Max export rows** — default 10_000? Configurable per app?
-2. **UTF-8 BOM** — prepend for Excel on Windows? (recommended: yes, optional flag).
-3. **Package surface** — core only vs thin Angular helpers in ui/primeng (recommended: both).
-4. **Permissions** — export endpoint same policy as list, or separate claim?
+1. **MaxExportRows** — default 50_000; overridable per endpoint via `GridExportOptions`.
+2. **Truncation** — stream partial file + header vs 413 when over cap (recommend: stream + `X-Grid-Export-Truncated`).
+3. **ASP.NET package** — ship `QueryGrid.AspNetCore` in v1 or document minimal API sample only (recommend: sample first, package when second consumer exists).
+4. **Permissions** — same as list in v1; document pattern for stricter export policies.
 
 ## References
 
 - Row selection: [getting-started.md](../getting-started.md#row-selection-and-bulk-actions)
 - `GridQuery` transport: [getting-started.md](../getting-started.md#json-shape)
-- Showcase bulk demo: `samples/showcase-ui/src/app/ui-showcase-page.component.ts`
+- List pipeline: `GridResultExecutor.Plan`, `ToGridResultAsync`
+- Showcase list endpoint: `samples/showcase-api/Program.cs`

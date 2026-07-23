@@ -13,6 +13,7 @@
     <Project Path="QueryGrid.Abstractions/QueryGrid.Abstractions.csproj" />
     <Project Path="QueryGrid.Core/QueryGrid.Core.csproj" />
     <Project Path="QueryGrid.EntityFrameworkCore/QueryGrid.EntityFrameworkCore.csproj" />
+    <Project Path="QueryGrid.Export.Excel/QueryGrid.Export.Excel.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/QueryGrid.IntegrationTests/QueryGrid.IntegrationTests.csproj" />

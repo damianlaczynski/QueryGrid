@@ -1,8 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  readGridErrorCode,
-  readGridProblemDetails,
-} from "./format-grid-error.js";
+import { readGridErrorCode, readGridProblemDetails } from "./format-grid-error.js";
 import {
   GRID_ERROR_CODES,
   GRID_TRANSPORT_ERROR_CODES,
@@ -12,6 +9,10 @@ import {
 } from "./grid-error-codes.js";
 
 const EXPECTED_VALIDATION_CODES = [
+  "export_columns_required",
+  "export_format_not_supported",
+  "export_selection_required",
+  "export_selection_too_large",
   "field_not_filterable",
   "field_not_sortable",
   "filter_too_deep",
@@ -35,9 +36,7 @@ describe("grid-error-codes", () => {
 
   it("includes transport codes in the combined map", () => {
     expect(GRID_ERROR_CODES.invalidGridJson).toBe("invalid_grid_json");
-    expect(GRID_TRANSPORT_ERROR_CODES.invalidGridJson).toBe(
-      "invalid_grid_json",
-    );
+    expect(GRID_TRANSPORT_ERROR_CODES.invalidGridJson).toBe("invalid_grid_json");
   });
 
   it("narrows known validation codes", () => {

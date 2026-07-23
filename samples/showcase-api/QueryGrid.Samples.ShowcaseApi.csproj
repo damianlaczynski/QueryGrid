@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\dotnet\QueryGrid.EntityFrameworkCore\QueryGrid.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\src\dotnet\QueryGrid.Export.Excel\QueryGrid.Export.Excel.csproj" />
   </ItemGroup>
 
 </Project>

@@ -27,6 +27,7 @@
     <ProjectReference Include="..\..\QueryGrid.Abstractions\QueryGrid.Abstractions.csproj" />
     <ProjectReference Include="..\..\QueryGrid.Core\QueryGrid.Core.csproj" />
     <ProjectReference Include="..\..\QueryGrid.EntityFrameworkCore\QueryGrid.EntityFrameworkCore.csproj" />
+    <ProjectReference Include="..\..\QueryGrid.Export.Excel\QueryGrid.Export.Excel.csproj" />
   </ItemGroup>
 
 </Project>

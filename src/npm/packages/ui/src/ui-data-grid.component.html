@@ -26,6 +26,19 @@
           />
         }
 
+        @if (exportEnabled()) {
+          <ui-menu
+            triggerVariant="dropdown"
+            appearance="outline"
+            [size]="size()"
+            icon="arrow_download"
+            text="Export"
+            [disabled]="grid().loading() || exporting()"
+            [menuItems]="exportAllMenuItems"
+            (menuItemClick)="onExportAllMenuItemClick($event)"
+          />
+        }
+
         <ui-button
           appearance="outline"
           [size]="size()"
@@ -37,11 +50,25 @@
       </div>
     </div>
 
-    @if (selectedCount() > 0 && bulkToolbarTemplate(); as bulkToolbar) {
+    @if (showBulkToolbar()) {
       <div class="qg-ui-grid__bulk-toolbar">
         <span class="qg-ui-grid__bulk-toolbar-count">{{ selectedCount() }} selected</span>
         <div class="qg-ui-grid__bulk-toolbar-actions">
-          <ng-container [ngTemplateOutlet]="bulkToolbar" />
+          @if (exportSelectedEnabled()) {
+            <ui-menu
+              triggerVariant="dropdown"
+              appearance="outline"
+              [size]="size()"
+              icon="arrow_download"
+              text="Export selected"
+              [disabled]="exporting()"
+              [menuItems]="exportSelectedMenuItems"
+              (menuItemClick)="onExportSelectedMenuItemClick($event)"
+            />
+          }
+          @if (bulkToolbarTemplate(); as bulkToolbar) {
+            <ng-container [ngTemplateOutlet]="bulkToolbar" />
+          }
         </div>
         <ui-button
           appearance="outline"

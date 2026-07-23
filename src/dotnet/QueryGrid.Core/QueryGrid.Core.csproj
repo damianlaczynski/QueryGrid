@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="QueryGrid.Export.Excel" />
     <InternalsVisibleTo Include="QueryGrid.EntityFrameworkCore" />
     <InternalsVisibleTo Include="QueryGrid.IntegrationTests" />
   </ItemGroup>

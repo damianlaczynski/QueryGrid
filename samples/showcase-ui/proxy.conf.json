@@ -3,6 +3,10 @@
     "target": "http://localhost:5180",
     "secure": false
   },
+  "/rows/export": {
+    "target": "http://localhost:5180",
+    "secure": false
+  },
   "/health": {
     "target": "http://localhost:5180",
     "secure": false
