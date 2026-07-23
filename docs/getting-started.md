@@ -195,6 +195,81 @@ readonly grid = this.gridFactory.create<IssueDto>({
 
 Use `[reorderable]="false"`, `[resizable]="false"`, or `[pinnable]="false"` on fixed columns. The column chooser footer offers **Reset layout** when widths or pins differ from defaults.
 
+### Row selection and bulk actions
+
+Enable `rowSelection` for a checkbox column and cross-page selection keyed by `dataKey` on the grid component:
+
+```typescript
+readonly grid = this.gridFactory.create<IssueDto>({
+  // …
+  rowSelection: true, // or { mode: "single" }
+});
+```
+
+```html
+<qg-prime-data-grid [grid]="grid" dataKey="id">
+  <ng-template qgBulkToolbar>
+    <p-button label="Delete selected" (onClick)="deleteSelected()" />
+  </ng-template>
+  <!-- qgColumn templates … -->
+</qg-prime-data-grid>
+```
+
+`qg-ui-data-grid` uses the same `qgBulkToolbar` slot and `dataKey` input.
+
+**Behavior:**
+
+- Selection is stored as `Set<string>` row keys in memory — **not** in `GridQuery`, `persistState`, or saved views.
+- **Multiple** mode (default): checkboxes on each row; header checkbox selects the current page; selection survives paging.
+- **Single** mode: one row at a time (`rowSelection: { mode: "single" }`).
+- Selection clears on filter, search, page size, and page changes. It is **kept** on sort-only changes.
+- `grid.selectedKeys()`, `grid.selectedCount()`, `grid.clearRowSelection()`, and related helpers are available when `rowSelection` is enabled.
+
+Wire bulk actions in your component:
+
+```typescript
+import { hasRowSelection } from "@query-grid/primeng";
+
+deleteSelected(): void {
+  if (!hasRowSelection(this.grid)) {
+    return;
+  }
+
+  const keys = [...this.grid.selectedKeys()];
+  // call API with keys …
+}
+```
+
+### Horizontal scroll (session)
+
+When `persistState` is enabled, horizontal scroll position is stored automatically in session **extra** under `scroll.left` (not in `GridQuery` or saved views):
+
+```json
+{
+  "extra": {
+    "scroll": { "left": 240 },
+    "columnLayout": { "…": "…" }
+  }
+}
+```
+
+- Restored after reload and after data/layout changes (including when a saved view is active).
+- Cleared by **Clear** (toolbar) and **Reset layout** (column chooser).
+- Switching saved views resets scroll to the left edge.
+- Scroll the **table body** (scrollbar under headers), then wait briefly (~200 ms) before reloading so the debounced save can run.
+
+Requires horizontal overflow (wide columns, many visible columns, or pinned layout).
+
+### Persist extra state summary
+
+| State            | Storage        | In `GridQuery` | In saved views |
+| ---------------- | -------------- | -------------- | -------------- |
+| Sort/filter/page | session + URL  | yes            | yes (`query`)  |
+| Column visibility| session extra  | no             | yes (`extra`)  |
+| Column layout    | session extra  | no             | yes (`extra`)  |
+| Horizontal scroll| session extra  | no             | no             |
+| Row selection    | memory only    | no             | no             |
+
 Declare columns with `qgColumn` — each template defines header, filters, and cell content:
 
 ```html
