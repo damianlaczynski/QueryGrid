@@ -60,6 +60,54 @@ export const GRID_TABLE_STYLES = `
     gap: 0.5rem;
   }
 
+  :host .qg-caption-bulk-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--p-primary-color, #3b82f6);
+    border-radius: var(--p-border-radius, 0.375rem);
+    background: color-mix(in srgb, var(--p-primary-color, #3b82f6) 8%, transparent);
+  }
+
+  :host .qg-caption-bulk-toolbar-count {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--p-text-color, #0f172a);
+    white-space: nowrap;
+  }
+
+  :host .qg-caption-bulk-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+
+  :host .qg-header-cell--selection,
+  :host .qg-body-cell--selection {
+    width: 2.75rem;
+    min-width: 2.75rem;
+    max-width: 2.75rem;
+    padding: 0 !important;
+    text-align: center;
+    vertical-align: middle;
+  }
+
+  :host .qg-selection-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    min-height: 2.75rem;
+  }
+
+  :host .qg-body-cell--selection .qg-selection-cell {
+    min-height: 2.5rem;
+  }
+
   :host .qg-column-header {
     display: flex;
     align-items: center;
@@ -173,18 +221,22 @@ export const GRID_TABLE_STYLES = `
     color: var(--p-primary-color, #3b82f6);
   }
 
-  :host .p-datatable-thead {
-    position: sticky;
-    top: 0;
-    z-index: 30;
+  :host ::ng-deep .p-datatable-scrollable-table > .p-datatable-thead {
+    z-index: 40;
   }
 
   :host .p-datatable-thead > tr > th {
     background: var(--p-datatable-header-background, var(--p-content-background, #ffffff));
   }
 
-  :host .qg-header-cell,
-  :host .qg-body-cell {
+  :host .p-datatable-thead > tr > .qg-header-cell--selection,
+  :host .p-datatable-thead > tr > .qg-header-cell.qg-pinned-left,
+  :host .p-datatable-thead > tr > .qg-header-cell.qg-pinned-right {
+    top: 0;
+  }
+
+  :host .qg-header-cell:not(.qg-pinned-left):not(.qg-pinned-right):not(.qg-header-cell--selection),
+  :host .qg-body-cell:not(.qg-pinned-left):not(.qg-pinned-right):not(.qg-body-cell--selection) {
     position: relative;
   }
 
@@ -200,6 +252,45 @@ export const GRID_TABLE_STYLES = `
     position: sticky;
     background: var(--p-content-background, #ffffff);
     border-right: none;
+  }
+
+  :host .qg-header-cell--selection,
+  :host .qg-body-cell--selection {
+    position: sticky;
+    left: 0;
+    border-right: none;
+  }
+
+  :host .qg-header-cell--selection-edge,
+  :host .qg-body-cell--selection-edge {
+    box-shadow:
+      inset -1px 0 0 0 var(--p-content-border-color, #e2e8f0),
+      4px 0 6px -2px color-mix(in srgb, var(--p-content-border-color, #e2e8f0) 50%, transparent);
+  }
+
+  :host .qg-header-cell--selection-separator,
+  :host .qg-body-cell--selection-separator {
+    box-shadow: inset -1px 0 0 0 var(--p-content-border-color, #e2e8f0);
+  }
+
+  :host .qg-header-cell--selection {
+    background: var(--p-datatable-header-background, var(--p-content-background, #ffffff));
+  }
+
+  :host .qg-body-cell--selection {
+    background: var(--p-content-background, #ffffff);
+  }
+
+  :host .p-datatable-striped .p-datatable-tbody > tr:nth-child(even) > .qg-body-cell--selection {
+    background: var(--p-datatable-row-striped-background, #f8fafc);
+  }
+
+  :host .p-datatable-tbody > tr:hover > .qg-body-cell--selection {
+    background: var(--p-datatable-row-hover-background, #f1f5f9);
+  }
+
+  :host .p-datatable-tbody > tr.qg-row--selected > .qg-body-cell--selection {
+    background: color-mix(in srgb, var(--p-primary-color, #3b82f6) 10%, transparent);
   }
 
   :host .p-datatable-striped .p-datatable-tbody > tr:nth-child(even) > .qg-body-cell.qg-pinned-left,

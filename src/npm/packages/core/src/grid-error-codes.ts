@@ -12,10 +12,13 @@ export const GRID_VALIDATION_CODES = {
   inListTooLong: "in_list_too_long",
   tooManySorts: "too_many_sorts",
   pageTooLarge: "page_too_large",
+  exportColumnsRequired: "export_columns_required",
+  exportSelectionRequired: "export_selection_required",
+  exportSelectionTooLarge: "export_selection_too_large",
+  exportFormatNotSupported: "export_format_not_supported",
 } as const;
 
-export type GridValidationCode =
-  (typeof GRID_VALIDATION_CODES)[keyof typeof GRID_VALIDATION_CODES];
+export type GridValidationCode = (typeof GRID_VALIDATION_CODES)[keyof typeof GRID_VALIDATION_CODES];
 
 /** Transport / binding failures outside the query engine. Keep in sync with `GridTransportErrorCodes.cs`. */
 export const GRID_TRANSPORT_ERROR_CODES = {
@@ -30,12 +33,9 @@ export const GRID_ERROR_CODES = {
   ...GRID_TRANSPORT_ERROR_CODES,
 } as const;
 
-export type GridErrorCode =
-  (typeof GRID_ERROR_CODES)[keyof typeof GRID_ERROR_CODES];
+export type GridErrorCode = (typeof GRID_ERROR_CODES)[keyof typeof GRID_ERROR_CODES];
 
-const gridValidationCodeSet = new Set<string>(
-  Object.values(GRID_VALIDATION_CODES),
-);
+const gridValidationCodeSet = new Set<string>(Object.values(GRID_VALIDATION_CODES));
 
 const gridErrorCodeSet = new Set<string>(Object.values(GRID_ERROR_CODES));
 

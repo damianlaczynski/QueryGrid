@@ -18,6 +18,16 @@
       searchPlaceholder="Search labels…"
       [pageSizeOptions]="[10, 20, 50, 100]"
     >
+      <ng-template qgBulkToolbar>
+        <ui-button
+          appearance="outline"
+          size="medium"
+          icon="arrow_export"
+          text="Export selected"
+          (click)="exportSelected()"
+        />
+      </ng-template>
+
       <ng-template
         qgColumn="Id"
         header="Id"

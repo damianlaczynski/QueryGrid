@@ -1,8 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, Injector, signal } from '@angular/core';
-import { CardComponent, MessageBarComponent, TagComponent } from '@laczynski/ui';
+import { ButtonComponent, CardComponent, MessageBarComponent, TagComponent } from '@laczynski/ui';
 import { buildGridQueryUrl, formatGridError } from '@query-grid/core';
-import { QgColumnDirective, QgEmptyDirective, UiDataGridComponent } from '@query-grid/ui';
+import {
+  hasRowSelection,
+  QgBulkToolbarDirective,
+  QgColumnDirective,
+  QgEmptyDirective,
+  UiDataGridComponent,
+} from '@query-grid/ui';
 import { ShowcaseRow } from './models/showcase-row.model';
 import { ShowcaseApiService } from './services/showcase-api.service';
 import { createUiShowcaseGrid } from './showcase-grid.factory';
@@ -15,9 +21,11 @@ import { getShowcaseCategoryLabel, showcaseCategories } from './utils/showcase.u
     CardComponent,
     MessageBarComponent,
     TagComponent,
+    ButtonComponent,
     UiDataGridComponent,
     QgColumnDirective,
     QgEmptyDirective,
+    QgBulkToolbarDirective,
   ],
   templateUrl: './ui-showcase-page.component.html',
   styleUrl: './showcase-page.shared.css',
@@ -43,5 +51,14 @@ export class UiShowcasePageComponent {
       this.linkCopied.set(true);
       globalThis.setTimeout(() => this.linkCopied.set(false), 2000);
     });
+  }
+
+  exportSelected(): void {
+    if (!hasRowSelection(this.grid)) {
+      return;
+    }
+
+    const keys = [...this.grid.selectedKeys()];
+    globalThis.alert(`Export ${keys.length} row(s): ${keys.join(', ')}`);
   }
 }

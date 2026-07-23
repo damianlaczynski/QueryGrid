@@ -28,6 +28,7 @@ function showcaseGridOptions(injector: Injector, api: ShowcaseApiService, persis
     syncRoute: true,
     columnChooser: true,
     columnLayout: true,
+    rowSelection: true,
     views: {
       storageKey: persistKey,
       builtins: [showcaseActiveView],

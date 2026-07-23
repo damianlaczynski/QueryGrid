@@ -66,6 +66,26 @@
         </div>
       </div>
 
+      @if (selectedCount() > 0 && bulkToolbarTemplate(); as bulkToolbar) {
+        <div class="qg-caption-bulk-toolbar">
+          <span class="qg-caption-bulk-toolbar-count">{{ selectedCount() }} selected</span>
+          <div class="qg-caption-bulk-toolbar-actions">
+            <ng-container [ngTemplateOutlet]="bulkToolbar" />
+          </div>
+          <p-button
+            type="button"
+            icon="pi pi-times"
+            severity="secondary"
+            [outlined]="true"
+            size="small"
+            aria-label="Clear selection"
+            pTooltip="Clear selection"
+            tooltipPosition="top"
+            (onClick)="clearRowSelection()"
+          />
+        </div>
+      }
+
       @if (filtersExpanded() && toolbarTemplate(); as toolbar) {
         <div class="qg-caption-filters">
           <ng-container [ngTemplateOutlet]="toolbar" />
@@ -94,6 +114,27 @@
       [class.qg-header-row--dragging]="columnDragActive()"
       (cdkDropListDropped)="onColumnDropped($event)"
     >
+      @if (rowSelectionEnabled()) {
+        <th
+          scope="col"
+          class="qg-header-cell qg-header-cell--selection"
+          [class.qg-header-cell--selection-edge]="isSelectionColumnFrozenEdge()"
+          [class.qg-header-cell--selection-separator]="isSelectionColumnSeparator()"
+          [attr.aria-label]="isMultipleSelection() ? 'Select page' : 'Select row'"
+          [style.z-index]="selectionHeaderZIndex()"
+        >
+          @if (isMultipleSelection()) {
+            <div class="qg-selection-cell">
+              <p-checkbox
+                [binary]="true"
+                [ngModel]="isPageSelectionChecked()"
+                [indeterminate]="isPageSelectionIndeterminate()"
+                (ngModelChange)="onPageSelectionChange($event)"
+              />
+            </div>
+          }
+        </th>
+      }
       @for (column of displayedColumns(); track column.field) {
         <th
           scope="col"
@@ -112,9 +153,9 @@
           [class.qg-pinned-right-edge]="isRightPinnedEdge(column.field)"
           [style.minWidth]="columnWidth(column)"
           [style.width]="columnWidth(column)"
-          [style.left.px]="pinnedOffset(column.field)?.left"
+          [style.left.px]="pinnedLeftPx(column.field)"
           [style.right.px]="pinnedOffset(column.field)?.right"
-          [style.z-index]="pinnedZIndex(column.field, 'header') ?? scrollableZIndex(column.field)"
+          [style.z-index]="headerCellZIndex(column.field)"
           [style.textAlign]="column.align"
           [pSortableColumn]="isSortable(column) ? column.field : undefined"
         >
@@ -171,7 +212,23 @@
   </ng-template>
 
   <ng-template #body let-row>
-    <tr>
+    <tr [class.qg-row--selected]="isRowSelected(row)">
+      @if (rowSelectionEnabled()) {
+        <td
+          class="qg-body-cell qg-body-cell--selection"
+          [class.qg-body-cell--selection-edge]="isSelectionColumnFrozenEdge()"
+          [class.qg-body-cell--selection-separator]="isSelectionColumnSeparator()"
+          [style.z-index]="selectionBodyZIndex()"
+        >
+          <div class="qg-selection-cell">
+            <p-checkbox
+              [binary]="true"
+              [ngModel]="isRowSelected(row)"
+              (ngModelChange)="onRowSelectionChange(row, $event)"
+            />
+          </div>
+        </td>
+      }
       @for (column of displayedColumns(); track column.field) {
         <td
           class="qg-body-cell"
@@ -183,9 +240,9 @@
           [class.qg-pinned-right-edge]="isRightPinnedEdge(column.field)"
           [style.minWidth]="columnWidth(column)"
           [style.width]="columnWidth(column)"
-          [style.left.px]="pinnedOffset(column.field)?.left"
+          [style.left.px]="pinnedLeftPx(column.field)"
           [style.right.px]="pinnedOffset(column.field)?.right"
-          [style.z-index]="pinnedZIndex(column.field, 'body') ?? scrollableZIndex(column.field)"
+          [style.z-index]="bodyCellZIndex(column.field)"
           [style.textAlign]="column.align"
         >
           @if (cellTemplate(column.field); as template) {
@@ -204,13 +261,13 @@
   <ng-template #emptymessage>
     @if (emptyTemplate(); as template) {
       <tr>
-        <td [attr.colspan]="displayedColumns().length">
+        <td [attr.colspan]="tableColumnCount()">
           <ng-container [ngTemplateOutlet]="template" />
         </td>
       </tr>
     } @else {
       <tr>
-        <td [attr.colspan]="displayedColumns().length">No data</td>
+        <td [attr.colspan]="tableColumnCount()">No data</td>
       </tr>
     }
   </ng-template>

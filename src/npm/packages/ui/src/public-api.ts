@@ -1,3 +1,4 @@
+export { QgBulkToolbarDirective } from "./bulk-toolbar.directive";
 export {
   createGridResource,
   type GridResource,
@@ -15,6 +16,11 @@ export {
   type GridResourceWithColumnChooser,
 } from "./grid-column-visibility-controls";
 export { GridResourceFactory } from "./grid-resource-factory";
+export {
+  hasRowSelection,
+  type GridResourceWithRowSelection,
+  type GridRowSelectionConfig,
+} from "./grid-row-selection-controls";
 export { hasGridViews, type GridResourceWithViews } from "./grid-views-controls";
 export { QgGridViewsComponent } from "./grid-views.component";
 export { buildEnumMatchModeOptions, buildMatchModeOptions } from "./match-mode-options";

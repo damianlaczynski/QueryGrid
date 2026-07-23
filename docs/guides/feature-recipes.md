@@ -37,6 +37,26 @@ See [Change coupling checklist](../../AGENTS.md#change-coupling-checklist). Step
 4. Map UI control in `@query-grid/primeng` if user-facing.
 5. Update [getting-started.md](../getting-started.md) example payload if user-visible.
 
+## Add row selection or bulk toolbar behavior
+
+1. Extend `@query-grid/core` helpers in `grid-row-selection.ts` if selection rules change.
+2. Wire controls in `grid-row-selection-controls.ts` and `createGridResource()` (ui + primeng).
+3. Update checkbox column and `[qgBulkToolbar]` in `ui-data-grid` / `prime-data-grid` templates.
+4. Require `dataKey` on the grid component; document in [getting-started.md](../getting-started.md).
+5. Run `npm run test:npm` and verify in showcase (cross-page selection, sort keeps selection, filter clears).
+
+## Add client persist extra (scroll, layout, …)
+
+1. Add helpers in `@query-grid/core` (`pick*Extra` / `read*Extra`).
+2. Add controls module and merge in `createGridResource()` `getExtraState` / `applyExtraState`.
+3. Bind DOM state in grid component (`bindHorizontalScrollPersistence` pattern for scroll).
+4. Document what is / is not stored in saved views — see [getting-started.md](../getting-started.md#persist-extra-state-summary).
+5. Add unit tests for round-trip extra state.
+
+## Add grid export
+
+Follow [grid-export-plan.md](grid-export-plan.md). Start with `@query-grid/core` CSV helpers, then thin ui/primeng wrappers and showcase.
+
 ## Add a new NuGet integration package
 
 1. Create project under `src/dotnet/QueryGrid.<Name>/`.

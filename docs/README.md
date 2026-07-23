@@ -25,6 +25,7 @@ Implementation conventions for library packages. Start with [guides/README.md](g
 | [npm-guidelines.md](guides/npm-guidelines.md)         | npm / Angular library conventions                      |
 | [testing-guidelines.md](guides/testing-guidelines.md) | Test ownership, anti-patterns, what to run before a PR |
 | [feature-recipes.md](guides/feature-recipes.md)       | Short recipes for common library changes               |
+| [grid-export-plan.md](guides/grid-export-plan.md)     | Planned grid export API and implementation phases      |
 
 ## Consumer docs
 
